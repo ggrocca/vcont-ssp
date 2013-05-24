@@ -98,6 +98,11 @@ public:
 	return bogus;
     }
 
+    T& operator() (int x, int y, Access a = BOUND)
+    {
+	return (*this)(Coord (x, y), a);
+    }
+
     unsigned size ()
     {
         return data.size();

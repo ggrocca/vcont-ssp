@@ -34,7 +34,7 @@ DEP_EXT = dd
 OBJ_EXT = oo
 
 ### files to compile. add C++ sources and C sources to the right variable
-CPPSOURCES = scaletracker_main.cc demreader.cc imagewriter.cc
+CPPSOURCES = dem.cc demreader.cc imagewriter.cc scaletracker_main.cc
 CSOURCES = rastertiff.c
 
 # generic compilation configuration, to be used for both C++ and C
