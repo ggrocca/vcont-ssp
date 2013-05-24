@@ -14,9 +14,9 @@ ImageWriter::ImageWriter (Dem *dem)
     height = dem->height;
     int max = dem->max;
     int min = dem->min;
-    int m = (65536 / (max - min)) - 1;
+    int m = (65536 / (max - min));
 
-    printf ("max: %d, min: %d, m: %d\n", max, min, m);
+    printf ("max: %d, min: %d, multiplier: %d\n", max, min, m);
 
     for (int i = 0; i < dem->width; i++)
     	for (int j = 0; j < dem->height; j++)
