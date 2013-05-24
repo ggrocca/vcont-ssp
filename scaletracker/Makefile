@@ -14,7 +14,7 @@
 ### General configuration section.
 
 #TARGET = executable name
-TARGET = smoother
+TARGET = scaletracker
 
 # Directory where build junk goes. Comment this line out or leave
 # empty if you want to build in the working directory.
@@ -34,8 +34,7 @@ DEP_EXT = dd
 OBJ_EXT = oo
 
 ### files to compile. add C++ sources and C sources to the right variable
-#CPPSOURCES = test_trackstring.cc tracking.cc trackstring.cc demreader.cc scalespace.cc
-CPPSOURCES = smoother_main.cc tracking.cc trackstring.cc demreader.cc scalespace.cc
+CPPSOURCES = scaletracker_main.cc demreader.cc imagewriter.cc
 CSOURCES = rastertiff.c
 
 # generic compilation configuration, to be used for both C++ and C
@@ -63,7 +62,7 @@ CINCLUDES =
 CDEFINES = 
 
 # C++ specific conf
-CXXFLAGS = -pipe  -D_THREAD_SAFE -pthread
+CXXFLAGS = -pipe  -D_THREAD_SAFE -pthread -Wno-write-strings
 CXXINCLUDES = 
 CXXDEFINES = 
 

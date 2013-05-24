@@ -1,0 +1,9 @@
+syntax: glob
+
+.DS_Store
+scaletracker/scaletracker
+trackviewer/trackviewer
+*.oo
+*.dd
+*.o
+*.d
