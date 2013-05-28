@@ -1,8 +1,10 @@
-#ifndef _GRID_H
-#define _GRID_H
+#ifndef _GRID_HH
+#define _GRID_HH
 
 #include <vector>
 #include <limits>
+
+#include "debug.h"
 
 class Coord
 {
@@ -46,7 +48,7 @@ public:
 				   width (width), height (height), data ()
     {
 	if (width < 0 || height < 0)
-	    fprintf (stderr, "Grid::Grid(): Warning, negative dimension.\n");
+	    eprintx (EXIT_GRID, "Negative dimension %d,%d.\n", width, height);
 
         data.resize(width * height);
     }
@@ -55,7 +57,7 @@ public:
 				   width (width), height (height), data ()
     {
 	if (width < 0 || height < 0)
-	    fprintf (stderr, "Grid::Grid(): Warning, negative dimension.\n");
+	    eprintx (EXIT_GRID, "Negative dimension %d,%d.\n", width, height);
 
         data.resize(width * height);
 
@@ -72,8 +74,7 @@ public:
 	switch (a)
 	{
 	case BOUND:
-	    fprintf (stderr, "GridM<T>::operator() out of mem access "
-		     " with Access==BOUND, %d %d\n", c.x, c.y);
+	    eprint ("Out of mem access with Access==BOUND, %d %d\n", c.x, c.y);
 	    return bogus;
 	    break;
 	    
@@ -94,7 +95,7 @@ public:
 	    ;
 	}
 
-	fprintf (stderr, "GridM<T>::operator() impossible case, %d %d\n", c.x, c.y);
+	eprintx (EXIT_GRID, "Impossible case, %d %d\n", c.x, c.y);
 	return bogus;
     }
 
@@ -111,7 +112,7 @@ public:
     void resize (int _width, int _height)
     {
 	if (width < 0 || height < 0)
-	    fprintf (stderr, "Grid::resize(): Warning, negative dimension.\n");
+	    eprintx (EXIT_GRID, "Negative dimension %d,%d.\n", _width, _height);
 
         data.resize(_width*_height);
         height = _height;
@@ -119,4 +120,4 @@ public:
     }
 };
 
-#endif // _GRID_H
+#endif // _GRID_HH

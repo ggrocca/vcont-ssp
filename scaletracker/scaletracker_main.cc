@@ -246,6 +246,12 @@ int main (int argc, char *argv[])
 	delete d;
     }
 
+    // eprintx ("%s", "sooca\n");
+    tprint ("%s", "sooca\n");
+    tprints (SCOPE_TRACKING, "%s", "sooca\n");
+    tprints (SCOPE_DUMMY, "%s", "sooca\n");
+    tprintp ("sooca", "%s", "sooca\n");
+    tprintsp (SCOPE_TRACKING, "sooca", "%s", "sooca\n");
 
     ///////////////////////////////////////////////////
     ///////// DEBUG END

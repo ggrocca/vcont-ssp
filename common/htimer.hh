@@ -1,5 +1,5 @@
-#ifndef _GETTIME_H
-#define _GETTIME_H
+#ifndef _HTIMER_HH
+#define _HTIMER_HH
 
 //#include <sys/types.h>
 #include <sys/time.h>
@@ -180,4 +180,4 @@ static inline char* H2B2S (size_t b, ht t)
     return H2B2S_f (b, t, 'G');
 }
 
-#endif
+#endif // _HTIMER_HH

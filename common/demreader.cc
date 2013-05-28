@@ -172,7 +172,7 @@ int HGTReader::get_pixel(unsigned int x, unsigned int y)
     
     if (pixel == SHRT_MIN)
     {
-	fprintf (stderr, "HGTReader::get_pixel(): warning, hgt holes zero clipped\n");
+	eprint ("HGT hole zero clipped: %d,%d\n", x, y);
 	return 0;
     }
     return pixel;

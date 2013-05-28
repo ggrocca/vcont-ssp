@@ -1,5 +1,6 @@
-#ifndef DEMREADER_H
-#define DEMREADER_H
+#ifndef _DEMREADER_HH
+#define _DEMREADER_HH
+
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -12,7 +13,8 @@
 #include <vector>
 
 #include "CImg.h"
-// #include "dem.hh"
+#include "debug.h"
+
 
 class DEMReader {
 public:
@@ -82,7 +84,7 @@ public:
 	for (const char** p = fmts; **p != '\0'; p++, fmtnum++)
 	    if (!strcmp (*p, ext))
 		return get (filename, static_cast<Format>(fmtnum));
-	fprintf (stderr, "DEMSelector: format `%s' not supported.\n", ext);
+	eprint ("Format `%s' not supported.\n", ext);
 	return 0;
     }
 
@@ -99,7 +101,7 @@ public:
 	case HGT:
 	    return new HGTReader (filename);
 	default:
-	    fprintf (stderr, "DEMSelector: wrong format code\n");
+	    eprint ("%s","Wrong format code\n");
 	    return 0;
 	}
     }
@@ -124,4 +126,4 @@ private:
 };
 
 
-#endif
+#endif // _DEMREADER_HH

@@ -17,30 +17,31 @@ Dem::Dem (DEMReader* dr) : Grid<double> (dr->width, dr->height),
 		      max (dr->max),
 		      min (dr->min)
 {
-    for (int i = 0; i < dr->width; i++)
-	for (int j = 0; j < dr->height; j++)
+    for (unsigned i = 0; i < dr->width; i++)
+	for (unsigned j = 0; j < dr->height; j++)
 	    (*this)(i, j, BOUND) = dr->get_pixel (i, j);
 }
 
 // copy dem
 Dem::Dem (Dem& dem) : Grid<double> (dem.width, dem.height),
-		 max (dem.max),
-		 min (dem.min)
+		      max (dem.max),
+		      min (dem.min)
 {
     for (int i = 0; i < dem.width; i++)
 	for (int j = 0; j < dem.height; j++)
 	    (*this)(i, j, BOUND) = dem (i, j);
 }
 
+
 // crop & copy dem
 Dem::Dem (Dem& dem, Coord a, Coord b) : Grid<double> (b.x - a.x, b.y - a.y),
-				   max (-DBL_MAX),
-				   min (DBL_MAX)
+					max (-DBL_MAX),
+					min (DBL_MAX)
 {
     if (!(a < b) ||
 	!a.is_inside (dem.width, dem.height) ||
 	!b.is_inside (dem.width, dem.height)) 
-	fprintf (stderr, "Dem::Dem(): Cropping constructor parameters problem.\n");
+	eprint ("%s","Cropping constructor parameters problem.\n");
 	
     for (int i = 0; i < width; i++)
 	for (int j = 0; j < height; j++)
@@ -88,6 +89,27 @@ Dem::Dem (Dem& dem, double amp, unsigned int seed) :
 	}
 	
 }
+
+Dem::Dem (Dem& dem, TGaussianBlur<double>& BlurFilter) :
+    Grid<double> (dem.width, dem.height),
+    max (-DBL_MAX),
+    min (DBL_MAX)
+{
+    BlurFilter.Filter(&(dem.data[0]), &((*this).data[0]), width, height, 5);
+
+    for (int i = 0; i < width; i++)
+	for (int j = 0; j < height; j++)
+	{
+	    double v = (*this)(i, j);
+	    if (v < min)
+		min = v;
+	    if (v > max)
+		max = v;
+
+	}
+
+}
+
 
 // read & write element with coord
 double& Dem::operator() (Coord c, Access a) // = ABYSS

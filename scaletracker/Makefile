@@ -40,13 +40,13 @@ CSOURCES = rastertiff.c
 # generic compilation configuration, to be used for both C++ and C
 # on every OS.  FLAGS are always used, while DEBUG_FLAGS are used
 # instead of RELEASE flags when "make debug" is used.
-FLAGS = 
-DEBUG_FLAGS = -Wall -W -g
-RELEASE_FLAGS = -O2 -DNDEBUG
-INCLUDES = -I../common/
-DEFINES = 
-LDFLAGS = -Dcimg_use_png -lpng -lz -ltiff -lm
-FRAMEWORKS = 
+override FLAGS += 
+override DEBUG_FLAGS += -Wall -W -g
+override RELEASE_FLAGS += -O2 -DNDEBUG
+override INCLUDES += -I../common/
+override DEFINES += 
+override LDFLAGS += -Dcimg_use_png -lpng -lz -ltiff -lm
+override FRAMEWORKS += 
 
 
 ####################################
@@ -57,14 +57,14 @@ FRAMEWORKS =
 # one called in the linking phase.
 
 # C specific conf
-CFLAGS = 
-CINCLUDES = 
-CDEFINES = 
+override CFLAGS += 
+override CINCLUDES += 
+override CDEFINES += 
 
 # C++ specific conf
-CXXFLAGS = -pipe  -D_THREAD_SAFE -pthread -Wno-write-strings
-CXXINCLUDES = 
-CXXDEFINES = 
+override CXXFLAGS += -pipe  -D_THREAD_SAFE -pthread -Wno-write-strings
+override CXXINCLUDES += 
+override CXXDEFINES += 
 
 
 ##################################
