@@ -72,13 +72,13 @@
 
 #define eprint(fmt, ...)						\
     do {								\
-	fprintf(stderr, "Warning. %s:%d:%s(): " fmt, __FILE__,		\
+	fprintf(stderr, "Error. %s:%d:%s(): " fmt, __FILE__,		\
 		__LINE__, _FUNC, __VA_ARGS__);				\
     } while (0)
 
 #define eprintx(exit_value, fmt, ...)					\
     do {								\
-	fprintf(stderr, "Warning. %s:%d:%s(): " fmt, __FILE__,		\
+	fprintf(stderr, "Fatal. %s:%d:%s(): " fmt, __FILE__,	\
 		__LINE__, _FUNC, __VA_ARGS__);				\
 	exit (exit_value);						\
     } while (0)
