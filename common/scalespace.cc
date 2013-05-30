@@ -58,11 +58,9 @@ RelationType _get_ext_relation (CriticalPoint a, CriticalPoint b, Dem* d)
 
 CriticalPoint _discover_iline (CriticalPoint prev, Dem* d, Grid<char>& il)
 {
-    // assert (!(prev.c == Coord (413, 78)));
-
     CriticalType search = prev.t;
 
-    if (d->point_type (prev.c) == search) // we reached a max or min
+    if ((d->point_type (prev.c) == search) || d->is_clip (prev.c)) // max or min reached
 	return prev;
 
     il (prev.c) = search;
