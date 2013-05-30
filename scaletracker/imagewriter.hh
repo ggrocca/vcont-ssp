@@ -13,8 +13,8 @@ public:
     ImageWriter (Dem *image);
     ~ImageWriter ();
     
-    // void draw_points (std::vector<critical_t>* points);
-    // void draw_lines (SimpleMatrix<char>* ilines);
+    void draw_points (std::vector<CriticalPoint>* points);
+    void draw_lines (Grid<char>* ilines);
 
     void write (char* name, char* mark, int count);
 };

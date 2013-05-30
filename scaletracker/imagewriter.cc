@@ -1,11 +1,11 @@
 #include "imagewriter.hh"
 
-pix16_t pix_red = {65535, 0, 0};
-pix16_t pix_green = {0, 65535, 0};
-pix16_t pix_blue = {0, 0, 65535};
-pix16_t pix_yellow = {65535,65535,0};
-pix16_t pix_magenta = {32768,0,32768};
-pix16_t pix_black = {0,0,0};
+static pix16_t pix_red = {65535, 0, 0};
+static pix16_t pix_green = {0, 65535, 0};
+static pix16_t pix_blue = {0, 0, 65535};
+static pix16_t pix_yellow = {65535,65535,0};
+static pix16_t pix_magenta = {32768,0,32768};
+static pix16_t pix_black = {0,0,0};
 
 ImageWriter::ImageWriter (Dem *dem)
 {
@@ -33,30 +33,30 @@ ImageWriter::~ImageWriter ()
     raster16_free (raster_out);
 }
 
-// void ImageWriter::draw_points (std::vector<critical_t>* points)
-// {
-// 	for (unsigned i = 0; i < (*points).size(); i++)
-// 	{
-// 	    pix16_t pix_to_draw =
-// 		(*points)[i].c_type == MAX? pix_red :
-// 		(*points)[i].c_type == MIN? pix_blue :
-// 		(*points)[i].c_type == SA2? pix_green :
-// 		(*points)[i].c_type == SA3? pix_yellow :
-// 		(*points)[i].c_type == EQU? pix_black :
-// 		raster16_get (raster_out, (*points)[i].x, (*points)[i].y,
-// 			      width, height);
-// 	    raster16_set (raster_out, (*points)[i].x, (*points)[i].y,
-// 			  width, height, pix_to_draw);
-// 	}
-// }
+void ImageWriter::draw_points (std::vector<CriticalPoint>* points)
+{
+	for (unsigned i = 0; i < (*points).size(); i++)
+	{
+	    pix16_t pix_to_draw =
+		(*points)[i].t == MAX? pix_red :
+		(*points)[i].t == MIN? pix_blue :
+		(*points)[i].t == SA2? pix_green :
+		(*points)[i].t == SA3? pix_yellow :
+		(*points)[i].t == EQU? pix_black :
+		raster16_get (raster_out, (*points)[i].c.x, (*points)[i].c.y,
+			      width, height);
+	    raster16_set (raster_out, (*points)[i].c.x, (*points)[i].c.y,
+			  width, height, pix_to_draw);
+	}
+}
 
-// void ImageWriter::draw_lines (SimpleMatrix<char>* ilines)
-// {
-//     for (unsigned i = 0; i < ilines->rows(); i++)
-// 	for (unsigned j = 0; j < ilines->cols(); j++)
-// 	    if ((*ilines)( i, j) != 0)
-// 		raster16_set (raster_out, i, j, width, height, pix_magenta);
-// }
+void ImageWriter::draw_lines (Grid<char>* ilines)
+{
+    for (int i = 0; i < ilines->width; i++)
+	for (int j = 0; j < ilines->height; j++)
+	    if ((*ilines)(i, j) != 0)
+		raster16_set (raster_out, i, j, width, height, pix_magenta);
+}
 
 void ImageWriter::write (char* name, char* mark, int count)
 {

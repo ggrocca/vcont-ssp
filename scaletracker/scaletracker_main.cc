@@ -5,8 +5,7 @@
 
 #include "../common/dem.hh"
 #include "../common/demreader.hh"
-// #include "../common/scalespace.hh"
-// #include "../common/rastertiff.h"
+#include "../common/scalespace.hh"
 
 #include "imagewriter.hh"
 // #include "tracking.hh"
@@ -60,33 +59,22 @@ void print_help (FILE* f)
 //
 /////////////////////////////////////////////////////////
 //
-// #define SS_ILINES 1
-// #define SS_PRESMOOTH 2
-// #define SS_PERTURB 4
-// #define SS_JUMP 8
-// #define SS_CROP 16
-// #define SS_CLIP 32
+// static const unsigned int ILINES    = 1;
+// static const unsigned int PRESMOOTH = 2;
+// static const unsigned int PERTURB   = 4;
+// static const unsigned int JUMP      = 8;
+// static const unsigned int CROP      = 16;
+// static const unsigned int CLIP      = 32;
 //
-// typedef unsigned int SS_Opts;
+// double perturb_amp;
+// int perturb_seed;
+// int jump_num;
+// double clip_value;
+// Coord crop_a;
+// Coord crop_b;
 //
-// inline void set_opt (SS_Opts* os, int o);
-// inline bool check_opt (SS_Opts os, int o);
-//
-// struct SS_OptValues {
-//     double perturb_amp;
-//     int perturb_seed;
-//     int jump_num;
-//     double clip_value;
-//     int crop_x0;
-//     int crop_y0;
-//     int crop_x1;
-//     int crop_y1;
-// };
-//
-// DEMScaleSpace (DEMReader* base,
-// 	       int num_levels,
-// 	       SS_Opts op,
-// 	       SS_OptValues opvs);
+// void set (int o) { os |= o; }
+// bool check (int o) { return (bool)(os & o); }
 //
 /////////////////////////////////////////////////////////
 
@@ -190,42 +178,39 @@ int main (int argc, char *argv[])
 
     printf ("### Start!\n");
 
-    // SS_Opts op = 0;
-    // SS_OptValues ov;
+    ScaleSpaceOpts opts;
     
-    // if (do_perturb)
-    // {
-    // 	set_opt (&op, SS_PERTURB);
-    // 	ov.perturb_amp = perturb_amp;
-    // 	ov.perturb_seed = ov.perturb_seed;
-    // }
+    if (do_perturb)
+    {
+    	opts.set (ScaleSpaceOpts::PERTURB);
+    	opts.perturb_amp = perturb_amp;
+    	opts.perturb_seed = perturb_seed;
+    }
 
-    // if (do_jump)
-    // {
-    // 	set_opt (&op, SS_JUMP);
-    // 	ov.jump_num = numjumps;
-    // }
+    if (do_jump)
+    {
+    	opts.set (ScaleSpaceOpts::JUMP);
+    	opts.jump_num = numjumps;
+    }
 
-    // if (do_clip)
-    // {
-    // 	set_opt (&op, SS_CLIP);
-    // 	ov.clip_value = clip_value;
-    // }
+    if (do_clip)
+    {
+    	opts.set (ScaleSpaceOpts::CLIP);
+    	opts.clip_value = clip_value;
+    }
 
-    // if (do_crop)
-    // {
-    // 	set_opt (&op, SS_CROP);
-    // 	ov.crop_x0 = crop_x0;
-    // 	ov.crop_y0 = crop_y0;
-    // 	ov.crop_x1 = crop_x1;
-    // 	ov.crop_y1 = crop_y1;
-    // }
+    if (do_crop)
+    {
+    	opts.set (ScaleSpaceOpts::CROP);
+    	opts.crop_a = crop_a;
+    	opts.crop_b = crop_b;
+    }
 
-    // if (do_ilines)
-    // 	set_opt (&op, SS_ILINES);
+    if (do_ilines)
+    	opts.set (ScaleSpaceOpts::ILINES);
 
-    // if (do_presmooth)
-    // 	set_opt (&op, SS_PRESMOOTH);
+    if (do_presmooth)
+    	opts.set (ScaleSpaceOpts::PRESMOOTH);
 
     
     if (tiffnames)
@@ -246,14 +231,57 @@ int main (int argc, char *argv[])
 	delete d;
     }
 
-    tprint ("%s", "sooca\n");
-    tprints (SCOPE_TRACKING, "%s", "sooca\n");
-    tprints (SCOPE_DUMMY, "%s", "sooca\n");
-    tprintp ("sooca", "%s", "sooca\n");
-    tprintsp (SCOPE_TRACKING, "sooca", "%s", "sooca\n");
+    if (stage == 1)
+	exit (0);
 
-    eprint ("%s", "sooca\n");
-    eprintx (42, "%s", "sooca\n");
+    ScaleSpace ssp (dr, numlevel, opts);
+
+    if (stage == 2)
+	exit (0);
+
+    if (tiffnames)
+    {
+	for (int i = 0; i < ssp.levels; i++)
+	{
+	    ImageWriter iw (ssp.dem[i]);
+	    iw.write (tiffnames, "", i);
+	    iw.draw_points (&(ssp.critical[i]));
+	    if (do_ilines)
+		iw.draw_lines (&(ssp.ilines[i]));
+	    iw.write (tiffnames, "-MARKED-", i);
+
+	    tprintp ("###$$$", "Finished writing tiff %d!\n", i);
+	}
+    }
+
+    if (stage == 3)
+	exit (0);
+
+    for (int i = 0; i < ssp.levels; i++)
+    {
+	int num_max, num_min, num_sad;
+	num_max = num_min = num_sad = 0;
+	for (unsigned j = 0; j < ssp.critical[i].size(); j++)
+	{
+	    if (ssp.critical[i][j].t == MAX)
+		num_max++;
+	    if (ssp.critical[i][j].t == MIN)
+		num_min++;
+	    if (ssp.critical[i][j].t == SA2)
+		num_sad++;
+	    if (ssp.critical[i][j].t == SA3)
+		num_sad += 2;
+	}
+	printf ("\nlevel %d, num_max = %d, num_min = %d, num_sad = %d\n"
+		"\tnum_max - num_min = %d, num_max + num_min = %d\n"
+		"\t\tnum_max + num_min - num_sad = %d\n",
+		i, num_max, num_min, num_sad,
+		num_max - num_min, num_max + num_min,
+		num_max + num_min - num_sad);
+    }
+
+    if (stage == 4)
+	exit (0);
 
     ///////////////////////////////////////////////////
     ///////// DEBUG END
@@ -267,60 +295,6 @@ int main (int argc, char *argv[])
 
 #if 0
 
-    if (stage == 1)
-	exit (0);
-
-    DEMScaleSpace demsp (image, numlevel, op, ov);
-
-    if (stage == 2)
-	exit (0);
-
-    if (tiffnames)
-    {
-#define __FNLEN 64
-	char str[__FNLEN] = {'\0'};
-	// ==== tiff'o'rama =========
-	for (int i = 0; i < demsp.num_levels; i++)
-	{
-	    write_tiff (demsp.dems[i], 0, 0,
-			tiffnames, i, multiplier);
-	    snprintf (str, __FNLEN, "%s%s" ,tiffnames, "-MARKED-");
-	    write_tiff (demsp.dems[i], &(demsp.c_points[i]),
-			do_ilines? &(demsp.ilines[i]) : 0,
-			str, i, multiplier);
-	    printf ("###$$$ Finished writing tiff %d!\n", i);
-	}
-#undef __FNLEN
-    }
-
-    if (stage == 3)
-	exit (0);
-
-    for (int i = 0; i < demsp.num_levels; i++)
-    {
-	int num_max, num_min, num_sad;
-	num_max = num_min = num_sad = 0;
-	for (unsigned j = 0; j < demsp.c_points[i].size(); j++)
-	{
-	    if (demsp.c_points[i][j].c_type == MAX)
-		num_max++;
-	    if (demsp.c_points[i][j].c_type == MIN)
-		num_min++;
-	    if (demsp.c_points[i][j].c_type == SA2)
-		num_sad++;
-	    if (demsp.c_points[i][j].c_type == SA3)
-		num_sad += 2;
-	}
-	printf ("\nlevel %d, num_max = %d, num_min = %d, num_sad = %d\n"
-		"\tnum_max - num_min = %d, num_max + num_min = %d\n"
-		"\t\tnum_max + num_min - num_sad = %d\n",
-		i, num_max, num_min, num_sad,
-		num_max - num_min, num_max + num_min,
-		num_max + num_min - num_sad);
-    }
-
-    if (stage == 4)
-	exit (0);
 
     if (trackfile)
     {

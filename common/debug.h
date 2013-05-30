@@ -3,11 +3,9 @@
 
 
 
-
 //=//////////////////////////////////////////=//
 ////// MACRO SIGNATURES AND DOCUMENTATION //////
 //=//////////////////////////////////////////=//
-
 
 
 // Error prints. Write to stderr and add file,line, and function name
@@ -19,16 +17,15 @@
 // #define eprintx(exit_value, fmt, ...)
 
 
+// Debug trace prints. Printed only if DEBUGTRACE is defined, either
+// in-program or on the compiler command line. Always cheked by the
+// compiler, which is a Good Idea(TM) that avoids stale variables. We
+// leave to the optimizer their removal if debugging is turned off.
 
-// Debug trace prints. Printed only if DEBUGTRACE is defined. Always
-// cheked by the compiler, which is a Good Idea(TM) that avoids stale
-// variables. We leave to the optimizer their removal if debugging is
-// turned off.
+// #define DEBUGTRACE
 
 // scope: print happens only if specific scope is set to 1
 // preamble: print something before the file:line:func: section.
-
-// #define DEBUGTRACE
 
 // #define tprint(fmt, ...)
 // #define tprintp(preamble, fmt, ...)
@@ -37,24 +34,29 @@
 
 
 
+//=///////////////////////////=//
+////// DEBUG CONFIGURATION //////
+//=///////////////////////////=//
 
-//=//////////////////////////=//
-////// CUSTOM DEFINITIONS //////
-//=//////////////////////////=//
 
+// perform an assert when a non critical error is reached?
+#define DO_ASSERT 1
 
-// Add here custom exit values.
+// Add here custom exit failure values.
 #define EXIT_GRID 3
-
+#define EXIT_RELATION 5
 
 
 // Add here custom scopes for trace debug prints.
 // Set them to 0/1 to disable/enable specific trace prints.
 
-#define SCOPE_DUMMY 0
-#define SCOPE_CRITICAL 1
-#define SCOPE_TRACKING 1
+#define SCOPE_NEVER 0
+#define SCOPE_ALWAYS 1
 
+#define SCOPE_CRITICAL 0
+#define SCOPE_TRACKING 0
+#define SCOPE_PLATEUS 0
+#define SCOPE_POINTTYPE 0
 
 
 
@@ -62,6 +64,7 @@
 ////// MACRO IMPLEMENTATION //////
 //=////////////////////////////=//
 
+#include <assert.h>
 
 // set fancy function names with class and signature if we're using gcc
 #ifdef __GNUC__
@@ -74,12 +77,15 @@
     do {								\
 	fprintf(stderr, "Error. %s:%d:%s(): " fmt, __FILE__,		\
 		__LINE__, _FUNC, __VA_ARGS__);				\
+	if (DO_ASSERT)							\
+	    assert (0);							\
     } while (0)
 
 #define eprintx(exit_value, fmt, ...)					\
     do {								\
 	fprintf(stderr, "Fatal. %s:%d:%s(): " fmt, __FILE__,	\
 		__LINE__, _FUNC, __VA_ARGS__);				\
+	assert (0);							\
 	exit (exit_value);						\
     } while (0)
 
@@ -120,5 +126,10 @@
 		    __LINE__, _FUNC, __VA_ARGS__);			\
     } while (0)
 
+#define oprints(scope, fmt, ...)					\
+    do {								\
+	if (_TRACE_TEST && (scope))					\
+	    fprintf(stdout, fmt, __VA_ARGS__);				\
+    } while (0)
 
 #endif // _DEBUG_H

@@ -51,9 +51,10 @@ void PNGReader::print_info (char *filename)
     char* succ = ". ";
     char* p = filename? prev : empty;
     char* s = filename? succ : empty;
+    char* f = filename? filename : empty;
 	
     printf ("%s%s%s""width %d, height %d, max %d, min %d.\n",
-	    p, filename, s, width, height, max, min);
+	    p, f, s, width, height, max, min);
     return;
 }
 
@@ -86,9 +87,10 @@ void BMPReader::print_info (char *filename = 0)
     char* succ = ". ";
     char* p = filename? prev : empty;
     char* s = filename? succ : empty;
+    char* f = filename? filename : empty;
 	
     printf ("%s%s%s""width %d, height %d, max %d, min %d.\n",
-	    p, filename, s, width, height, max, min);
+	    p, f, s, width, height, max, min);
     return;
 }
 
@@ -122,9 +124,10 @@ void TIFReader::print_info (char *filename = 0)
     char* succ = ". ";
     char* p = filename? prev : empty;
     char* s = filename? succ : empty;
+    char* f = filename? filename : empty;
 	
     printf ("%s%s%s""width %d, height %d, max %d, min %d.\n",
-	    p, filename, s, width, height, max, min);
+	    p, f, s, width, height, max, min);
     return;
 }
 
@@ -172,8 +175,8 @@ int HGTReader::get_pixel(unsigned int x, unsigned int y)
     
     if (pixel == SHRT_MIN)
     {
-	eprint ("HGT hole zero clipped: %d,%d\n", x, y);
-	return 0;
+	eprint ("Found HGT hole: %d,%d\n", x, y);
+	return INT_MIN;
     }
     return pixel;
 }
@@ -187,10 +190,11 @@ void HGTReader::print_info (char *filename = 0)
     char* succ = ". ";
     char* p = filename? prev : empty;
     char* s = filename? succ : empty;
+    char* f = filename? filename : empty;
 	
     printf ("HGTReader: %s%s%s length %d, byte_length %d, "
 	    "width %d, height %d, max %d, min %d.\n",
-	    p, filename, s,
+	    p, f, s,
 	    length, byte_length, width, height,
 	    max, min);
     return;

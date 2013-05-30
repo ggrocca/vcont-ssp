@@ -23,7 +23,8 @@ public:
 
     DEMReader () {}
     virtual ~DEMReader () {}
-    virtual int get_pixel (unsigned int x, unsigned int y) = 0;
+    // get_pixel returns INT_MIN in case of error or missing data
+    virtual int get_pixel (unsigned int x, unsigned int y) = 0; 
     virtual void print_info (char* filename = 0) = 0;
     void set_maxmin ();
 };

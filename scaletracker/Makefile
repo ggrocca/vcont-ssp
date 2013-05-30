@@ -27,14 +27,15 @@ VPATH = ../common
 CXXC = g++
 CC = gcc
 
-# file extensions for C++ files, their objects and dependencies. (.c,
-# .o and .d are always used for C files)
+# file extensions for C++ files, their objects and dependencies (e.g:
+# .cpp/.dpp/.opp, or .cc/.dd/.oo or whatever you like; remember that
+# .c, .d and .o are always used for C files).
 CPP_EXT = cc
 DEP_EXT = dd
 OBJ_EXT = oo
 
 ### files to compile. add C++ sources and C sources to the right variable
-CPPSOURCES = dem.cc demreader.cc imagewriter.cc scaletracker_main.cc
+CPPSOURCES = dem.cc demreader.cc imagewriter.cc scalespace.cc scaletracker_main.cc
 CSOURCES = rastertiff.c
 
 # generic compilation configuration, to be used for both C++ and C
@@ -42,6 +43,7 @@ CSOURCES = rastertiff.c
 # instead of RELEASE flags when "make debug" is used.
 override FLAGS += 
 override DEBUG_FLAGS += -Wall -W -g
+override TRACE_FLAGS += -DDEBUGTRACE
 override RELEASE_FLAGS += -O2 -DNDEBUG
 override INCLUDES += -I../common/
 override DEFINES += 
@@ -109,9 +111,11 @@ endif
 # non-file targets
 .PHONY : all clean
 
-# use release flags for `make', debug flags for `make debug'
+# use release flags for `make', debug flags for `make debug' and
+# tracing flags for "make trace" if your application supports them.
 all: override FLAGS += $(RELEASE_FLAGS)
 debug: override FLAGS += $(DEBUG_FLAGS)
+trace: override FLAGS += $(DEBUG_FLAGS) $(TRACE_FLAGS)
 
 # complete specific language flags with general ones
 override CFLAGS += $(FLAGS)
@@ -144,6 +148,8 @@ override DEPS += $(CSOURCES:.c=.d)
 # standard goals
 all : $(TARGET)
 debug : $(TARGET)
+trace : $(TARGET)
+
 clean :
 	-$(RM) $(BUILD_OBJECTS) $(BUILD_DEPS) $(TARGET)
 ifneq ($(strip $(BUILD_DIR)),)
