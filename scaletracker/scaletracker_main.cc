@@ -33,6 +33,7 @@ Coord crop_b;
 bool do_ilines = false;
 bool do_presmooth = false;
 int stage = 0;
+int tiff_mult = 0;
 
 void print_help (FILE* f)
 {
@@ -49,6 +50,7 @@ void print_help (FILE* f)
 	     "[-g stagenum] : stop at a certain point. 0 disable this.\n"
 	     "[-l] : compute integral lines\n"
 	     "[-s] : perform presmoothing of data\n"
+	     "[-m mult] : multiply tiff output values by mult. Default auto mode\n"
 	     "\n"
 	     );
 }
@@ -105,6 +107,11 @@ void app_init(int argc, char *argv[])
 
             case 'n':
                 numlevel = atoi (*++argv);
+                argc--;
+                break;
+
+            case 'm':
+                tiff_mult = atoi (*++argv);
                 argc--;
                 break;
 
@@ -219,13 +226,13 @@ int main (int argc, char *argv[])
 	if (do_crop)
 	{
 	    Dem* c = new Dem (*d, crop_a, crop_b);
-	    ImageWriter iw (c);
+	    ImageWriter iw (c, tiff_mult);
 	    iw.write (tiffnames, "-base", -1);
 	    delete c;
 	}
 	else
 	{
-	    ImageWriter iw (d);
+	    ImageWriter iw (d, tiff_mult);
 	    iw.write (tiffnames, "-base", -1);
 	}
 	delete d;
@@ -243,7 +250,7 @@ int main (int argc, char *argv[])
     {
 	for (int i = 0; i < ssp.levels; i++)
 	{
-	    ImageWriter iw (ssp.dem[i]);
+	    ImageWriter iw (ssp.dem[i], tiff_mult);
 	    iw.write (tiffnames, "", i);
 	    iw.draw_points (&(ssp.critical[i]));
 	    if (do_ilines)

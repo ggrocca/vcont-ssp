@@ -7,14 +7,14 @@ static pix16_t pix_yellow = {65535,65535,0};
 static pix16_t pix_magenta = {32768,0,32768};
 static pix16_t pix_black = {0,0,0};
 
-ImageWriter::ImageWriter (Dem *dem)
+ImageWriter::ImageWriter (Dem *dem, int mult) // == 0, that means auto
 {
     raster_out = raster16_new (dem->width, dem->height);
     width = dem->width;
     height = dem->height;
     int max = dem->max;
     int min = dem->min;
-    int m = (65536 / (max - min));
+    int m = mult != 0? mult : (65536 / (max - min));
 
     printf ("max: %d, min: %d, multiplier: %d\n", max, min, m);
 

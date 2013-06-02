@@ -10,7 +10,7 @@ private:
     unsigned width, height;
 
 public:
-    ImageWriter (Dem *image);
+    ImageWriter (Dem *image, int mult = 0);
     ~ImageWriter ();
     
     void draw_points (std::vector<CriticalPoint>* points);
