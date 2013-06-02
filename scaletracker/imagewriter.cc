@@ -68,14 +68,8 @@ void ImageWriter::write (char* name, char* mark, int count)
 	snprintf (image_out, __FNLEN, "%s%s%d.%s", name, mark, count, "tif");
 #undef __FNLEN
 
-    TIFF* tiff_out;    
-    if ((tiff_out = TIFFOpen (image_out, "w")) == NULL)
-    {
-	fprintf (stderr, "Could not open %s\n", image_out);
-	exit (42);
-    }
-
-    tag_new_raster16 (tiff_out, width, height);
+    TIFF* tiff_out = tiff_open_write (image_out);
+    tiff16_tag_write (tiff_out, width, height);
     raster16_write (tiff_out, raster_out, width, height);
     TIFFClose (tiff_out);
 }

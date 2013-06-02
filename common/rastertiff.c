@@ -68,12 +68,49 @@ void raster8_free (raster8_t raster)
 }
 
 
-////////////////////////
-/// handle tiff tags ///
-////////////////////////
+////////////////////
+/// handle tiff  ///
+////////////////////
 
-void tag_new_raster16 (TIFF* out, int width, int height)
+TIFF* tiff_open_read (char* file)
 {
+    TIFF* tiffp;
+
+    if ((tiffp = TIFFOpen (file, "r")) == NULL)
+    {
+	fprintf (stderr, "tiff_open_read(): Could not open %s\n", file);
+	exit (42);
+    }
+    
+    return tiffp;
+}
+
+TIFF* tiff_open_write (char* file)
+{
+    TIFF* tiffp;
+
+    if ((tiffp = TIFFOpen (file, "w")) == NULL)
+    {
+	fprintf (stderr, "tiff_open_read(): Could not open %s\n", file);
+	exit (42);
+    }
+
+    return tiffp;
+}
+
+void tiff_tag_read (TIFF* in, int* width, int* height)
+{
+    int _length;
+    int _width;
+
+    TIFFGetField (in, TIFFTAG_IMAGELENGTH, &_length);
+    TIFFGetField (in, TIFFTAG_IMAGEWIDTH, &_width);
+
+    *width = _length;
+    *height = _width;
+}
+
+void tiff16_tag_write (TIFF* out, int width, int height){
     uint32 bps = 16;
     uint32 spp = 3;
 
@@ -425,6 +462,46 @@ raster16_t raster16_copy (raster16_t r_in, uint32 w, uint32 h)
 
     return r_out;
 }
+
+void raster16_diff (raster16_t ra, raster16_t rb, uint32 w, uint32 h)
+{
+    if (ra == NULL)
+    {
+	fprintf (stderr, "raster16_print: ra is NULL\n");
+	return;
+    }
+    if (rb == NULL)
+    {
+	fprintf (stderr, "raster16_print: rb is NULL\n");
+	return;
+    }
+
+    for (unsigned i = 0; i < w; i++)
+	for (unsigned j = 0; j < h; j++)
+	{
+	    pix16_t p[2];
+	    p[0] = raster16_get (ra, i, j, w, h);
+	    p[1] = raster16_get (rb, i, j, w, h);
+
+	    if (p[0].r != p[1].r || p[0].g != p[1].g || p[0].b != p[1].g)
+	    {
+		printf ("[%5d][%5d] ", i, j);
+
+		for (int k = 0; k < 2; k++)
+		{
+		    printf (k == 0? "A: " : "B: ");
+
+		    if (p[k].r == p[k].g && p[k].r == p[k].b)
+			printf ("mono (-----,%5d,-----)", p[k].r);
+		    else
+			printf ("mono (%5d,%5d,%5d)", p[k].r, p[k].g, p[k].b);
+
+		    printf (k == 0? "  :::  " : "\n");
+		}
+	    }
+	}
+}
+
 
 void raster16_print (raster16_t raster, uint32 w, uint32 h)
 {

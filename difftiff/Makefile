@@ -14,7 +14,7 @@
 ### General configuration section.
 
 #TARGET = executable name
-TARGET = scaletracker
+TARGET = difftiff
 
 # Directory where build junk goes. Comment this line out or leave
 # empty if you want to build in the working directory.
@@ -35,8 +35,8 @@ DEP_EXT = dd
 OBJ_EXT = oo
 
 ### files to compile. add C++ sources and C sources to the right variable
-CPPSOURCES = dem.cc demreader.cc imagewriter.cc scalespace.cc scaletracker_main.cc
-CSOURCES = rastertiff.c
+CPPSOURCES = 
+CSOURCES = difftiff.c rastertiff.c
 
 # generic compilation configuration, to be used for both C++ and C
 # on every OS.  FLAGS are always used, while DEBUG_FLAGS are used
@@ -47,7 +47,7 @@ override TRACE_FLAGS += -DDEBUGTRACE
 override RELEASE_FLAGS += -O2 -DNDEBUG
 override INCLUDES += -I../common/
 override DEFINES += 
-override LDFLAGS += -Dcimg_use_png -lpng -lz -ltiff -lm
+override LDFLAGS += -ltiff -lm
 override FRAMEWORKS += 
 
 
@@ -64,7 +64,7 @@ override CINCLUDES +=
 override CDEFINES += 
 
 # C++ specific conf
-override CXXFLAGS += -pipe  -D_THREAD_SAFE -pthread -Wno-write-strings
+override CXXFLAGS +=
 override CXXINCLUDES += 
 override CXXDEFINES += 
 
@@ -84,7 +84,6 @@ ifeq ($(UNAME),Darwin)
 override FRAMEWORKS += 
 override INCLUDES += -I/opt/local/include
 override LDFLAGS += -L/opt/local/lib
-override LDFLAGS += -lm -lpthread -L/usr/X11R6/lib -lm -lpthread -lX11
 GENERIC = false
 endif
 

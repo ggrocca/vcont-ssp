@@ -7,13 +7,15 @@
 extern "C" {
 #endif
     
-    ////////////////////////
-    /// handle tiff tags ///
-    ////////////////////////
+    ////////////////////
+    /// handle tiff  ///
+    ////////////////////
 
-    void tag_new_raster16 (TIFF* out, int width, int height);
-    void tag_cp (TIFF* in, TIFF* out);
-
+    TIFF* tiff_open_read (char* file);
+    TIFF* tiff_open_write (char* file);
+    void tiff_tag_read (TIFF* out, int* width, int* height);
+    void tiff16_tag_write (TIFF* out, int width, int height);
+    void tiff_tag_cp (TIFF* in, TIFF* out);
 
     ////////////////////////////////////
     /// raster rgb 8 bit per channel ///
@@ -45,6 +47,7 @@ extern "C" {
     raster16_t raster16_read (TIFF* image, uint32 w, uint32 h);
     raster16_t raster16_copy (raster16_t r_in, uint32 w, uint32 h);
     void raster16_write (TIFF* image, raster16_t raster, uint32 w, uint32 h);
+    void raster16_diff (raster16_t ra, raster16_t rb, uint32 w, uint32 h);
     void raster16_print (raster16_t raster, uint32 w, uint32 h);
     void raster16_print8 (raster16_t raster, uint32 w, uint32 h);
     void raster16_free (raster16_t raster);
