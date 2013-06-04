@@ -183,7 +183,7 @@ int main (int argc, char *argv[])
     DEMReader *dr = DEMSelector::get (imagefile);
     dr->print_info ();
 
-    printf ("### Start!\n");
+    tprintp ("###", "%s", "Start!\n");
 
     ScaleSpaceOpts opts;
     

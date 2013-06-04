@@ -39,8 +39,8 @@
 //=///////////////////////////=//
 
 
-// perform an assert when a non critical error is reached?
-#define DO_ASSERT 1
+// if 1, perform an assert when a non critical error is reached.
+#define DO_ASSERT 0
 
 // Add here custom exit failure values.
 #define EXIT_GRID 3

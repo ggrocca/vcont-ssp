@@ -186,6 +186,8 @@ ScaleSpace::ScaleSpace (DEMReader* base, int levels, ScaleSpaceOpts opts)
 
     if (opts.check (ScaleSpaceOpts::PERTURB))
     {
+	tprintp ("!!!!!!!!", "%s", " PERTURB \n");
+
 	Dem* td = new Dem (*(dem[0]), opts.perturb_amp, opts.perturb_seed);
 	delete (dem[0]);
 	dem[0] = td;
@@ -193,6 +195,8 @@ ScaleSpace::ScaleSpace (DEMReader* base, int levels, ScaleSpaceOpts opts)
 
     if (opts.check (ScaleSpaceOpts::PRESMOOTH))
     {
+	tprintp ("!!!!!!!!", "%s", " PRESMOOTH \n");
+
 	Dem* td = new Dem (*(dem[0]), BlurFilter);
 	delete (dem[0]);
 	dem[0] = td;
@@ -200,6 +204,8 @@ ScaleSpace::ScaleSpace (DEMReader* base, int levels, ScaleSpaceOpts opts)
 
     if (opts.check (ScaleSpaceOpts::CROP))
     {
+	tprintp ("!!!!!!!!", "%s", " CROP \n");
+
 	Dem* td = new Dem (*(dem[0]), opts.crop_a, opts.crop_b);
 	delete (dem[0]);
 	dem[0] = td;
@@ -221,7 +227,7 @@ ScaleSpace::ScaleSpace (DEMReader* base, int levels, ScaleSpaceOpts opts)
 	ht h;
 	ht_start (&h);
 
-	dem[i] = new Dem (*(dem[0]), BlurFilter, window);	
+	dem[i] = new Dem (*(dem[i-1]), BlurFilter, window);	
 	// BlurFilter.Filter (&(dem[i-1]->data[0]), &(dem[i]->data[0]),
 	// 		   base_width, base_height, window);
 
@@ -231,6 +237,8 @@ ScaleSpace::ScaleSpace (DEMReader* base, int levels, ScaleSpaceOpts opts)
 
     if (opts.check (ScaleSpaceOpts::CLIP))
     {
+	tprintp ("!!!!!!!!", "%s", " CLIP \n");
+
 	dem[0]->clip_background (opts.clip_value);
 
 	for (int i = 1; i < levels; i++)
@@ -239,8 +247,10 @@ ScaleSpace::ScaleSpace (DEMReader* base, int levels, ScaleSpaceOpts opts)
 
     if (opts.check (ScaleSpaceOpts::JUMP))
     {
+	tprintp ("!!!!!!!!", "%s", " JUMP \n");
+
 	if (opts.jump_num != 1)
-	    eprint ("%s", "nly 1 jump supported now.\n");
+	    eprint ("%s", "Only 1 jump supported now.\n");
 
 	delete dem[0];
 	for (int i = 1; i < levels; i++)
@@ -251,6 +261,9 @@ ScaleSpace::ScaleSpace (DEMReader* base, int levels, ScaleSpaceOpts opts)
 
     critical = std::vector< std::vector<CriticalPoint> > (levels);
 
+    // GG HACK
+    // return;
+
     for (int i = 0; i < levels; i++)
     {
 	critical[i] = std::vector<CriticalPoint>();
@@ -260,6 +273,8 @@ ScaleSpace::ScaleSpace (DEMReader* base, int levels, ScaleSpaceOpts opts)
 
     if (opts.check (ScaleSpaceOpts::ILINES))
     {
+	tprintp ("!!!!!!!!", "%s", " ILINES \n");
+
 	ilines = std::vector< Grid<char> > (levels);
 
 	for (int i = 0; i < levels; i++)

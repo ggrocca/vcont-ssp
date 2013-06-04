@@ -47,7 +47,8 @@ extern "C" {
     raster16_t raster16_read (TIFF* image, uint32 w, uint32 h);
     raster16_t raster16_copy (raster16_t r_in, uint32 w, uint32 h);
     void raster16_write (TIFF* image, raster16_t raster, uint32 w, uint32 h);
-    void raster16_diff (raster16_t ra, raster16_t rb, uint32 w, uint32 h);
+    int raster16_diff (raster16_t ra, raster16_t rb,
+		       uint32 w, uint32 h, int verbose_level);
     void raster16_print (raster16_t raster, uint32 w, uint32 h);
     void raster16_print8 (raster16_t raster, uint32 w, uint32 h);
     void raster16_free (raster16_t raster);

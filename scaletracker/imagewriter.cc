@@ -12,8 +12,8 @@ ImageWriter::ImageWriter (Dem *dem, int mult) // == 0, that means auto
     raster_out = raster16_new (dem->width, dem->height);
     width = dem->width;
     height = dem->height;
-    int max = dem->max;
-    int min = dem->min;
+    int max = (int) dem->max;
+    int min = mult!= 0? 0 : (int) dem->min;
     int m = mult != 0? mult : (65536 / (max - min));
 
     printf ("max: %d, min: %d, multiplier: %d\n", max, min, m);
@@ -21,10 +21,9 @@ ImageWriter::ImageWriter (Dem *dem, int mult) // == 0, that means auto
     for (int i = 0; i < dem->width; i++)
     	for (int j = 0; j < dem->height; j++)
 	{
-	    int v = ((unsigned short) (*dem)(Coord (i, j)));
-	    v -= (int) dem->min;
+	    int v = (int)((((*dem)(Coord (i, j))) * ((double) m)) - ((double) min));
     	    raster16_set (raster_out, i, j, dem->width, dem->height,
-			  pix16_mono (v * m));
+			  pix16_mono ((unsigned short)v));
 	}
 }
 

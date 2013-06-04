@@ -463,67 +463,96 @@ raster16_t raster16_copy (raster16_t r_in, uint32 w, uint32 h)
     return r_out;
 }
 
-void raster16_diff (raster16_t ra, raster16_t rb, uint32 w, uint32 h)
+int raster16_diff (raster16_t ra, raster16_t rb, uint32 w, uint32 h, int verbose_level)
 {
     if (ra == NULL)
     {
 	fprintf (stderr, "raster16_print: ra is NULL\n");
-	return;
+	return -1;
     }
     if (rb == NULL)
     {
 	fprintf (stderr, "raster16_print: rb is NULL\n");
+	return -1;
+    }
+
+    int count = 0;
+
+    for (unsigned i = 0; i < w; i++)
+	for (unsigned j = 0; j < h; j++)
+	{
+	    pix16_t p[2];
+	    char mono[2];
+	    p[0] = raster16_get (ra, i, j, w, h);
+	    p[1] = raster16_get (rb, i, j, w, h);
+
+	    if (p[0].r != p[1].r || p[0].g != p[1].g || p[0].b != p[1].g)
+	    {
+		count++;
+
+		if (verbose_level >= 2)
+		{
+		    printf ("[%5d][%5d] ", i, j);
+		
+		    for (int k = 0; k < 2; k++)
+		    {
+			printf (k == 0? "A: " : "B: ");
+
+			if ((mono[k] = (p[k].r == p[k].g && p[k].r == p[k].b)))
+			    printf ("(-----,%5d,-----)", p[k].r);
+			else
+			    printf ("(%5d,%5d,%5d)", p[k].r, p[k].g, p[k].b);
+		    
+			if (k == 0)
+			    printf ("  :::  ");
+		    }
+		
+		    if (mono[0] && mono[1])
+			printf ("  :::  A-B: <%5d>", p[0].r - p[1].r);
+		    printf ("\n");
+		}
+	    }
+	}
+
+    return count;
+}
+
+
+void raster16_print (raster16_t ra, uint32 w, uint32 h)
+{
+    if (ra == NULL)
+    {
+	fprintf (stderr, "raster16_print: raster is NULL\n");
 	return;
     }
 
     for (unsigned i = 0; i < w; i++)
 	for (unsigned j = 0; j < h; j++)
 	{
-	    pix16_t p[2];
-	    p[0] = raster16_get (ra, i, j, w, h);
-	    p[1] = raster16_get (rb, i, j, w, h);
+	    pix16_t p = raster16_get (ra, i, j, w, h);
 
-	    if (p[0].r != p[1].r || p[0].g != p[1].g || p[0].b != p[1].g)
-	    {
-		printf ("[%5d][%5d] ", i, j);
+	    printf ("[%5d][%5d] ", i, j);
 
-		for (int k = 0; k < 2; k++)
-		{
-		    printf (k == 0? "A: " : "B: ");
+	    if (p.r == p.g && p.r == p.b)
+		printf ("(-----,%5d,-----)\n", p.r);
+	    else
+		printf ("(%5d,%5d,%5d)\n", p.r, p.g, p.b);
 
-		    if (p[k].r == p[k].g && p[k].r == p[k].b)
-			printf ("mono (-----,%5d,-----)", p[k].r);
-		    else
-			printf ("mono (%5d,%5d,%5d)", p[k].r, p[k].g, p[k].b);
-
-		    printf (k == 0? "  :::  " : "\n");
-		}
-	    }
 	}
-}
 
+/* uint32 i; */
 
-void raster16_print (raster16_t raster, uint32 w, uint32 h)
-{
-    uint32 i;
-
-    if (raster == NULL)
-    {
-	fprintf (stderr, "raster16_print: raster is NULL\n");
-	return;
-    }
-
-    printf ("-----------------------------------------\n");
-    for (i = 0; i < w * h; i++)
-    {
-#ifdef VERBOSE
-	printf ("<%d: %d-%d-%d>%c", i, raster[i].r, raster[i].g, raster[i].b,
-		((i+1) % (w-1))? ' ' : '\n');
-#else
-	printf ("%5d%c", raster[i].r, ((i+1) % w)? ' ' : '\n');
-#endif
-    }    
-    printf ("-----------------------------------------\n");
+/*     printf ("-----------------------------------------\n"); */
+/*     for (i = 0; i < w * h; i++) */
+/*     { */
+/* #ifdef VERBOSE */
+/* 	printf ("<%d: %d-%d-%d>%c", i, raster[i].r, raster[i].g, raster[i].b, */
+/* 		((i+1) % (w-1))? ' ' : '\n'); */
+/* #else */
+/* 	printf ("%5d%c", raster[i].r, ((i+1) % w)? ' ' : '\n'); */
+/* #endif */
+/*     }     */
+/*     printf ("-----------------------------------------\n"); */
 }
 
 void raster16_print8 (raster16_t raster, uint32 w, uint32 h)

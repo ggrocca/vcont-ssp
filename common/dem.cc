@@ -67,6 +67,26 @@ static inline double __random_value (double fmin, double fmax)
     return fmin + f * (fmax - fmin);
 }
 
+void __write_random (int i, int j, double o, double r, double p, bool end = false)
+{
+    static FILE* fp = NULL;
+
+    if (end && fp != NULL)
+    {
+	fclose (fp);
+	return;
+    }
+
+    if (fp == NULL)
+	fp = fopen ("perturbed.txt", "w");
+    
+    fprintf (fp, "== [%d][%d] ==\n", i, j);
+    fprintf (fp, "ORIG: %4.60lf\n", o);
+    fprintf (fp, "RAND: %4.60lf\n", r);
+    fprintf (fp, "PERT: %4.60lf\n", p);
+    fprintf (fp, "-----------------------\n");
+}
+
 // copy & perturb dem
 Dem::Dem (Dem& dem, double amp, unsigned int seed) :
     Grid<double> (dem.width, dem.height),
@@ -74,16 +94,20 @@ Dem::Dem (Dem& dem, double amp, unsigned int seed) :
     min (DBL_MAX)
 {
     srand(seed);
+    printf ("!!!!!!!!!!!!!!!!!!!!DIO PORCO SEED = %d\n", seed);
 
     for (int i = 0; i < width; i++)
 	for (int j = 0; j < height; j++)
 	{
 	    double dv = dem (i, j);
-	    double p = __random_value (-amp, amp);
-	    dv = dv < amp * 2.0? amp * 2.0 : dv;
+	    double p = __random_value (0.0, amp);
+	    // double p = __random_value (-amp, amp);
+	    // dv = dv < amp * 2.0? amp * 2.0 : dv;
 	    double pv = dv + p;
 
 	    (*this)(i, j) = pv;
+
+	    // __write_random (i, j, dv, p, pv);
 
 	    if (pv < min)
 		min = pv;
@@ -91,7 +115,7 @@ Dem::Dem (Dem& dem, double amp, unsigned int seed) :
 		max = pv;
 
 	}
-	
+    // __write_random (0,0,0,0,0, true);
 }
 
 Dem::Dem (Dem& dem, TGaussianBlur<double>& BlurFilter, int window) : // window = 5
@@ -209,8 +233,8 @@ RelationType Dem::point_relation (Coord a, Coord b)
     if (av < bv)
     	return LT;
 
-    eprint ("Two points with same value: ax:%d, ay:%d, bx:%d, by:%d\n",
-	    a.x, a.y, b.x, b.y);
+    // eprint ("Two points with same value: ax:%d, ay:%d, bx:%d, by:%d\n",
+    // 	    a.x, a.y, b.x, b.y);
 
     if (a.x > b.x)
 	return GT;
