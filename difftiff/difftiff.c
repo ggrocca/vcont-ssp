@@ -24,8 +24,28 @@ void app_init(int argc, char* argv[])
 {
     for (argc--, argv++; argc--; argv++)
     {
+	if( (*argv)[0] != '-')
+	{
+	    /* printf ("!! 2 : file[0]: %s\n", file[0]); */
+	    /* printf ("!! 2 : file[0]: %s\n", file[0]); */
+	    /* printf ("!- argc: %d _ argv: %s __ file_num: %d\n", */
+	    /* 	    argc, *argv, file_num); */
+
+	    if (file_num < 2)
+		file[file_num++] = *argv;
+	    else
+		file_num++;
+
+	    /* printf ("!! 3 : file[0]: %s\n", file[0]); */
+	    /* printf ("!! 3 : file[0]: %s\n", file[0]); */
+	}
+
         if( (*argv)[0] == '-')
         {
+	    /* printf ("=- argc: %d _ argv: %s\n", argc, *argv); */
+	    /* printf ("!! 4 : file[0]: %s\n", file[0]); */
+	    /* printf ("!! 4 : file[0]: %s\n", file[0]); */
+
             switch( (*argv)[1] )
             {
 	    case 'h':
@@ -40,21 +60,16 @@ void app_init(int argc, char* argv[])
             default:
                 goto die;
             }
+	    /* printf ("!! 5 : file[0]: %s\n", file[0]); */
+	    /* printf ("!! 5 : file[0]: %s\n", file[0]); */
         }
-	else
-	{
-	    if (file_num < 2)
-		file[file_num++] = *argv;
-	    else
-		file_num++;
-	}
     }
 
     if (file_num < 1 || file_num > 2)
-	goto die;
+    	goto die;
 
     if (verbose_level < 0 || verbose_level > 2)
-	goto die;
+    	goto die;
 
     return;
 
@@ -66,7 +81,13 @@ void app_init(int argc, char* argv[])
 
 int main (int argc, char* argv[])
 {
+    /* printf ("!! 0 : file[0]: %s\n", file[0]); */
+    /* printf ("!! 0 : file[0]: %s\n", file[0]); */
+
     app_init (argc, argv);
+
+    /* printf ("!! 8 : file[0]: %s\n", file[0]); */
+    /* printf ("!! 8 : file[0]: %s\n", file[0]); */
 
     TIFF* t1 = tiff_open_read (file[0]);
     int w, h;
@@ -82,7 +103,7 @@ int main (int argc, char* argv[])
 	goto out1;
     }
 
-    TIFF* t2 = tiff_open_read (argv[2]);    
+    TIFF* t2 = tiff_open_read (file[1]);
     int _w, _h;
     tiff_tag_read (t2, &_w, &_h);
     
@@ -104,7 +125,8 @@ int main (int argc, char* argv[])
     }
     else
     {
-	printf ("Tiff files match.\n");	
+	if (verbose_level > 0)
+	    printf ("Tiff files match.\n");	
     }
 
     raster16_free (r2);

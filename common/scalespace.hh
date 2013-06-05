@@ -70,6 +70,7 @@ public:
 
     void point_print_interpolated (int level, double t, Coord c);
     void point_print_interpolated (int scope, int level, double t, Coord c);
+    void write_critical (char* filename);
 
     std::vector<Dem*> dem;
     std::vector< std::vector<CriticalPoint> > critical;

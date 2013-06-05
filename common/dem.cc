@@ -94,7 +94,6 @@ Dem::Dem (Dem& dem, double amp, unsigned int seed) :
     min (DBL_MAX)
 {
     srand(seed);
-    printf ("!!!!!!!!!!!!!!!!!!!!DIO PORCO SEED = %d\n", seed);
 
     for (int i = 0; i < width; i++)
 	for (int j = 0; j < height; j++)

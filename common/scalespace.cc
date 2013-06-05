@@ -365,6 +365,53 @@ void ScaleSpace::point_print_interpolated (int scope, int level, double t, Coord
     oprints (scope, "%s", "--------\n");    
 }
 
+void ScaleSpace::write_critical (char* filename)
+{
+    FILE* fp = fopen (filename, "w");
+
+    if (fp == NULL)
+	eprint ("Could not write file %s\n", filename);
+
+    fprintf (fp, "stats | #num_levels %d\n", levels);
+
+    for (int i = 0; i < levels; i++)
+    {
+	int num_max, num_min, num_sad;
+	num_max = num_min = num_sad = 0;
+	fprintf (fp,
+		 "stats |     level %d\n"
+		 "stats |     #num_points %d\n",
+		 i, (int)critical[i].size());
+
+	for (unsigned j = 0; j < critical[i].size(); j++)
+	{
+	    if (critical[i][j].t == MAX)
+		num_max++;
+	    if (critical[i][j].t == MIN)
+		num_min++;
+	    if (critical[i][j].t == SA2)
+		num_sad++;
+	    if (critical[i][j].t == SA3)
+		num_sad += 2;
+	}
+
+	fprintf (fp,
+		 "stats |  \tnum_max = %d\n"
+		 "stats |  \tnum_min = %d\n"
+		 "stats |  \tnum_sad = %d\n"
+		 "stats |  \tnum_max + num_min - num_sad = %d\n",
+		 num_max, num_min, num_sad,
+		 num_max + num_min - num_sad);
+
+	for (unsigned j = 0; j < critical[i].size(); j++)
+	    fprintf (fp, "\t\t\tpoint %d [%5d][%5d] {%c}\n", 
+		     j, critical[i][j].c.x, critical[i][j].c.y,
+		     critical2char (critical[i][j].t));
+
+	fprintf (fp, "\n");
+    }
+}
+
 
 ScaleSpace::~ScaleSpace()
 {

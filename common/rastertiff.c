@@ -486,7 +486,7 @@ int raster16_diff (raster16_t ra, raster16_t rb, uint32 w, uint32 h, int verbose
 	    p[0] = raster16_get (ra, i, j, w, h);
 	    p[1] = raster16_get (rb, i, j, w, h);
 
-	    if (p[0].r != p[1].r || p[0].g != p[1].g || p[0].b != p[1].g)
+	    if (p[0].r != p[1].r || p[0].g != p[1].g || p[0].b != p[1].b)
 	    {
 		count++;
 

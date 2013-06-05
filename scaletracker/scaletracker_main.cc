@@ -16,7 +16,9 @@
 
 
 char *imagefile = 0;
-char *trackfile = 0;
+char *out_name = 0;
+char *tracking_name = 0;
+char *critical_name = 0;
 char *tiffnames = 0;
 char *statfile = 0;
 int numlevel = 0;
@@ -40,8 +42,7 @@ void print_help (FILE* f)
     fprintf (f, "Usage: smoother\n"
 	     "-n numlevel : number of levels\n"
 	     "-i imagefile : supported inputs formats hgt, png, bmp\n"
-	     "[-o trackfile] : compute and write to file traking data structure\n"
-	     "[-o averagefile] : compute and write to file averages\n"
+	     "[-o outname] : write files outname.trk and outname.crt\n"
 	     "[-t tiffnames] : write a tiff for every level\n"
 	     "[-p amplitude seed] : randomly perturb data\n"
 	     "[-j numjumps] : do not consider first n levels\n"
@@ -121,8 +122,16 @@ void app_init(int argc, char *argv[])
                 break;
 
             case 'o':
-                trackfile = (*++argv);
-                argc--;
+                out_name = (*++argv);
+#define _FNLEN 512
+		static char _tracking_str[_FNLEN] = {'\0'};
+		static char _critical_str[_FNLEN] = {'\0'};
+		snprintf (_tracking_str, _FNLEN, "%s%s" ,out_name, ".trk");
+		snprintf (_critical_str, _FNLEN, "%s%s" ,out_name, ".crt");
+		tracking_name = &(_tracking_str[0]);
+		critical_name = &(_critical_str[0]);
+#undef _FNLEN
+		argc--;
                 break;
 
             case 't':
@@ -286,6 +295,9 @@ int main (int argc, char *argv[])
 		num_max - num_min, num_max + num_min,
 		num_max + num_min - num_sad);
     }
+
+    if (critical_name)
+	ssp.write_critical (critical_name);
 
     if (stage == 4)
 	exit (0);
