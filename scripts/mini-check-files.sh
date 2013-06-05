@@ -4,7 +4,7 @@ source mini-conf.sh
 
 for i in $DATASETS ; do
     for j in $FILETYPES ; do
-	echo "Checking $NEWRES/$i.$j"
+	echo "diff $NEWRES/$i.$j"
 	if [ -f $NEWRES/$i.$j ] ; then
 	    diff $NEWRES/$i.$j $OLDRES/$i.$j
 	else
