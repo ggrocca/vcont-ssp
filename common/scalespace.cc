@@ -197,7 +197,7 @@ ScaleSpace::ScaleSpace (DEMReader* base, int levels, ScaleSpaceOpts opts)
     {
 	tprintp ("!!!!!!!!", "%s", " PRESMOOTH \n");
 
-	Dem* td = new Dem (*(dem[0]), BlurFilter);
+	Dem* td = new Dem (*(dem[0]), BlurFilter, 7);
 	delete (dem[0]);
 	dem[0] = td;
     }

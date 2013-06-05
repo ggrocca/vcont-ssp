@@ -117,7 +117,7 @@ Dem::Dem (Dem& dem, double amp, unsigned int seed) :
     // __write_random (0,0,0,0,0, true);
 }
 
-Dem::Dem (Dem& dem, TGaussianBlur<double>& BlurFilter, int window) : // window = 5
+Dem::Dem (Dem& dem, TGaussianBlur<double>& BlurFilter, int window) :
     Grid<double> (dem.width, dem.height),
     max (-DBL_MAX),
     min (DBL_MAX)

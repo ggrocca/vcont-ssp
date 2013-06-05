@@ -1,4 +1,4 @@
-EXE=./scaletracker
+EXE=../scaletracker/scaletracker
 DIFFTIFF="../difftiff/difftiff -v 0"
 NEWRES=../../scalespace-results/mini
 OLDRES=../../../horizon/smoother-results/mini
