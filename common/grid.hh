@@ -6,6 +6,47 @@
 
 #include "debug.h"
 
+// GG SUBSTITUTE WITH <type_traits> in c++11
+template<class T>
+struct GenericType {
+    enum { IS_NUMERIC = 0 };
+    static T lowest() { return (T()); }
+};
+template<> struct GenericType <char> {
+    enum { IS_NUMERIC = 1 };
+    static char lowest() { return (std::numeric_limits<char>::min()); }
+};
+template<> struct GenericType <unsigned char> {
+    enum { IS_NUMERIC = 1 };
+    static unsigned char lowest() { return (std::numeric_limits<unsigned char>::min());}
+};
+template<> struct GenericType <short> {
+    enum { IS_NUMERIC = 1 };
+    static short lowest() { return (std::numeric_limits<short>::min()); }
+};
+template<> struct GenericType <unsigned short> {
+    enum { IS_NUMERIC = 1 };
+    static  unsigned short lowest(){return(std::numeric_limits<unsigned short>::min());}
+};
+template<> struct GenericType <int> {
+    enum { IS_NUMERIC = 1 };
+    static int lowest() { return (std::numeric_limits<int>::min()); }
+};
+template<> struct GenericType <unsigned int> {
+    enum { IS_NUMERIC = 1 };
+    static unsigned int lowest() { return (std::numeric_limits<unsigned int>::min()); }
+};
+template<> struct GenericType <float> {
+    enum { IS_NUMERIC = 1 };
+    static float lowest() { return (-std::numeric_limits<float>::max()); }
+};
+template<> struct GenericType <double> {
+    enum { IS_NUMERIC = 1 };
+    static double lowest() { return (-std::numeric_limits<double>::max()); }
+};
+//////////////////
+
+
 class Coord
 {
     
@@ -39,6 +80,49 @@ public:
     bool operator==(const Coord& rhs)
     {
 	return (x == rhs.x && y == rhs.y);
+    }
+
+    int linear_index (Coord c)
+    {
+	int idx = -1;
+	int dx = c.x - x;
+	int dy = c.y - y;
+	
+	if (dx == -1)
+	{
+	    if (dy == -1) // 0 --> [-1][-1]
+		idx = 0;
+	    else if (dy ==  0) // 1 --> [-1][ 0]
+		idx = 1;
+	    else
+		goto bad_coords;
+	}
+	else if (dx == 0)
+	{
+	    if (dy ==  1) // 2 --> [ 0][ 1]
+		idx = 2;
+	    if (dy == -1) // 5 --> [ 0][-1]
+		idx = 5;
+	    else
+		goto bad_coords;
+	}
+	else if (dx == 1)
+	{
+	    if (dy ==  1) // 3 --> [ 1][ 1]
+		idx = 3;	    
+	    if (dy ==  0) // 4 --> [ 1][ 0]
+		idx = 4;
+	    else
+		goto bad_coords;
+	}
+	else
+	    goto bad_coords;
+
+	return idx;
+
+    bad_coords:
+	eprint ("Coords not adjacent: [%d][%d]-[%d][%d]\n", x, y, c.x, c.y);
+	return -1;
     }
 
     // returns next coord around current one in a 6-connected fashion.
@@ -205,8 +289,8 @@ public:
 	case ABYSS:
 	    if (std::numeric_limits<T>::is_integer)
 		return bogus = std::numeric_limits<T>::min();
-	    else
-		return bogus = -std::numeric_limits<T>::max();
+	    else 
+		return bogus = GenericType<T>::lowest();
 	    break;
 	    
 	case PLATEU:

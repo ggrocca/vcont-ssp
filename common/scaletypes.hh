@@ -2,9 +2,22 @@
 #define _SCALETYPES_HH
 
 #include "debug.h"
+#include "grid.hh"
 
 enum CriticalType {REG=0,MAX,MIN,SA2,SA3,EQU};
 enum RelationType {GT,LT,EQ};
+
+static inline RelationType inverted_relation (RelationType rel)
+{
+    if (rel == GT)
+	return LT;
+
+    if (rel == LT)
+	return GT;
+
+    eprint ("Impossible relation, %d\n", rel);
+    return rel;
+}
 
 class CriticalPoint {
  public:

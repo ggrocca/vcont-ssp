@@ -146,7 +146,7 @@ double& Dem::operator() (Coord c, AccessType a) // = ABYSS
 
 double& Dem::operator() (int x, int y, AccessType a) // = ABYSS
 {
-    return Grid<double>::operator()(Coord (x, y), a);
+    return Grid<double>::operator()(x, y, a);
 }
 
 

@@ -6,6 +6,7 @@
 #include "../common/dem.hh"
 #include "../common/demreader.hh"
 #include "../common/scalespace.hh"
+#include "flipper.hh"
 
 #include "imagewriter.hh"
 // #include "tracking.hh"
@@ -301,6 +302,10 @@ int main (int argc, char *argv[])
 
     if (stage == 4)
 	exit (0);
+
+    Flipper* flipper = new Flipper (ssp);
+    
+    (void) flipper;
 
     ///////////////////////////////////////////////////
     ///////// DEBUG END

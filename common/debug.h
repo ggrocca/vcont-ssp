@@ -57,7 +57,7 @@
 #define SCOPE_TRACKING 0
 #define SCOPE_PLATEUS 0
 #define SCOPE_POINTTYPE 0
-
+#define SCOPE_FLIP 0
 
 
 //=////////////////////////////=//

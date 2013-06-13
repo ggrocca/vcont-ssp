@@ -1,8 +1,8 @@
 #ifndef _IMAGEWRITER_HH
 #define _IMAGEWRITER_HH
 
-#include "../common/dem.hh"
 #include "../common/rastertiff.h"
+#include "../common/dem.hh"
 
 class ImageWriter {
 private:
