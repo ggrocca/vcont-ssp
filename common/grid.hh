@@ -82,9 +82,18 @@ public:
 	return (x == rhs.x && y == rhs.y);
     }
 
+    /**
+                     <2>           <3>
+           [  ,  ] [ 0, 1] [ 1, 1]
+       <1> [-1, 0] [ 0, 0] [ 1, 0] <4>
+           [-1,-1] [ 0,-1] [  ,  ]
+       <0>           <5>
+     **/
+
     int linear_index (Coord c)
     {
 	int idx = -1;
+
 	int dx = c.x - x;
 	int dy = c.y - y;
 	
@@ -94,35 +103,27 @@ public:
 		idx = 0;
 	    else if (dy ==  0) // 1 --> [-1][ 0]
 		idx = 1;
-	    else
-		goto bad_coords;
 	}
 	else if (dx == 0)
 	{
 	    if (dy ==  1) // 2 --> [ 0][ 1]
 		idx = 2;
-	    if (dy == -1) // 5 --> [ 0][-1]
+	    else if (dy == -1) // 5 --> [ 0][-1]
 		idx = 5;
-	    else
-		goto bad_coords;
 	}
 	else if (dx == 1)
 	{
 	    if (dy ==  1) // 3 --> [ 1][ 1]
 		idx = 3;	    
-	    if (dy ==  0) // 4 --> [ 1][ 0]
+	    else if (dy ==  0) // 4 --> [ 1][ 0]
 		idx = 4;
-	    else
-		goto bad_coords;
 	}
-	else
-	    goto bad_coords;
-
+	
+	if (idx < 0 || idx > 5)
+	    eprint ("Coords not adjacent: [%d][%d] - [%d][%d] = [%d][%d] __ idx: %d.\n",
+		    c.x, c.y, x, y, dx, dy, idx);
+	
 	return idx;
-
-    bad_coords:
-	eprint ("Coords not adjacent: [%d][%d]-[%d][%d]\n", x, y, c.x, c.y);
-	return -1;
     }
 
     // returns next coord around current one in a 6-connected fashion.

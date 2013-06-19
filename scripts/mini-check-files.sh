@@ -1,12 +1,52 @@
 #!/bin/bash
 
+DIFF="diff -q"
+
 source mini-conf.sh
+
+echo ""
+echo "Checking tiff files"
+echo ""
+
+for i in $DATASETS ; do
+
+    if [ -f $NEWRES/"$i"n-base.tif ] ; then
+	echo "difftiff: " $NEWRES/"$i"n-base.tif $OLDRES/"$i"n-base.tif
+	$DIFFTIFF $NEWRES/"$i"n-base.tif $OLDRES/"$i"n-base.tif
+    else
+	echo "!! No file " $NEWRES/"$i"n-base.tif $OLDRES/"$i"n-base.tif
+    fi
+
+    for (( j=1; j<$NUM_LEVELS; j++ )) ; do
+	if [ -f $NEWRES/"$i"n"$j".tif ] ; then
+	    echo "difftiff: " $NEWRES/"$i"n"$j".tif $OLDRES/"$i"n"$j".tif
+	    $DIFFTIFF $NEWRES/"$i"n"$j".tif $OLDRES/"$i"n"$j".tif
+	else
+	    echo "!! No file " $NEWRES/"$i"n"$j".tif $OLDRES/"$i"n"$j".tif
+	fi
+    done
+
+    for (( j=0; j<$NUM_LEVELS; j++ )) ; do
+	if [ -f $NEWRES/"$i"n"$j".tif ] ; then
+	    echo "difftiff: " $NEWRES/"$i"n-MARKED-"$j".tif $OLDRES/"$i"n-MARKED-"$j".tif
+	    $DIFFTIFF $NEWRES/"$i"n-MARKED-"$j".tif $OLDRES/"$i"n-MARKED-"$j".tif
+	else
+	    echo "!! No file " $NEWRES/"$i"n-MARKED-"$j".tif $OLDRES/"$i"n-MARKED-"$j".tif
+	fi
+    done
+
+done
+
+
+echo ""
+echo "Checking text files"
+echo ""
 
 for i in $DATASETS ; do
     for j in $FILETYPES ; do
-	echo "diff $NEWRES/$i.$j"
+	echo $DIFF $NEWRES/$i.$j $OLDRES/$i.$j
 	if [ -f $NEWRES/$i.$j ] ; then
-	    diff $NEWRES/$i.$j $OLDRES/$i.$j
+	    $DIFF $NEWRES/$i.$j $OLDRES/$i.$j
 	else
 	    echo "!! No .$j file $NEWRES/$i.$j"
 	fi

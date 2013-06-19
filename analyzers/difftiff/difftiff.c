@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../common/rastertiff.h"
+#include "../../common/rastertiff.h"
 
 /* typedef char bool; */
 /* #define true 1 */

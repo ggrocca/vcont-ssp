@@ -16,6 +16,18 @@ public:
     double t;
     int mate; // other saddle if 2-saddle
     int life; // birth or death companion
+
+    TrackEntry () : c (0,0), t (0.0), mate (-1), life (-1) {}
+    TrackEntry (Coord c) : c (c), t (0.0), mate (-1), life (-1) {}
+    TrackEntry (double t) : c (0,0), t (t), mate (-1), life (-1) {}
+    TrackEntry (Coord c, double t) : c (c), t (t), mate (-1), life (-1) {}
+    // TrackEntry (const TrackEntry& te) :
+    // 	c (te.c), t (te.t), mate (te.mate), life (te.life) {}
+
+    // Coord& position() { return  c; }
+    // double& time() { return t; }
+    // void reset_mate { mate = -1; }
+    // void reset_life { life = -1; }
 };
 
 // struct critical_rend_t {

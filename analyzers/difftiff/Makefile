@@ -21,7 +21,7 @@ TARGET = difftiff
 BUILD_DIR = build
 
 # Additional directories for source files 
-VPATH = ../common
+VPATH = ../../common
 
 # C, CXX compiler
 CXXC = g++
@@ -45,7 +45,7 @@ override FLAGS +=
 override DEBUG_FLAGS += -Wall -W -g
 override TRACE_FLAGS += -DDEBUGTRACE
 override RELEASE_FLAGS += -O2 -DNDEBUG
-override INCLUDES += -I../common/
+override INCLUDES += -I../../common/
 override DEFINES += 
 override LDFLAGS += -ltiff -lm
 override FRAMEWORKS += 

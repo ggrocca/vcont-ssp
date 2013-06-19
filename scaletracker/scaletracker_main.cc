@@ -253,6 +253,8 @@ int main (int argc, char *argv[])
 
     ScaleSpace ssp (dr, numlevel, opts);
 
+    delete dr;
+
     if (stage == 2)
 	exit (0);
 
@@ -305,47 +307,34 @@ int main (int argc, char *argv[])
 
     Flipper* flipper = new Flipper (ssp);
     
-    (void) flipper;
-
-    ///////////////////////////////////////////////////
-    ///////// DEBUG END
-    ///////////////////////////////////////////////////
-    exit(0);
-}
-///////////////////////////////////////////////////
-///////// DEBUG END
-///////////////////////////////////////////////////
-
-
-#if 0
-
-
-    if (trackfile)
-    {
-	Tracking *track = new Tracking (demsp);
+    Track* track = flipper->track (ssp);
+    
+    delete flipper;
 	
-	printf ("\n=========================\n\n"
-		"flips_total = %d\nflips_num: ", track->flips_total);
-	for (unsigned i = 0; i < track->flips_num.size(); i++)
-	    printf ("%d ", track->flips_num[i]);
-	printf ("\n");
+    track->write (tracking_name);
+
+    delete track;
+
+	// Tracking *track = new Tracking (demsp);
+	
+	// printf ("\n=========================\n\n"
+	// 	"flips_total = %d\nflips_num: ", track->flips_total);
+	// for (unsigned i = 0; i < track->flips_num.size(); i++)
+	//     printf ("%d ", track->flips_num[i]);
+	// printf ("\n");
 
 	// print track data structure
-	track->write (trackfile);
+	// track->write (trackfile);
 
-	print_final_stats (track, false);
-	print_final_stats (track, true);
+	// print_final_stats (track, false);
+	// print_final_stats (track, true);
 	
-	delete track;
-    }
-
-    delete image;
+	// delete track;
 
     exit (0);
-
 }
 
-
+#if 0
 
 void print_final_stats (Tracking* track, bool latex)
 {

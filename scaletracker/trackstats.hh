@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "debug.h"
+#include "../common/debug.h"
 #include "../common/track.hh"
 #include "flipper.hh"
 

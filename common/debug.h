@@ -75,7 +75,7 @@
 
 #define eprint(fmt, ...)						\
     do {								\
-	fprintf(stderr, "Error. %s:%d:%s(): " fmt, __FILE__,		\
+	fprintf(stderr, "Error. %s:%d: %s(): " fmt, __FILE__,		\
 		__LINE__, _FUNC, __VA_ARGS__);				\
 	if (DO_ASSERT)							\
 	    assert (0);							\
@@ -83,7 +83,7 @@
 
 #define eprintx(exit_value, fmt, ...)					\
     do {								\
-	fprintf(stderr, "Fatal. %s:%d:%s(): " fmt, __FILE__,	\
+	fprintf(stderr, "Fatal. %s:%d: %s(): " fmt, __FILE__,	\
 		__LINE__, _FUNC, __VA_ARGS__);				\
 	assert (0);							\
 	exit (exit_value);						\
@@ -101,28 +101,28 @@
 #define tprint(fmt, ...)						\
     do {								\
 	if (_TRACE_TEST)						\
-	    fprintf(stdout, "%s:%d:%s(): " fmt, __FILE__,		\
+	    fprintf(stdout, "%s:%d: %s(): " fmt, __FILE__,		\
 		    __LINE__, _FUNC, __VA_ARGS__);			\
     } while (0)
 
 #define tprintp(preamble, fmt, ...)					\
     do {								\
 	if (_TRACE_TEST)						\
-	    fprintf(stdout, preamble " %s:%d:%s(): " fmt, __FILE__,	\
+	    fprintf(stdout, preamble " %s:%d: %s(): " fmt, __FILE__,	\
 		    __LINE__, _FUNC, __VA_ARGS__);			\
     } while (0)
 
 #define tprints(scope, fmt, ...)					\
     do {								\
 	if (_TRACE_TEST && (scope))					\
-	    fprintf(stdout, "%s:%d:%s(): " fmt, __FILE__,		\
+	    fprintf(stdout, "%s:%d: %s(): " fmt, __FILE__,		\
 		    __LINE__, _FUNC, __VA_ARGS__);			\
     } while (0)
 
 #define tprintsp(scope, preamble, fmt, ...)				\
     do {								\
 	if (_TRACE_TEST && (scope))					\
-	    fprintf(stdout, preamble " %s:%d:%s(): " fmt, __FILE__,	\
+	    fprintf(stdout, preamble " %s:%d: %s(): " fmt, __FILE__,	\
 		    __LINE__, _FUNC, __VA_ARGS__);			\
     } while (0)
 

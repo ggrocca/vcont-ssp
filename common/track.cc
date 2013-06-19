@@ -175,8 +175,8 @@ Track::Track (char *filename)
     FILE *f = fopen (filename, "r");
 
     int critical_points_num = 0;
-    fscanf (f, "%d\n", &critical_points_num);
-    fscanf (f, "%lf\n", &time_of_life);
+    fscanf (f, "#lines: %d\n", &critical_points_num);
+    fscanf (f, "tol: %lf\n\n\n", &time_of_life);
 
     printf ("Tracking::Tracking(): reading %d criticals, lifetime %lf\n",
 	    critical_points_num, time_of_life);
@@ -185,7 +185,7 @@ Track::Track (char *filename)
     {
 	char ctype;
 	int lines_num = 0;
-	fscanf (f, "%c %d\n", &ctype, &lines_num);
+	fscanf (f, "type: %c\n#entries: %d\n\n", &ctype, &lines_num);
 		// critical2char (critical_points[i].type), 
 		// critical_points[i].line.size());
 	TrackLine newline;
@@ -195,7 +195,7 @@ Track::Track (char *filename)
 	for (int j = 0; j < lines_num; j++)
 	{
 	    TrackEntry newentry;
-	    fscanf (f, "%d %d ## %d %d\n%lf\n", 
+	    fscanf (f, "x:%d y:%d ## mate:%d life:%d\ntime: %lf\n", 
 		    &(newentry.c.x),
 		    &(newentry.c.y),
 		    &(newentry.mate),
@@ -203,6 +203,7 @@ Track::Track (char *filename)
 		    &(newentry.t));
 	    lines[i].entries.push_back (newentry);
 	}
+	fscanf (f, "\n\n");
     }
 }
 
@@ -210,22 +211,23 @@ void Track::write (char *filename)
 {
     FILE *f = fopen (filename, "w");
 
-    fprintf (f, "%zu\n", lines.size());
-    fprintf (f, "%.80lf\n", time_of_life);
+    fprintf (f, "#lines: %zu\n", lines.size());
+    fprintf (f, "tol: %.80lf\n\n\n", time_of_life);
 
     for (unsigned i = 0; i < lines.size(); i++)
     {
-	fprintf(f, "%c %zu\n",
+	fprintf(f, "type: %c\n#entries: %zu\n\n",
 		critical2char (lines[i].type), 
 		lines[i].entries.size());
 
 	for (unsigned j = 0; j < lines[i].entries.size(); j++)
-	    fprintf (f, "%d %d ## %d %d\n%.80lf\n", 
+	    fprintf (f, "x:%d y:%d ## mate:%d life:%d\ntime: %.80lf\n", 
 		     lines[i].entries[j].c.x,
 		     lines[i].entries[j].c.y,
 		     lines[i].entries[j].mate,
 		     lines[i].entries[j].life,
 		     lines[i].entries[j].t);
+	fprintf (f, "\n\n");	
     }
 }
 

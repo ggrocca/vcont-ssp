@@ -1,7 +1,11 @@
 EXE=../scaletracker/scaletracker
-DIFFTIFF="../difftiff/difftiff -v 0"
+
+DIFFTIFF="../analyzers/difftiff/difftiff -v 0"
+DIFFTRAC="../analyzers/difftrack/difftrack -v 0"
+
 NEWRES=../../scalespace-results/mini
 OLDRES=../../../horizon/smoother-results/mini
+
 NUM_LEVELS=8
 
 NORMAL1000="normal1000"
