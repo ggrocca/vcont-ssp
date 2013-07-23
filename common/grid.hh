@@ -82,6 +82,11 @@ public:
 	return (x == rhs.x && y == rhs.y);
     }
 
+    bool operator!=(const Coord& rhs)
+    {
+	return (! (*this == rhs));
+    }
+
     /**
                      <2>           <3>
            [  ,  ] [ 0, 1] [ 1, 1]

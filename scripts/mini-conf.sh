@@ -2,6 +2,7 @@ EXE=../scaletracker/scaletracker
 
 DIFFTIFF="../analyzers/difftiff/difftiff -v 0"
 DIFFTRAC="../analyzers/difftrack/difftrack -v 0"
+DIFF="diff -q"
 
 NEWRES=../../scalespace-results/mini
 OLDRES=../../../horizon/smoother-results/mini

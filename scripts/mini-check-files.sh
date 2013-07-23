@@ -1,7 +1,5 @@
 #!/bin/bash
 
-DIFF="diff -q"
-
 source mini-conf.sh
 
 echo ""
@@ -51,4 +49,17 @@ for i in $DATASETS ; do
 	    echo "!! No .$j file $NEWRES/$i.$j"
 	fi
     done
+done
+
+echo ""
+echo "Checking track files"
+echo ""
+
+for i in $DATASETS ; do
+    echo $DIFFTRAC $NEWRES/$i.trk $OLDRES/$i.trk
+    if [ -f $NEWRES/$i.trk ] ; then
+	$DIFFTRAC $NEWRES/$i.trk $OLDRES/$i.trk
+    else
+	echo "!! No .trk file $NEWRES/$i.trk"
+    fi
 done

@@ -3,7 +3,8 @@ syntax: glob
 .DS_Store
 scaletracker/scaletracker
 trackviewer/trackviewer
-difftiff/difftiff
+analyzers/difftiff/difftiff
+analyzers/difftrack/difftrack
 *.oo
 *.dd
 *.o
