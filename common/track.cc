@@ -130,27 +130,29 @@ double TrackLine::lifetime ()
 }
 
 // GG should be implemented in Track
-// void final_point (std::vector<critical_line_t>& critical_points,
-// 		  double* fx, double* fy)
-// {
-//     double x =  line.back().x;
-//     double y =  line.back().y;
-//     if (is_alive())
-//     {
-// 	*fx = x;
-// 	*fy = y;
-//     }
-//     else
-//     {
-// 	int life = line.back().life;
-// 	// if (life == -1)
-// 	// 	fprintf (stderr, "AIUTO: %d.life = %d", i, life);
-// 	double lx = critical_points[life].line.back().x;
-// 	double ly = critical_points[life].line.back().y;
-// 	*fx = x + ((lx - x)/2.0);
-// 	*fy = y + ((ly - y)/2.0);
-//     }
-// }
+void TrackLine::final_point (std::vector<TrackLine>& lines,
+		  double* fx, double* fy)
+{
+    double x =  entries.back().c.x;
+    double y =  entries.back().c.y;
+
+    if (is_alive())
+    {
+	*fx = x;
+	*fy = y;
+    }
+
+    else
+    {
+	int life = entries.back().life;
+	// if (life == -1)
+	// 	fprintf (stderr, "AIUTO: %d.life = %d", i, life);
+	double lx = lines[life].entries.back().c.x;
+	double ly = lines[life].entries.back().c.y;
+	*fx = x + ((lx - x)/2.0);
+	*fy = y + ((ly - y)/2.0);
+    }
+}
 
 
 // GG old ideas
@@ -231,33 +233,31 @@ void Track::write (char *filename)
     }
 }
 
-// void Track::query (double t, std::vector<critical_rend_t>& v, bool verbose = true)
-// {
-//     critical_rend_t r;
+void Track::query (double t, std::vector<TrackRenderingEntry>& v, bool verbose)
+{
+    TrackRenderingEntry r;
 
-//     v.resize (0);
-//     for (unsigned i = 0; i < critical_points.size(); i++)
-//     {
-// 	critical_points[i].mark = false;
-// 	int j = critical_points[i].get_entry (t);
-// 	if (j != -1)
-// 	{
-// 	    r.type = critical_points[i].get_type(j);
-// 	    r.tx = critical_points[i].line[j].x;
-// 	    r.ty = critical_points[i].line[j].y;
-// 	    r.ox = critical_points[i].line[0].x;
-// 	    r.oy = critical_points[i].line[0].y;
-// 	    r.idx = j;
-// 	    r.tol = critical_points[i].lifetime();
-// 	    r.tob = critical_points[i].line[0].t;
-// 	    r.is_born = critical_points[i].is_born ();
-// 	    r.is_alive = critical_points[i].is_alive ();
-// 	    critical_points[i].final_point(critical_points, &(r.fx), &(r.fy));
+    v.resize (0);
+    for (unsigned i = 0; i < lines.size(); i++)
+    {
+	lines[i].mark = false;
+	int j = lines[i].get_entry (t);
+	if (j != -1)
+	{
+	    r.type = lines[i].get_type(j);
+	    r.tc = lines[i].entries[j].c;
+	    r.oc = lines[i].entries[0].c;
+	    r.idx = j;
+	    r.tol = lines[i].lifetime();
+	    r.tob = lines[i].entries[0].t;
+	    r.is_born = lines[i].is_born ();
+	    r.is_alive = lines[i].is_alive ();
+	    lines[i].final_point(lines, &(r.fx), &(r.fy));
 
-// 	    v.push_back (r);
-// 	    critical_points[i].mark = true;
-// 	}
-//     }
-//     if (verbose)
-// 	printf ("!!! Tracking::query(): found %zu criticals\n", v.size());
-// }
+	    v.push_back (r);
+	    lines[i].mark = true;
+	}
+    }
+    if (verbose)
+	tprintp ("!!!", "Found %zu criticals\n", v.size());
+}

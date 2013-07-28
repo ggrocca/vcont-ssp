@@ -21,7 +21,7 @@ TARGET = trackviewer
 BUILD_DIR = build
 
 # Additional directories for source files 
-VPATH = ../common ../smoother
+VPATH = ../common
 
 # Directory where external libs are
 BASELIBS_DIR = ../..
@@ -38,7 +38,7 @@ OBJ_EXT = oo
 
 ### files to compile. add C++ sources and C sources to the right variable
 #CPPSOURCES = test_trackstring.cc tracking.cc trackstring.cc demreader.cc scalespace.cc
-CPPSOURCES = viewer.cc camera.cc trackdisplay.cc tracking.cc demreader.cc scalespace.cc trackstring.cc
+CPPSOURCES = viewer.cc camera.cc trackdisplay.cc track.cc demreader.cc scalespace.cc dem.cc
 CSOURCES =
 
 # generic compilation configuration, to be used for both C++ and C
@@ -47,7 +47,7 @@ CSOURCES =
 FLAGS = 
 DEBUG_FLAGS = -Wall -W -g
 RELEASE_FLAGS = -O2 -DNDEBUG
-INCLUDES = -I../common/ -I../smoother/ -I${BASELIBS_DIR}/AntTweakBar/include/
+INCLUDES = -I../common/ -I${BASELIBS_DIR}/AntTweakBar/include/
 DEFINES = 
 LDFLAGS = -lpng -lz -lm -L${BASELIBS_DIR}/AntTweakBar/lib -lAntTweakBar
 FRAMEWORKS = 
@@ -61,12 +61,12 @@ FRAMEWORKS =
 # one called in the linking phase.
 
 # C specific conf
-CFLAGS = 
+CFLAGS = -std=gnu99
 CINCLUDES = 
 CDEFINES = 
 
 # C++ specific conf
-CXXFLAGS = -pipe  -D_THREAD_SAFE -pthread
+CXXFLAGS = -pipe  -D_THREAD_SAFE -pthread -Wno-write-strings
 CXXINCLUDES = 
 CXXDEFINES = 
 

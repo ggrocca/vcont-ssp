@@ -30,17 +30,20 @@ public:
     // void reset_life { life = -1; }
 };
 
-// struct critical_rend_t {
-//     critical_type_t type; 
-//     int tx,ty; // current position
-//     int ox,oy; // original position
-//     double fx, fy; // death position
-//     int idx; // index in Tracking.critical_points
-//     double tol; // time of life
-//     double tob; // time of birth
-//     bool is_born;
-//     bool is_alive;
-// };
+class TrackRenderingEntry {
+
+public:
+    
+    CriticalType type; 
+    Coord tc; // current position
+    Coord oc; // original position
+    double fx, fy; // death position
+    int idx; // index in Track.lines[i].entries
+    double tol; // time of life
+    double tob; // time of birth
+    bool is_born;
+    bool is_alive;
+};
 
 
 class TrackLine {
@@ -66,8 +69,8 @@ public:
     double lifetime ();
 
     // GG should be implemented in track
-    // void final_point (std::vector<critical_line_t>& critical_points,
-    // 		      double* fx, double* fy);
+    void final_point (std::vector<TrackLine>& lines,
+    		      double* fx, double* fy);
 };
 
 
@@ -94,7 +97,7 @@ public:
     Track (char *filename);
 
     void write (char *filename);    
-    // void query (double t, std::vector<critical_rend_t>& v, bool verbose = true);
+    void query (double t, std::vector<TrackRenderingEntry>& v, bool verbose = true);
 
     // void print_stats ();
 
