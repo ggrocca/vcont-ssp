@@ -21,6 +21,7 @@ public:
     static const unsigned int JUMP      = 8;
     static const unsigned int CROP      = 16;
     static const unsigned int CLIP      = 32;
+    static const unsigned int CONTROL   = 64;
 
     double perturb_amp;
     int perturb_seed;
@@ -68,6 +69,7 @@ public:
     double operator() (int level, Coord c);
     double operator() (int level, int x, int y);
 
+    static double lerp (double t, double a, double b);
     void point_print_interpolated (int level, double t, Coord c);
     void point_print_interpolated (int scope, int level, double t, Coord c);
     void write_critical (char* filename);

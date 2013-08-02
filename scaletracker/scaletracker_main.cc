@@ -37,6 +37,7 @@ bool do_ilines = false;
 bool do_presmooth = false;
 int stage = 0;
 int tiff_mult = 0;
+bool do_control = false;
 
 void print_help (FILE* f)
 {
@@ -52,6 +53,7 @@ void print_help (FILE* f)
 	     "[-g stagenum] : stop at a certain point. 0 disable this.\n"
 	     "[-l] : compute integral lines\n"
 	     "[-s] : perform presmoothing of data\n"
+	     "[-f] : controlled filtering\n"
 	     "[-m mult] : multiply tiff output values by mult. Default auto mode\n"
 	     "\n"
 	     );
@@ -160,6 +162,10 @@ void app_init(int argc, char *argv[])
                 argc--;
                 break;
 
+            case 'f':
+		do_control = true;
+                break;
+
             case 'c':
 		do_crop = true;
                 crop_a.x = atoi (*++argv);
@@ -228,6 +234,9 @@ int main (int argc, char *argv[])
 
     if (do_presmooth)
     	opts.set (ScaleSpaceOpts::PRESMOOTH);
+
+    if (do_control)
+    	opts.set (ScaleSpaceOpts::CONTROL);
 
     
     if (tiffnames)

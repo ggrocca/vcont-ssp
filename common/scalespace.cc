@@ -3,6 +3,7 @@
 
 #include "scalespace.hh"
 #include "gaussian.hh"
+#include "../scaletracker/flipper.hh"
 
 #include "htimer.hh"
 
@@ -231,6 +232,14 @@ ScaleSpace::ScaleSpace (DEMReader* base, int levels, ScaleSpaceOpts opts)
 	// BlurFilter.Filter (&(dem[i-1]->data[0]), &(dem[i]->data[0]),
 	// 		   base_width, base_height, window);
 
+	
+	if (opts.check (ScaleSpaceOpts::CONTROL))
+	{
+	    std::vector<CriticalPoint> crits = std::vector<CriticalPoint>();
+	    scan_critical_points (dem[i], crits);
+	    Flipper::filter (dem[i-1], dem[i], crits);
+	}
+
 	tprintp ("###$$$", "Blurred level %d, window %d, elapsed %s\n",
 		 i, window, H2S_f (ht_get(&h), 's'));
     }
@@ -304,7 +313,7 @@ void ScaleSpace::point_print_interpolated (int level, double t, Coord c)
     point_print_interpolated (SCOPE_ALWAYS, level, t, c);
 }
 
-double __lerp (double t, double a, double b)
+double ScaleSpace::lerp (double t, double a, double b)
 {
     return (a * (1 - t)) + (b * t);
 }
@@ -344,15 +353,15 @@ void ScaleSpace::point_print_interpolated (int scope, int level, double t, Coord
     m_s  = _pdm ((*this)(i+1, x  , y-1));
     m_se = _pdm ((*this)(i+1, x+1, y-1));
 
-    nw = __lerp (t, b_nw, m_nw);
-    n  = __lerp (t, b_n, m_n);
-    ne = __lerp (t, b_ne, m_ne);
-    w  = __lerp (t, b_w, m_w);
-    c  = __lerp (t, b_c, m_c);
-    e  = __lerp (t, b_e, m_e);
-    sw = __lerp (t, b_sw, m_sw);
-    s  = __lerp (t, b_s, m_s);
-    se = __lerp (t, b_se, m_se);
+    nw = lerp (t, b_nw, m_nw);
+    n  = lerp (t, b_n, m_n);
+    ne = lerp (t, b_ne, m_ne);
+    w  = lerp (t, b_w, m_w);
+    c  = lerp (t, b_c, m_c);
+    e  = lerp (t, b_e, m_e);
+    sw = lerp (t, b_sw, m_sw);
+    s  = lerp (t, b_s, m_s);
+    se = lerp (t, b_se, m_se);
 
     oprints (scope, "--POINT %d %d  -----\n", x, y);
     oprints (scope,

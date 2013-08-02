@@ -155,6 +155,8 @@ public:
     Flipper (ScaleSpace& ss);
 
     Track* track (ScaleSpace& ss);
+
+    static void filter (Dem* b, Dem* n, std::vector<CriticalPoint>& crits);
 };
 
 #endif // _FLIPPER_HH

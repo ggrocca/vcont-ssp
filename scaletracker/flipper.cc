@@ -420,6 +420,34 @@ Track* Flipper::track (ScaleSpace& ss)
     return track;
 }
 
+bool check_legality_flips (std::vector<Flip>& flips, Map* map);
+
+/// initialize tracking lines
+void init_critical_lines (std::vector<CriticalPoint>& critical,
+			  std::vector<TrackLine>& lines);
+
+// check if there are invalid flips and correct them in next dem
+bool control_filter (std::vector<Flip>& flips, Map* map, Dem* b, Dem* n);
+
+void Flipper::filter (Dem* b, Dem* n, std::vector<CriticalPoint>& crits)
+{
+    std::vector<Flip> fs;
+    std::vector<TrackLine> lines;
+
+    init_critical_lines (crits, lines);
+    
+    Map* map = new Map (*b, lines);
+    create_flips (b, n, fs);
+
+    while (!control_filter (fs, map, b, n))
+    {
+	delete map;
+	map = new Map (*b, lines);
+	create_flips (b, n, fs);
+    }
+
+    delete map;
+}
 
 
 ///////////////////////////////////////////
@@ -453,6 +481,8 @@ double get_flip_time (Dem* b, Dem* n, Edge e)
 void create_flips (Dem* b, Dem* n,
 		   std::vector<Flip>& fs)
 {
+    fs.clear ();
+
     for (int i = 0; i < b->width; i++)
     	for (int j = 0; j < b->height; j++)
 	{
@@ -498,10 +528,6 @@ void create_flips (Dem* b, Dem* n,
 ///////////////////////////////////////////
 /////////////// FLIP PROCESSING
 ///////////////////////////////////////////
-
-/// initialize tracking lines
-void init_critical_lines (std::vector<CriticalPoint>& critical,
-			  std::vector<TrackLine>& lines);
 
 // process flips
 void process_flips (std::vector<Flip>& flips, Map* map,
@@ -1061,4 +1087,131 @@ void pair_insert (std::vector<TrackLine>& lines, Map* map, Flip f,
 
  exit_success:
     return;
+}
+
+
+
+
+///////////////////////////////////////////
+/////////////// CONTROLLED TOPOLOGY
+///////////////////////////////////////////
+
+
+bool critical_pair_legality (CriticalPair before, CriticalPair after)
+{
+    CriticalType bl, br, al, ar;
+    bl = before.a;
+    br = before.b;
+    al = after.a;
+    ar = after.b;
+    
+   if ((bl != al && br != ar) && (bl != ar && br != al))
+   {
+       //  birth_1
+       if (bl == REG && br == REG)
+	   return false;
+       
+       // birth_2
+       if ((bl == REG && br == SA2) || (bl == SA2 && br == REG))
+	   return false;
+   }
+
+   return true;
+}
+
+void control_dem (Flip f, Dem* b, Dem* n)
+{
+    // prendo la quota z_flip in cui f.e.l e f.e.r sono orizzontali al tempo f.t
+    double z_flip = ScaleSpace::lerp (f.t, (*b)(f.e.l), (*n)(f.e.l));
+
+    if (z_flip != ScaleSpace::lerp (f.t, (*b)(f.e.r), (*n)(f.e.r)))
+	fprintf (stderr, "ggrnksjncksjdnkjdsc\n");
+
+    // prendo fra i vicini dell'edge, su dem_n, la piu' alta fra le
+    // minori, z_minus,  e la piu' bassa fra le maggiori, z_plus.
+    double z_minus = -DBL_MAX;
+    double z_plus = DBL_MAX;
+
+    Coord nc;
+    for (int k = 0; k < 2; k++)
+	for (int i = 0; i < 6; i++)
+	{
+	    if (k)
+		f.e.l.round_trip_6 (&nc);
+	    else
+		f.e.r.round_trip_6 (&nc);
+
+	    if ((*n)(nc) < z_flip && (*n)(nc) > z_minus)
+		z_minus = (*n)(nc);
+	    else if ((*n)(nc) > z_flip && (*n)(nc) < z_plus)
+		z_plus = (*n)(nc);
+	    else
+		fprintf (stderr, "siuvhsdnkdsjcnkdsjcndksjcn\n");
+	}
+
+    if (z_plus <= z_flip || z_minus >= z_flip)
+	fprintf (stderr, "mxcnbmnxcvbmcxnbcxv\n");
+
+    // il vertice che deve salire sale a (z_plus + Z_flip) / 2
+    // l'altro scende (z_minus + z_flip) / 2
+    double z_up = (z_plus + z_flip) / 2.0;
+    double z_down = (z_minus + z_flip) / 2.0;
+
+    // capisco chi fra f.e.l e f.e.r deve salire e chi scendere.
+    // controllare che le due quote siano una minore dell'altra.
+    if ((*n)(f.e.l) > (*n)(f.e.r))
+    {
+	(*n)(f.e.l) = z_flip - z_minus;
+	(*n)(f.e.r) = z_flip + z_plus;
+	if ((*n)(f.e.l) >= (*n)(f.e.r))
+	    fprintf (stderr, "opoipoipoipo\n");
+    }
+    else if ((*n)(f.e.l) < (*n)(f.e.r))
+    {
+	(*n)(f.e.l) = z_flip + z_plus;
+	(*n)(f.e.r) = z_flip - z_minus;
+	if ((*n)(f.e.l) <= (*n)(f.e.r))
+	    fprintf (stderr, "erwerwerwerewr\n");
+    }
+    else
+	fprintf (stderr, "zxxzcxzxczcxzc\n");
+}
+
+bool control_filter (std::vector<Flip>& flips, Map* map, Dem* b, Dem* n)
+{
+    for (unsigned i = 0; i < flips.size(); i++)
+    {
+	CriticalPair before, after;
+
+	before = map->pair (flips[i].e);
+	map->invert_relation (flips[i].e);
+	after = map->pair (flips[i].e);
+
+	if (!critical_pair_legality (before, after))
+	{
+	    // GG HERE correct in Dem* n
+	    control_dem (flips[i], b, n);
+	    return false;
+	}
+
+
+	// if (before.sum() != after.sum())
+	// FlipperDebug::print_flip_interpolated (flips[i], before, after, map, base);
+
+	// if (i == __debug_flip)
+	//     tracking_debug_print (fs[i], before, after, map, base);
+
+	///////////// pair_insert (lines, map, flips[i], before, after, base);
+
+	// if (!check_map_integrity_local (map, cps, fs[i]))
+	//     printf ("process_flips: maplocal was flip %d\n", i);
+
+	// if (!check_cri_integrity_local (map, cps, cpis))
+	//     printf ("process_flips: crilocal before was flip %d\n", i);
+	// __flip2crindex (map, fs[i], cpis);
+	// if (!check_cri_integrity_local (map, cps, cpis))
+	//     printf ("process_flips: crilocal after was flip %d\n", i);
+    }
+
+    return true;
 }
