@@ -55,4 +55,6 @@ public:
     void print ();
 };
 
+void print_stats (std::vector<TrackLine>& cps);
+
 #endif // _TRACKSTATS_HH

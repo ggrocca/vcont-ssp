@@ -8,16 +8,16 @@ SOURCE_RANGE="range500.png"
 SOURCE_DEM="N45E007.hgt"
 
 RANGE="range500"
-RANGE_OPTS=" -n 12 -b 10 "
+RANGE_OPTS=" -n 12 -b 10 -m 255 "
 
-DEM="dem1200"
-DEM_OPTS=" -n 15 -c 2400 2400 3600 3600 "
+DEM="dem300"
+DEM_OPTS=" -n 15 -c 2700 3000 3300 3600 -m 14 "
 
 NORMAL="normal"
-NORMAL_OPTS=" -p 0.0001 0"
+NORMAL_OPTS=" -p 0.0001 0 -s "
 
 FILTER="filter"
-FILTER_OPTS=" -p 0.0001 0 -f "
+FILTER_OPTS=" -p 0.0001 0 -f -s "
 
 DO_RANGE_NORMAL="yes"
 DO_RANGE_FILTER="yes"

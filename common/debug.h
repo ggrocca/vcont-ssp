@@ -40,7 +40,7 @@
 
 
 // if 1, perform an assert when a non critical error is reached.
-#define DO_ASSERT 0
+#define DO_ASSERT 1
 
 // Add here custom exit failure values.
 #define EXIT_GRID 3
@@ -58,6 +58,7 @@
 #define SCOPE_PLATEUS 0
 #define SCOPE_POINTTYPE 0
 #define SCOPE_FLIP 0
+#define SCOPE_FILTER 1
 
 
 //=////////////////////////////=//
@@ -96,6 +97,10 @@
 #else
 #define _TRACE_TEST 0
 #endif
+
+// GG HACK
+#undef _TRACE_TEST
+#define _TRACE_TEST 1
 
 
 #define tprint(fmt, ...)						\

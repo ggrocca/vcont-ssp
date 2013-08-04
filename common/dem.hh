@@ -23,7 +23,9 @@ public:
     Dem (Dem& dem);                                                       // copy dem
     Dem (Dem& dem, Coord a, Coord b);                              // crop & copy dem
     Dem (Dem& dem, double amp, unsigned int seed);              // copy & perturb dem
-    Dem (Dem& dem, TGaussianBlur<double>& BlurFilter, int window);    // blur dem
+    Dem (Dem& dem, TGaussianBlur<double>& BlurFilter, int window);        // blur dem
+    Dem (Dem& dem, TGaussianBlur<double>& BlurFilter, int window,
+	 std::vector<CriticalPoint>& crits);          // blur and controlled topology
 
     double& operator() (Coord c, AccessType a = ABYSS);    // read & write with coord
     double& operator() (int x, int y, AccessType a = ABYSS); // read & write with x,y

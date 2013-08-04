@@ -188,3 +188,129 @@ void FlipperDebug::setSS (ScaleSpace* ss)
 {
     _ss = ss;
 }
+
+void __acc_stats (double curr, double *av, double *max, double *min)
+{
+    if (av)
+	*av += curr;
+
+    if (max && *max < curr)
+	*max = curr;
+
+    if (min && *min > curr)
+	*min = curr;
+}
+
+void print_stats (std::vector<TrackLine>& cps)
+{
+    int total, original_num, born_num, dead_num, alive_num,
+	born_dead, born_alive, original_dead, original_alive;
+
+    total = original_num = born_num = dead_num = alive_num =
+	born_dead = born_alive = original_dead = original_alive = 0;
+
+    double av_lifetime_dead, av_lifetime_original_dead, av_lifetime_born_dead,
+	av_lifetime_born_alive, min_lifetime_dead, max_lifetime_dead, 
+	min_lifetime_born_alive, max_lifetime_born_alive;
+
+    double av_travel, min_travel, max_travel,
+	av_travel_alive, min_travel_alive, max_travel_alive,
+	av_travel_original_alive, min_travel_original_alive, max_travel_original_alive;
+
+    
+    av_lifetime_dead = av_lifetime_original_dead = av_lifetime_born_dead =
+	av_lifetime_born_alive = av_travel = av_travel_alive =
+	av_travel_original_alive = 0.0f;
+    max_lifetime_dead = max_lifetime_born_alive =
+	max_travel = max_travel_alive = max_travel_original_alive = -DBL_MAX;
+    min_lifetime_dead = min_lifetime_born_alive =
+	min_travel = min_travel_alive = min_travel_original_alive = DBL_MAX;
+
+    for (unsigned i = 0; i < cps.size(); i++)
+    {
+	total++;
+	cps[i].is_original()? original_num++ : original_num ;
+	cps[i].is_born()? born_num++ : born_num ;
+	cps[i].is_dead()? dead_num++ : dead_num ;
+	cps[i].is_alive()? alive_num++ : alive_num ;
+	cps[i].is_born() && cps[i].is_alive()? born_alive++ : born_alive ;
+	cps[i].is_born() && cps[i].is_dead()? born_dead++ : born_dead ;
+	cps[i].is_original() && cps[i].is_alive()? original_alive++ : original_alive ;
+	cps[i].is_original() && cps[i].is_dead()? original_dead++ : original_dead ;
+
+	__acc_stats (cps[i].travel(), &av_travel,
+		     &max_travel, &min_travel);
+
+	if (cps[i].is_dead())
+	    __acc_stats (cps[i].lifetime(), &av_lifetime_dead,
+			 &max_lifetime_dead, &min_lifetime_dead);
+
+	if (cps[i].is_alive())
+	    __acc_stats (cps[i].travel(), &av_travel_alive,
+			 &max_travel_alive, &min_travel_alive);
+
+	if (cps[i].is_original() && cps[i].is_dead())
+	    __acc_stats (cps[i].lifetime(), &av_lifetime_original_dead, 0, 0);
+
+	if (cps[i].is_original() && cps[i].is_alive())
+	    __acc_stats (cps[i].travel(), &av_travel_original_alive,
+			 &max_travel_original_alive, &min_travel_original_alive);
+
+	if (cps[i].is_born() && cps[i].is_dead())
+	    __acc_stats (cps[i].lifetime(), &av_lifetime_born_dead, 0, 0);
+
+	if (cps[i].is_born() && cps[i].is_alive())
+	    __acc_stats (cps[i].lifetime(), &av_lifetime_born_alive,
+			 &max_lifetime_born_alive, &min_lifetime_born_alive);
+    }
+
+    av_lifetime_dead /= ((double) dead_num);
+    av_lifetime_original_dead /= ((double) original_dead);
+    av_lifetime_born_dead /= ((double) born_dead);
+    av_lifetime_born_alive /= ((double) born_alive);
+    av_travel /= ((double) total);
+    av_travel_alive /= ((double) alive_num);
+    av_travel_original_alive /= ((double) original_alive);
+
+    printf ("\n");
+    printf ("************************\n");
+    printf ("\n");
+    printf ("total:             %d\n", total);
+    printf ("original_num:      %d\n", original_num);
+    printf ("born_num:          %d\n", born_num);
+    printf ("dead_num:          %d\n", dead_num);
+    printf ("alive_num:         %d\n", alive_num);
+    printf ("born_dead:         %d\n", born_dead);
+    printf ("born_alive:        %d\n", born_alive);
+    printf ("original_dead:     %d\n", original_dead);
+    printf ("original_alive:    %d\n", original_alive);
+    printf ("\n");
+    printf ("------------------------\n");
+    printf ("\n");
+    printf ("av_lifetime_born_alive:       %lf\n", av_lifetime_born_alive);
+    printf ("max_lifetime_born_alive:      %.20lf\n", max_lifetime_born_alive);
+    printf ("min_lifetime_born_alive:      %lf\n", min_lifetime_born_alive);
+    printf ("\n");
+    printf ("av_lifetime_dead:             %lf\n", av_lifetime_dead);
+    printf ("max_lifetime_dead:            %lf\n", max_lifetime_dead);
+    printf ("min_lifetime_dead:            %.20lf\n", min_lifetime_dead);
+    printf ("\n");
+    printf ("av_lifetime_born_dead:        %lf\n", av_lifetime_born_dead);
+    printf ("av_lifetime_original_dead:    %lf\n", av_lifetime_original_dead);
+    printf ("\n");
+    printf ("av_travel:                    %lf\n", av_travel);
+    printf ("max_travel:                   %lf\n", max_travel);
+    printf ("min_travel:                   %.20lf\n", min_travel);
+    printf ("\n");
+    printf ("av_travel_alive:              %lf\n", av_travel_alive);
+    printf ("max_travel_alive:             %lf\n", max_travel_alive);
+    printf ("min_travel_alive:             %.20lf\n", min_travel_alive);
+    printf ("\n");
+    printf ("av_travel_original_alive:     %lf\n", av_travel_original_alive);
+    printf ("max_travel_original_alive:    %lf\n", max_travel_original_alive);
+    printf ("min_travel_original_alive:    %.20lf\n", min_travel_original_alive);
+    printf ("\n");
+    printf ("************************\n");
+    printf ("\n");
+
+}

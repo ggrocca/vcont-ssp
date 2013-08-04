@@ -69,7 +69,7 @@ Map::Map(Dem& dem, std::vector<TrackLine>& lines) :
 	    eprint ("%s", "Wrong critical type in Map.\n");
 
 	if (tracktype != maptype)
-	    eprint ("lines[%d] -> [%d,%d] _ tracktype:%c _ maptypr:%c\n",
+	    eprint ("lines[%d] -> [%d,%d] _ tracktype:%c _ maptype:%c\n",
 		    i, c.x, c.y, critical2char (tracktype), critical2char (maptype));
     }
 
@@ -439,8 +439,10 @@ void Flipper::filter (Dem* b, Dem* n, std::vector<CriticalPoint>& crits)
     Map* map = new Map (*b, lines);
     create_flips (b, n, fs);
 
+    int i = 0;
     while (!control_filter (fs, map, b, n))
     {
+	tprintsp (SCOPE_FILTER, "<scope|filter> >>", "IN. Iteration: %d.\n", i++);
 	delete map;
 	map = new Map (*b, lines);
 	create_flips (b, n, fs);
@@ -605,7 +607,7 @@ void process_flips_all (std::vector< std::vector<Flip> >& flips,
 
 	Track::time_of_life = (double) i + 1;
 	
-	// print_stats(cps);
+	print_stats (lines);
     }
 
     ts.print ();
@@ -1124,8 +1126,9 @@ void control_dem (Flip f, Dem* b, Dem* n)
     // prendo la quota z_flip in cui f.e.l e f.e.r sono orizzontali al tempo f.t
     double z_flip = ScaleSpace::lerp (f.t, (*b)(f.e.l), (*n)(f.e.l));
 
-    if (z_flip != ScaleSpace::lerp (f.t, (*b)(f.e.r), (*n)(f.e.r)))
-	fprintf (stderr, "ggrnksjncksjdnkjdsc\n");
+    // if (z_flip != ScaleSpace::lerp (f.t, (*b)(f.e.r), (*n)(f.e.r)))
+    // 	eprint ("Different right and left z value at flip time.\n%.80lf\n%.80lf\n",
+    // 		z_flip, ScaleSpace::lerp (f.t, (*b)(f.e.r), (*n)(f.e.r)));
 
     // prendo fra i vicini dell'edge, su dem_n, la piu' alta fra le
     // minori, z_minus,  e la piu' bassa fra le maggiori, z_plus.
@@ -1143,45 +1146,82 @@ void control_dem (Flip f, Dem* b, Dem* n)
 
 	    if ((*n)(nc) < z_flip && (*n)(nc) > z_minus)
 		z_minus = (*n)(nc);
-	    else if ((*n)(nc) > z_flip && (*n)(nc) < z_plus)
+
+	    if ((*n)(nc) > z_flip && (*n)(nc) < z_plus)
 		z_plus = (*n)(nc);
-	    else
-		fprintf (stderr, "siuvhsdnkdsjcnkdsjcndksjcn\n");
 	}
 
-    if (z_plus <= z_flip || z_minus >= z_flip)
-	fprintf (stderr, "mxcnbmnxcvbmcxnbcxv\n");
+    double z_diff_up = z_plus == DBL_MAX?
+	(z_flip - z_minus) / 2.0 : (z_plus - z_flip) / 2.0;
+    double z_diff_down = z_minus == -DBL_MAX?
+	(z_plus - z_flip) / 2.0 : (z_flip - z_minus) / 2.0;
+
+    double z_up = z_flip + z_diff_up;
+    double z_down = z_flip - z_diff_down;
+
+    // if (z_minus == -DBL_MAX || z_plus == DBL_MAX)
+    // 	eprint ("Could not find z values. z_flip: %lf, z_plus: %lf, z_minus: %lf.\n",
+    // 		z_flip, z_plus, z_minus);    
+
+    // if (z_plus <= z_flip || z_minus >= z_flip)
+    // 	eprint ("Wrong z values. z_flip: %lf, z_plus: %lf, z_minus: %lf.\n",
+    // 		z_flip, z_plus, z_minus);
 
     // il vertice che deve salire sale a (z_plus + Z_flip) / 2
     // l'altro scende (z_minus + z_flip) / 2
-    double z_up = (z_plus + z_flip) / 2.0;
-    double z_down = (z_minus + z_flip) / 2.0;
+    // double z_up = (z_plus + z_flip) / 2.0;
+    // double z_down = (z_minus + z_flip) / 2.0;
 
     // capisco chi fra f.e.l e f.e.r deve salire e chi scendere.
     // controllare che le due quote siano una minore dell'altra.
     if ((*n)(f.e.l) > (*n)(f.e.r))
     {
-	(*n)(f.e.l) = z_flip - z_minus;
-	(*n)(f.e.r) = z_flip + z_plus;
-	if ((*n)(f.e.l) >= (*n)(f.e.r))
-	    fprintf (stderr, "opoipoipoipo\n");
+	(*n)(f.e.l) = z_down;
+	(*n)(f.e.r) = z_up;
+
+	    if ((*n)(f.e.l) >= (*n)(f.e.r))
+		eprint ("%s", "Wrong l>r correction.\n");
     }
     else if ((*n)(f.e.l) < (*n)(f.e.r))
     {
-	(*n)(f.e.l) = z_flip + z_plus;
-	(*n)(f.e.r) = z_flip - z_minus;
+	(*n)(f.e.l) = z_up;
+	(*n)(f.e.r) = z_down;
+
 	if ((*n)(f.e.l) <= (*n)(f.e.r))
-	    fprintf (stderr, "erwerwerwerewr\n");
+	    eprint ("%s", "Wrong l<r correction.\n");
     }
     else
-	fprintf (stderr, "zxxzcxzxczcxzc\n");
+	eprint ("%s", "Impossible correction.\n");
+}
+
+bool check_map_dem_relations (Flip f, Map* m, Dem* d)
+{
+    bool r = true;
+    Coord nc;
+
+    for (int i = 0; i < 6; i++)
+    {
+	f.e.l.round_trip_6 (&nc);
+
+	if (m->point_relation (f.e.l, i) != d->point_relation (f.e.l, nc))
+	    r = false;
+    }
+    for (int i = 0; i < 6; i++)
+    {
+	f.e.r.round_trip_6 (&nc);
+
+	if (m->point_relation (f.e.r, i) != d->point_relation (f.e.r, nc))
+	    r = false;
+    }
+
+    return r;
 }
 
 bool control_filter (std::vector<Flip>& flips, Map* map, Dem* b, Dem* n)
 {
     for (unsigned i = 0; i < flips.size(); i++)
     {
-	CriticalPair before, after;
+	CriticalPair before, after, control;
 
 	before = map->pair (flips[i].e);
 	map->invert_relation (flips[i].e);
@@ -1189,8 +1229,28 @@ bool control_filter (std::vector<Flip>& flips, Map* map, Dem* b, Dem* n)
 
 	if (!critical_pair_legality (before, after))
 	{
-	    // GG HERE correct in Dem* n
+	    // correct in Dem* n
 	    control_dem (flips[i], b, n);
+
+	    // GG here control critical type of flipped points is back to normal
+	    control.a = n->point_type (flips[i].e.l);
+	    control.b = n->point_type (flips[i].e.r);
+
+	    if (before != control)
+		tprintsp (SCOPE_FILTER, "<scope|filter> >>", "flip: %d. "
+			"before: %c%c. after: %c%c. control: %c%c.\n", i,
+			critical2char (before.a), critical2char (before.b), 
+			critical2char (after.a), critical2char (after.b), 
+			critical2char (control.a), critical2char (control.b));
+
+	    // // GG here control that relations are back to before
+	    // // (confront with map after inverted again)
+	    // map->invert_relation (flips[i].e);
+	    // if (!check_map_dem_relations (flips[i], map, n))
+	    // 	eprint ("Not the same relations as before, flip: %d.\n", i);
+
+	    tprintsp (SCOPE_FILTER, "<scope|filter> >>", "OUT. Reached: %d/%zu.\n",
+		      i, flips.size());
 	    return false;
 	}
 

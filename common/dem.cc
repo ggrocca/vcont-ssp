@@ -1,4 +1,5 @@
 #include "dem.hh"
+#include "../scaletracker/flipper.hh"
 
 
 
@@ -123,6 +124,29 @@ Dem::Dem (Dem& dem, TGaussianBlur<double>& BlurFilter, int window) :
     min (DBL_MAX)
 {
     BlurFilter.Filter(&(dem.data[0]), &((*this).data[0]), width, height, window);
+
+    for (int i = 0; i < width; i++)
+	for (int j = 0; j < height; j++)
+	{
+	    double v = (*this)(i, j);
+	    if (v < min)
+		min = v;
+	    if (v > max)
+		max = v;
+
+	}
+
+}
+
+Dem::Dem (Dem& dem, TGaussianBlur<double>& BlurFilter, int window,
+	  std::vector<CriticalPoint>& crits) :
+    Grid<double> (dem.width, dem.height),
+    max (-DBL_MAX),
+    min (DBL_MAX)
+{
+    BlurFilter.Filter(&(dem.data[0]), &((*this).data[0]), width, height, window);
+
+    Flipper::filter (&dem, this, crits);
 
     for (int i = 0; i < width; i++)
 	for (int j = 0; j < height; j++)

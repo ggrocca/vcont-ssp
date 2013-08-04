@@ -3,13 +3,14 @@
 
 #include "scalespace.hh"
 #include "gaussian.hh"
-#include "../scaletracker/flipper.hh"
 
 #include "htimer.hh"
 
 
 void scan_critical_points (Dem* d, std::vector<CriticalPoint>& cps)
 {
+    cps.clear();
+
     for (int i = 0; i < d->width; i++)
     	for (int j = 0; j < d->height; j++)
 	{
@@ -227,21 +228,25 @@ ScaleSpace::ScaleSpace (DEMReader* base, int levels, ScaleSpaceOpts opts)
 	
 	ht h;
 	ht_start (&h);
-
-	dem[i] = new Dem (*(dem[i-1]), BlurFilter, window);	
-	// BlurFilter.Filter (&(dem[i-1]->data[0]), &(dem[i]->data[0]),
-	// 		   base_width, base_height, window);
-
 	
 	if (opts.check (ScaleSpaceOpts::CONTROL))
 	{
 	    std::vector<CriticalPoint> crits = std::vector<CriticalPoint>();
-	    scan_critical_points (dem[i], crits);
-	    Flipper::filter (dem[i-1], dem[i], crits);
+	    scan_critical_points (dem[i-1], crits);
+	    dem[i] = new Dem (*(dem[i-1]), BlurFilter, window, crits);	
+	    // Flipper::filter (dem[i-1], dem[i], crits);
+	}
+	else
+	{
+	    dem[i] = new Dem (*(dem[i-1]), BlurFilter, window);	
+	    // BlurFilter.Filter (&(dem[i-1]->data[0]), &(dem[i]->data[0]),
+	    // 		   base_width, base_height, window);
 	}
 
+	tprintp ("###$$$", "%s", " !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 	tprintp ("###$$$", "Blurred level %d, window %d, elapsed %s\n",
 		 i, window, H2S_f (ht_get(&h), 's'));
+	tprintp ("###$$$", "%s", " !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
     }
 
     if (opts.check (ScaleSpaceOpts::CLIP))
@@ -266,6 +271,7 @@ ScaleSpace::ScaleSpace (DEMReader* base, int levels, ScaleSpaceOpts opts)
 	    dem[i-1] = dem[i];
 	dem.resize (dem.size() - 1);
 	levels--;
+	(this->levels)--;
     }
 
     critical = std::vector< std::vector<CriticalPoint> > (levels);

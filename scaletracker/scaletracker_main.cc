@@ -190,7 +190,7 @@ void app_init(int argc, char *argv[])
     exit(1);
 }
 
-//void print_final_stats (Tracking* track, bool latex);
+void print_final_stats (Track* track, bool latex);
 
 int main (int argc, char *argv[])
 {
@@ -267,9 +267,12 @@ int main (int argc, char *argv[])
     if (stage == 2)
 	exit (0);
 
-    if (tiffnames)
+    for (int i = 0; i < ssp.levels; i++)
     {
-	for (int i = 0; i < ssp.levels; i++)
+	tprintp ("###>>>", "Dem %d. max: %lf, min: %lf\n",
+		 i, ssp.dem[i]->max, ssp.dem[i]->min);
+
+	if (tiffnames)
 	{
 	    ImageWriter iw (ssp.dem[i], tiff_mult);
 	    iw.write (tiffnames, "", i);
@@ -322,6 +325,8 @@ int main (int argc, char *argv[])
 	
     track->write (tracking_name);
 
+    print_final_stats (track, false);
+
     delete track;
 
 	// Tracking *track = new Tracking (demsp);
@@ -343,9 +348,7 @@ int main (int argc, char *argv[])
     exit (0);
 }
 
-#if 0
-
-void print_final_stats (Tracking* track, bool latex)
+void print_final_stats (Track* track, bool latex)
 {
     if (!latex)
     {
@@ -353,15 +356,15 @@ void print_final_stats (Tracking* track, bool latex)
 	printf ("scale (time)   | max (n) | min (n) | sad (n) "
 		"||  av (n)   | avlog (n)\n");
     }
-    std::vector<critical_rend_t> v;
+    std::vector<TrackRenderingEntry> v;
     double s = 1.0;
     for (int i = 0; i < 5; i++)
     {
 	s *= 3.0;
 	if (!latex)
-	    track->query (scale2time(s), v);
+	    track->query (ScaleSpace::scale2time(s), v);
 	else
-	    track->query (scale2time(s), v, false);
+	    track->query (ScaleSpace::scale2time(s), v, false);
 
 	int num_sad, num_max, num_min, num_tot;
 	int num_sad_new, num_max_new, num_min_new, num_tot_new;
@@ -373,13 +376,13 @@ void print_final_stats (Tracking* track, bool latex)
 	for (unsigned j = 0; j < v.size(); j++)
 	{
 	    av_time += v[j].tol;
-	    av_scale += time2scale (v[j].tol);
+	    av_scale += ScaleSpace::time2scale (v[j].tol);
 	    num_tot++;
 
 	    if (v[j].is_born)
 	    {
 		av_time_new += v[j].tol;
-		av_scale_new += time2scale (v[j].tol);
+		av_scale_new += ScaleSpace::time2scale (v[j].tol);
 		num_tot_new++;
 	    }
 
@@ -429,7 +432,7 @@ void print_final_stats (Tracking* track, bool latex)
 	if (!latex)
 	    printf ("%.1lf (%.3lf)  | %d (%d) | %d (%d) | %d (%d) "
 		    "|| %lf (%lf) | %lf (%lf)\n",
-		    s, scale2time(s),
+		    s, ScaleSpace::scale2time(s),
 		    num_max, num_max_new, num_min, num_min_new, num_sad,
 		    num_sad_new, av_time, av_time_new, av_scale, av_scale_new);
 	// 3 & 1718 (1163) & ??(??) & ??(??) & ??(??) & ??(??) 
@@ -441,5 +444,3 @@ void print_final_stats (Tracking* track, bool latex)
 	
     }
 }
-
-#endif

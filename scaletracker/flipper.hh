@@ -12,7 +12,19 @@ class CriticalPair {
 public:
 
     CriticalType a,b;
+
     int sum () { return critical2value (a) + critical2value (b); }
+
+    bool operator == (const CriticalPair& cp)
+    {
+	return a == cp.a && b == cp.b;	
+    }
+
+    bool operator != (const CriticalPair& cp)
+    {
+	return !(*this == cp);
+    }
+
 };
 
 class Edge {
