@@ -176,6 +176,9 @@ Track::Track (char *filename)
 {
     FILE *f = fopen (filename, "r");
 
+    if (f == NULL)
+	eprintx (54, "Could not open file %s.\n", filename);
+
     int critical_points_num = 0;
     fscanf (f, "#lines: %d\n", &critical_points_num);
     fscanf (f, "tol: %lf\n\n\n", &time_of_life);
@@ -212,6 +215,9 @@ Track::Track (char *filename)
 void Track::write (char *filename)
 {
     FILE *f = fopen (filename, "w");
+
+    if (f == NULL)
+	eprintx (54, "Could not open file %s.\n", filename);
 
     fprintf (f, "#lines: %zu\n", lines.size());
     fprintf (f, "tol: %.80lf\n\n\n", time_of_life);

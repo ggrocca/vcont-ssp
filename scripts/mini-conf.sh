@@ -1,4 +1,5 @@
 EXE=../scaletracker/scaletracker
+SOURCE_DIR="../../datasets"
 
 DIFFTIFF="../analyzers/difftiff/difftiff -v 0"
 DIFFTRAC="../analyzers/difftrack/difftrack -v 0"

@@ -1151,10 +1151,18 @@ void control_dem (Flip f, Dem* b, Dem* n)
 		z_plus = (*n)(nc);
 	}
 
+    // se lo trovo imposto alla quantita' dell'altro
+    // double z_diff_up = z_plus == DBL_MAX?
+    // 	(z_flip - z_minus) / 2.0 : (z_plus - z_flip) / 2.0;
+    // double z_diff_down = z_minus == -DBL_MAX?
+    // 	(z_plus - z_flip) / 2.0 : (z_flip - z_minus) / 2.0;
+
+
+    // se non lo trovo lo lascio al tempo del flip
     double z_diff_up = z_plus == DBL_MAX?
-	(z_flip - z_minus) / 2.0 : (z_plus - z_flip) / 2.0;
+    	z_flip : (z_plus - z_flip) / 2.0;
     double z_diff_down = z_minus == -DBL_MAX?
-	(z_plus - z_flip) / 2.0 : (z_flip - z_minus) / 2.0;
+    	z_flip : (z_flip - z_minus) / 2.0;        
 
     double z_up = z_flip + z_diff_up;
     double z_down = z_flip - z_diff_down;

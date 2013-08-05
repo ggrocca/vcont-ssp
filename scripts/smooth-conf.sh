@@ -3,7 +3,7 @@ EXE=../scaletracker/scaletracker
 
 RES=../../scalespace-results/smooth
 
-SOURCE_DIR="../.."
+SOURCE_DIR="../../datasets"
 SOURCE_RANGE="range500.png"
 SOURCE_DEM="N45E007.hgt"
 
