@@ -328,7 +328,7 @@ public:
 	if (width < 0 || height < 0)
 	    eprintx (EXIT_GRID, "Negative dimension %d,%d.\n", _width, _height);
 
-        data.resize(_width*_height);
+        data.resize(_width * _height);
         height = _height;
         width = _width;
     }

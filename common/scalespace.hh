@@ -64,6 +64,7 @@ public:
     int levels;
 
     ScaleSpace (DEMReader* base, int levels, ScaleSpaceOpts opts);
+    ScaleSpace (char* filename, ScaleSpaceOpts opts);
     ~ScaleSpace ();
 
     double operator() (int level, Coord c);
@@ -73,6 +74,7 @@ public:
     void point_print_interpolated (int level, double t, Coord c);
     void point_print_interpolated (int scope, int level, double t, Coord c);
     void write_critical (char* filename);
+    void write_scalespace (char* filename);
 
     std::vector<Dem*> dem;
     std::vector< std::vector<CriticalPoint> > critical;

@@ -26,6 +26,9 @@ public:
     Dem (Dem& dem, TGaussianBlur<double>& BlurFilter, int window);        // blur dem
     Dem (Dem& dem, TGaussianBlur<double>& BlurFilter, int window,
 	 std::vector<CriticalPoint>& crits);          // blur and controlled topology
+    Dem (FILE* fp);
+    
+    void write (FILE* fp);
 
     double& operator() (Coord c, AccessType a = ABYSS);    // read & write with coord
     double& operator() (int x, int y, AccessType a = ABYSS); // read & write with x,y

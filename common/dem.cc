@@ -135,7 +135,6 @@ Dem::Dem (Dem& dem, TGaussianBlur<double>& BlurFilter, int window) :
 		max = v;
 
 	}
-
 }
 
 Dem::Dem (Dem& dem, TGaussianBlur<double>& BlurFilter, int window,
@@ -158,9 +157,38 @@ Dem::Dem (Dem& dem, TGaussianBlur<double>& BlurFilter, int window,
 		max = v;
 
 	}
-
 }
 
+Dem::Dem (FILE* fp) : Grid<double> (), max (-DBL_MAX), min (DBL_MAX)
+{
+    int width, height;
+
+    fread (&width, sizeof (int), 1, fp);
+    fread (&height, sizeof (int), 1, fp);
+
+    // int length = width * height;
+
+    resize (width, height);
+    fread (&(data[0]), sizeof (double), data.size(), fp);
+
+    for (int i = 0; i < width; i++)
+	for (int j = 0; j < height; j++)
+	{
+	    double v = (*this)(i, j);
+	    if (v < min)
+		min = v;
+	    if (v > max)
+		max = v;
+
+	}
+}
+    
+void Dem::write (FILE* fp)
+{
+    fwrite (&width, sizeof (int), 1, fp);
+    fwrite (&height, sizeof (int), 1, fp);
+    fwrite (&(data[0]), sizeof (double), data.size(), fp);
+}
 
 
 double& Dem::operator() (Coord c, AccessType a) // = ABYSS

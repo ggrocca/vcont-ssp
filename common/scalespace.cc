@@ -275,10 +275,6 @@ ScaleSpace::ScaleSpace (DEMReader* base, int levels, ScaleSpaceOpts opts)
     }
 
     critical = std::vector< std::vector<CriticalPoint> > (levels);
-
-    // GG HACK
-    // return;
-
     for (int i = 0; i < levels; i++)
     {
 	critical[i] = std::vector<CriticalPoint>();
@@ -291,7 +287,6 @@ ScaleSpace::ScaleSpace (DEMReader* base, int levels, ScaleSpaceOpts opts)
 	tprintp ("!!!!!!!!", "%s", " ILINES \n");
 
 	ilines = std::vector< Grid<char> > (levels);
-
 	for (int i = 0; i < levels; i++)
 	{
 	    ilines[i] = Grid<char> (base_width, base_height, false);
@@ -301,6 +296,78 @@ ScaleSpace::ScaleSpace (DEMReader* base, int levels, ScaleSpaceOpts opts)
 	}
     }
 }
+
+ScaleSpace::ScaleSpace(char* filename, ScaleSpaceOpts opts)
+{
+    FILE* fp = fopen (filename, "r");
+
+    if (fp == NULL)
+	eprint ("Could not read file %s\n", filename);
+
+    // read ssp file
+
+    fread (&levels, sizeof (int), 1, fp);
+
+    dem = std::vector<Dem*>(levels);
+    for (int i = 0; i < levels; i++)
+	dem[i] = new Dem (fp);
+
+    fclose (fp);
+
+    // compute criticals and integral lines
+
+    critical = std::vector< std::vector<CriticalPoint> > (levels);
+    for (int i = 0; i < levels; i++)
+    {
+	critical[i] = std::vector<CriticalPoint>();
+	scan_critical_points (dem[i], critical[i]);
+	tprintp ("###$$$", "Critical points, scanned level %d\n", i);
+    }
+
+    int base_width = dem[0]->width;
+    int base_height = dem[0]->height;
+
+    if (opts.check (ScaleSpaceOpts::ILINES))
+    {
+	tprintp ("!!!!!!!!", "%s", " ILINES \n");
+
+	ilines = std::vector< Grid<char> > (levels);
+	for (int i = 0; i < levels; i++)
+	{
+	    ilines[i] = Grid<char> (base_width, base_height, false);
+
+	    scan_integral_lines (dem[i], critical[i], ilines[i]);
+	    tprintp ("###$$$", "Integral lines, scanned level %d\n", i);
+	}
+    }
+}
+
+void ScaleSpace::write_scalespace (char* filename)
+{
+    FILE* fp = fopen (filename, "w");
+
+    if (fp == NULL)
+	eprint ("Could not write file %s\n", filename);
+
+    fwrite (&levels, sizeof (int), 1, fp);
+
+    for (int i = 0; i < levels; i++)
+	dem[i]->write (fp);
+    // {
+    // 	int length = dem[i]->data.size();
+    // 	fwrite (&length, sizeof (int), 1, fp);
+    // 	fwrite (&(dem[i]->data[0]), sizeof (double), dem[i]->data.size(), fp);
+    // }
+
+    fclose (fp);
+}
+
+ScaleSpace::~ScaleSpace()
+{
+    for (int i = 0; i < levels; i++)
+	delete dem[i];
+}
+
 
 double ScaleSpace::operator() (int level, int x, int y)
 {
@@ -425,11 +492,4 @@ void ScaleSpace::write_critical (char* filename)
 
 	fprintf (fp, "\n");
     }
-}
-
-
-ScaleSpace::~ScaleSpace()
-{
-    for (int i = 0; i < levels; i++)
-	delete dem[i];
 }

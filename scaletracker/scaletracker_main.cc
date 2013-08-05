@@ -20,6 +20,8 @@ char *imagefile = 0;
 char *out_name = 0;
 char *tracking_name = 0;
 char *critical_name = 0;
+char *scalespace_write_name = 0;
+char *scalespace_read_name = 0;
 char *tiffnames = 0;
 char *statfile = 0;
 int numlevel = 0;
@@ -43,8 +45,9 @@ void print_help (FILE* f)
 {
     fprintf (f, "Usage: smoother\n"
 	     "-n numlevel : number of levels\n"
-	     "-i imagefile : supported inputs formats hgt, png, bmp\n"
-	     "[-o outname] : write files outname.trk and outname.crt\n"
+	     "[-i imagefile] : supported inputs formats hgt, png, bmp\n"
+	     "[-r scalespace.ssp] : read scalespace in binary format"
+	     "[-o outname] : write files outname.trk, outname.crt, outname.ssp\n"
 	     "[-t tiffnames] : write a tiff for every level\n"
 	     "[-p amplitude seed] : randomly perturb data\n"
 	     "[-j numjumps] : do not consider first n levels\n"
@@ -124,15 +127,23 @@ void app_init(int argc, char *argv[])
                 argc--;
                 break;
 
+            case 'r':
+                scalespace_read_name = (*++argv);
+                argc--;
+                break;
+
             case 'o':
                 out_name = (*++argv);
 #define _FNLEN 512
 		static char _tracking_str[_FNLEN] = {'\0'};
 		static char _critical_str[_FNLEN] = {'\0'};
+		static char _scalespace_str[_FNLEN] = {'\0'};
 		snprintf (_tracking_str, _FNLEN, "%s%s" ,out_name, ".trk");
 		snprintf (_critical_str, _FNLEN, "%s%s" ,out_name, ".crt");
+		snprintf (_scalespace_str, _FNLEN, "%s%s" ,out_name, ".ssp");
 		tracking_name = &(_tracking_str[0]);
 		critical_name = &(_critical_str[0]);
+		scalespace_write_name = &(_scalespace_str[0]);
 #undef _FNLEN
 		argc--;
                 break;
@@ -183,6 +194,12 @@ void app_init(int argc, char *argv[])
         }
     }
 
+    if (imagefile == NULL && scalespace_read_name == NULL)
+    {
+	eprint ("%s","No image or scalespace input given.\n");
+	goto die;
+    }
+
     return;
 
     die:
@@ -195,9 +212,14 @@ void print_final_stats (Track* track, bool latex);
 int main (int argc, char *argv[])
 {
     app_init (argc, argv);
+    
+    DEMReader* dr = NULL;
 
-    DEMReader *dr = DEMSelector::get (imagefile);
-    dr->print_info ();
+    if (imagefile != NULL)
+    {
+	dr = DEMSelector::get (imagefile);
+	dr->print_info ();
+    }
 
     tprintp ("###", "%s", "Start!\n");
 
@@ -239,7 +261,7 @@ int main (int argc, char *argv[])
     	opts.set (ScaleSpaceOpts::CONTROL);
 
     
-    if (tiffnames)
+    if (tiffnames && dr != NULL)
     {
 	Dem* d = new Dem (dr);
 	if (do_crop)
@@ -260,25 +282,35 @@ int main (int argc, char *argv[])
     if (stage == 1)
 	exit (0);
 
-    ScaleSpace ssp (dr, numlevel, opts);
+    ScaleSpace *ssp;
 
-    delete dr;
+    if (imagefile != NULL)
+    {
+	ssp = new ScaleSpace (dr, numlevel, opts);
+	delete dr;
+    }
+
+    else if (scalespace_read_name != NULL)
+	ssp = new ScaleSpace (scalespace_read_name, opts);
+    else
+	eprintx (1, "%s","No image or scalespace input given.\n");
+
 
     if (stage == 2)
 	exit (0);
 
-    for (int i = 0; i < ssp.levels; i++)
+    for (int i = 0; i < ssp->levels; i++)
     {
 	tprintp ("###>>>", "Dem %d. max: %lf, min: %lf\n",
-		 i, ssp.dem[i]->max, ssp.dem[i]->min);
+		 i, ssp->dem[i]->max, ssp->dem[i]->min);
 
 	if (tiffnames)
 	{
-	    ImageWriter iw (ssp.dem[i], tiff_mult);
+	    ImageWriter iw (ssp->dem[i], tiff_mult);
 	    iw.write (tiffnames, "", i);
-	    iw.draw_points (&(ssp.critical[i]));
+	    iw.draw_points (&(ssp->critical[i]));
 	    if (do_ilines)
-		iw.draw_lines (&(ssp.ilines[i]));
+		iw.draw_lines (&(ssp->ilines[i]));
 	    iw.write (tiffnames, "-MARKED-", i);
 
 	    tprintp ("###$$$", "Finished writing tiff %d!\n", i);
@@ -288,19 +320,19 @@ int main (int argc, char *argv[])
     if (stage == 3)
 	exit (0);
 
-    for (int i = 0; i < ssp.levels; i++)
+    for (int i = 0; i < ssp->levels; i++)
     {
 	int num_max, num_min, num_sad;
 	num_max = num_min = num_sad = 0;
-	for (unsigned j = 0; j < ssp.critical[i].size(); j++)
+	for (unsigned j = 0; j < ssp->critical[i].size(); j++)
 	{
-	    if (ssp.critical[i][j].t == MAX)
+	    if (ssp->critical[i][j].t == MAX)
 		num_max++;
-	    if (ssp.critical[i][j].t == MIN)
+	    if (ssp->critical[i][j].t == MIN)
 		num_min++;
-	    if (ssp.critical[i][j].t == SA2)
+	    if (ssp->critical[i][j].t == SA2)
 		num_sad++;
-	    if (ssp.critical[i][j].t == SA3)
+	    if (ssp->critical[i][j].t == SA3)
 		num_sad += 2;
 	}
 	printf ("\nlevel %d, num_max = %d, num_min = %d, num_sad = %d\n"
@@ -312,14 +344,17 @@ int main (int argc, char *argv[])
     }
 
     if (critical_name)
-	ssp.write_critical (critical_name);
+	ssp->write_critical (critical_name);
+
+    if (scalespace_write_name)
+	ssp->write_scalespace (scalespace_write_name);
 
     if (stage == 4)
 	exit (0);
 
-    Flipper* flipper = new Flipper (ssp);
+    Flipper* flipper = new Flipper (*ssp);
     
-    Track* track = flipper->track (ssp);
+    Track* track = flipper->track (*ssp);
     
     delete flipper;
 	
