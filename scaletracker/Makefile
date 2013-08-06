@@ -94,7 +94,7 @@ endif
 
 # generic UNIX
 ifeq ($(GENERIC),true)
-override LDFLAGS += 
+override LDFLAGS +=  -lX11 -lpthread
 override INCLUDES += 
 endif
 

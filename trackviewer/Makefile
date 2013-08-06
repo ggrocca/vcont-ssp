@@ -21,7 +21,7 @@ TARGET = trackviewer
 BUILD_DIR = build
 
 # Additional directories for source files 
-VPATH = ../common
+VPATH = ../common ../scaletracker
 
 # Directory where external libs are
 BASELIBS_DIR = ../..
@@ -38,7 +38,7 @@ OBJ_EXT = oo
 
 ### files to compile. add C++ sources and C sources to the right variable
 #CPPSOURCES = test_trackstring.cc tracking.cc trackstring.cc demreader.cc scalespace.cc
-CPPSOURCES = viewer.cc camera.cc trackdisplay.cc track.cc demreader.cc scalespace.cc dem.cc
+CPPSOURCES = viewer.cc camera.cc trackdisplay.cc track.cc demreader.cc scalespace.cc dem.cc flipper.cc trackstats.cc
 CSOURCES =
 
 # generic compilation configuration, to be used for both C++ and C
@@ -97,7 +97,7 @@ endif
 
 # generic UNIX
 ifeq ($(GENERIC),true)
-override LDFLAGS += -lglut -lGLU -lX11
+override LDFLAGS += -lglut -lGLU -lX11 -lGL
 override INCLUDES += 
 endif
 
