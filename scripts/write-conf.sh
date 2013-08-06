@@ -5,7 +5,7 @@ SOURCE_DIR="../../datasets"
 SOURCE_RANGE="range500.png"
 SOURCE_DEM="N45E007.hgt"
 
-NUM_LEVELS=3
+NUM_LEVELS=8
 RANGE="range500"
 RANGE_OPTS=" -n $NUM_LEVELS -b 10 -m 255 "
 
