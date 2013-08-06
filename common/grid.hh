@@ -2,7 +2,11 @@
 #define _GRID_HH
 
 #include <vector>
+#include <climits>
 #include <limits>
+#include <iostream>
+#include <cstdlib>
+#include <stdio.h>
 
 #include "debug.h"
 
@@ -142,10 +146,10 @@ public:
 	static int pc = 0;
 	static int ps = 1;
 
-	static int _x = INT_MIN;
-	static int _y = INT_MIN;
+    static int _x = INT_MIN;
+    static int _y = INT_MIN;
 
-	if (_x == INT_MIN && _y == INT_MIN)
+    if (_x == INT_MIN && _y == INT_MIN)
 	{
 	    _x = x;
 	    _y = y;
@@ -199,10 +203,10 @@ public:
 	static int pc = 0;
 	static int ps = 1;
 
-	static int _x = INT_MIN;
-	static int _y = INT_MIN;
+    static int _x = INT_MIN;
+    static int _y = INT_MIN;
 
-	if (_x == INT_MIN && _y == INT_MIN)
+    if (_x == INT_MIN && _y == INT_MIN)
 	{
 	    _x = x;
 	    _y = y;
