@@ -29,6 +29,7 @@ public:
     double clip_value;
     Coord crop_a;
     Coord crop_b;
+    int filter_algo;
 
     ScaleSpaceOpts () : opcodes (0) {}
     ScaleSpaceOpts (unsigned int opcodes) : opcodes (opcodes) {}

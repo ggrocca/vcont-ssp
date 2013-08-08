@@ -138,14 +138,14 @@ Dem::Dem (Dem& dem, TGaussianBlur<double>& BlurFilter, int window) :
 }
 
 Dem::Dem (Dem& dem, TGaussianBlur<double>& BlurFilter, int window,
-	  std::vector<CriticalPoint>& crits) :
+	  int filter_algo, std::vector<CriticalPoint>& crits) :
     Grid<double> (dem.width, dem.height),
     max (-DBL_MAX),
     min (DBL_MAX)
 {
     BlurFilter.Filter(&(dem.data[0]), &((*this).data[0]), width, height, window);
 
-    Flipper::filter (&dem, this, crits);
+    Flipper::filter (&dem, this, filter_algo, crits);
 
     for (int i = 0; i < width; i++)
 	for (int j = 0; j < height; j++)

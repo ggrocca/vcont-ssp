@@ -233,7 +233,8 @@ ScaleSpace::ScaleSpace (DEMReader* base, int levels, ScaleSpaceOpts opts)
 	{
 	    std::vector<CriticalPoint> crits = std::vector<CriticalPoint>();
 	    scan_critical_points (dem[i-1], crits);
-	    dem[i] = new Dem (*(dem[i-1]), BlurFilter, window, crits);	
+	    dem[i] = new Dem (*(dem[i-1]), BlurFilter, window,
+			      opts.filter_algo, crits);	
 	    // Flipper::filter (dem[i-1], dem[i], crits);
 	}
 	else

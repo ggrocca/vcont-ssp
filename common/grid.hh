@@ -81,6 +81,16 @@ public:
 	return (x > rhs.x && y > rhs.y);
     }
 
+    bool operator<=(const Coord& rhs)
+    {
+	return (x <= rhs.x && y <= rhs.y);
+    }
+
+    bool operator>=(const Coord& rhs)
+    {
+	return (x >= rhs.x && y >= rhs.y);
+    }
+
     bool operator==(const Coord& rhs)
     {
 	return (x == rhs.x && y == rhs.y);

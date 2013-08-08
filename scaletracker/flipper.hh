@@ -168,7 +168,12 @@ public:
 
     Track* track (ScaleSpace& ss);
 
-    static void filter (Dem* b, Dem* n, std::vector<CriticalPoint>& crits);
+
+    static void filter (Dem* b, Dem* n, int filter_algo,
+		       std::vector<CriticalPoint>& crits);
+    static void filter_slow (Dem* b, Dem* n, std::vector<CriticalPoint>& crits);
+    static void filter_norm (Dem* b, Dem* n, std::vector<CriticalPoint>& crits);
+    static void filter_fast (Dem* b, Dem* n, std::vector<CriticalPoint>& crits);
 };
 
 #endif // _FLIPPER_HH

@@ -40,6 +40,7 @@ bool do_presmooth = false;
 int stage = 0;
 int tiff_mult = 0;
 bool do_control = false;
+int filter_algo = 0;
 
 void print_help (FILE* f)
 {
@@ -56,7 +57,7 @@ void print_help (FILE* f)
 	     "[-g stagenum] : stop at a certain point. 0 disable this.\n"
 	     "[-l] : compute integral lines\n"
 	     "[-s] : perform presmoothing of data\n"
-	     "[-f] : controlled filtering\n"
+	     "[-f N] : controlled filtering. 0: slow. 1: normal. 2: fast.\n"
 	     "[-m mult] : multiply tiff output values by mult. Default auto mode\n"
 	     "\n"
 	     );
@@ -174,6 +175,8 @@ void app_init(int argc, char *argv[])
                 break;
 
             case 'f':
+                filter_algo = atoi (*++argv);
+                argc--;
 		do_control = true;
                 break;
 
@@ -196,9 +199,16 @@ void app_init(int argc, char *argv[])
 
     if (imagefile == NULL && scalespace_read_name == NULL)
     {
-	eprint ("%s","No image or scalespace input given.\n");
+	fprintf (stderr, "No image or scalespace input given.\n");
 	goto die;
     }
+
+    if (filter_algo < 0 || filter_algo > 2)
+    {
+	fprintf (stderr, "Unrecognized filter algorithm.\n");
+	goto die;
+    }
+    
 
     return;
 
@@ -258,8 +268,10 @@ int main (int argc, char *argv[])
     	opts.set (ScaleSpaceOpts::PRESMOOTH);
 
     if (do_control)
+    {
     	opts.set (ScaleSpaceOpts::CONTROL);
-
+	opts.filter_algo = filter_algo;
+    }
     
     if (tiffnames && dr != NULL)
     {

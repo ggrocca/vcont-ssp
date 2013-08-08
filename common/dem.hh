@@ -24,7 +24,7 @@ public:
     Dem (Dem& dem, Coord a, Coord b);                              // crop & copy dem
     Dem (Dem& dem, double amp, unsigned int seed);              // copy & perturb dem
     Dem (Dem& dem, TGaussianBlur<double>& BlurFilter, int window);        // blur dem
-    Dem (Dem& dem, TGaussianBlur<double>& BlurFilter, int window,
+    Dem (Dem& dem, TGaussianBlur<double>& BlurFilter, int window, int filter_algo,
 	 std::vector<CriticalPoint>& crits);          // blur and controlled topology
     Dem (FILE* fp);
     
