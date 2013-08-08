@@ -85,7 +85,7 @@ public:
 	for (const char** p = fmts; **p != '\0'; p++, fmtnum++)
 	    if (!strcmp (*p, ext))
 		return get (filename, static_cast<Format>(fmtnum));
-	eprint ("Format `%s' not supported.\n", ext);
+	eprint ("File `%s': format `%s' not supported.\n", filename, ext);
 	return 0;
     }
 

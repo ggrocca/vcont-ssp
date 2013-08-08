@@ -178,14 +178,14 @@ void TW_CALL call_quit(void *clientData)
 
 void read_dems (char* name, int num)
 {
-#define __FNLEN 64
+#define __FNLEN 512
     char dem_in[__FNLEN] = {'\0'};
     snprintf (dem_in, __FNLEN, "%s-base.%s" , name, "tif");
     td.read_dem (dem_in);
     
     for (int i = 0; i < num; i++)
     {
-	snprintf (dem_in, __FNLEN, "%s%d.%s" , name, i, "tif");
+	snprintf (dem_in, __FNLEN, "%s-%d.%s" , name, i, "tif");
 	td.read_dem (dem_in);
     }
 #undef __FNLEN
@@ -254,7 +254,7 @@ int main (int argc, char *argv[])
     // 	       " keyIncr='<' keyDecr='>'"); 
 
     TwAddVarRW(cBar, "show terrain", TW_TYPE_BOOLCPP, &(td.draw_terrain), "");
-#define __FNLEN 64
+#define __FNLEN 512
     char dem_num_bounds[__FNLEN] = {'\0'};
     snprintf (dem_num_bounds, __FNLEN, "min=-1 max=%d step=1 "
 	      "keydecr='<' keyincr='>'", dem_num-1);

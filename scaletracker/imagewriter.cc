@@ -59,12 +59,12 @@ void ImageWriter::draw_lines (Grid<char>* ilines)
 
 void ImageWriter::write (char* name, char* mark, int count)
 {
-#define __FNLEN 128
+#define __FNLEN 512
     char image_out[__FNLEN] = {'\0'};
     if (count < 0)
 	snprintf (image_out, __FNLEN, "%s%s.%s", name, mark, "tif");
     else
-	snprintf (image_out, __FNLEN, "%s%s%d.%s", name, mark, count, "tif");
+	snprintf (image_out, __FNLEN, "%s%s-%d.%s", name, mark, count, "tif");
 #undef __FNLEN
 
     TIFF* tiff_out = tiff_open_write (image_out);

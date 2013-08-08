@@ -9,7 +9,7 @@ echo ""
 for i in $DATASETS ; do
 
     for (( j=0; j<$NUM_LEVELS; j++ )) ; do
-	( set -x; $DIFFTIFF $RES/"$i"_"$NORMAL""$j".tif $RES/"$i"_"$READ""$j".tif )
+	( set -x; $DIFFTIFF $RES/"$i"_"$NORMAL"-"$j".tif $RES/"$i"_"$READ"-"$j".tif )
     done
 
     for (( j=0; j<$NUM_LEVELS; j++ )) ; do

@@ -8,28 +8,28 @@ echo ""
 
 for i in $DATASETS ; do
 
-    if [ -f $NEWRES/"$i"n-base.tif ] ; then
-	echo "difftiff: " $NEWRES/"$i"n-base.tif $OLDRES/"$i"n-base.tif
-	$DIFFTIFF $NEWRES/"$i"n-base.tif $OLDRES/"$i"n-base.tif
+    if [ -f $NEWRES/"$i"-base.tif ] ; then
+	echo "difftiff: " $NEWRES/"$i"-base.tif $OLDRES/"$i"-base.tif
+	$DIFFTIFF $NEWRES/"$i"-base.tif $OLDRES/"$i"-base.tif
     else
-	echo "!! No file " $NEWRES/"$i"n-base.tif $OLDRES/"$i"n-base.tif
+	echo "!! No file " $NEWRES/"$i"-base.tif $OLDRES/"$i"-base.tif
     fi
 
     for (( j=1; j<$NUM_LEVELS; j++ )) ; do
-	if [ -f $NEWRES/"$i"n"$j".tif ] ; then
-	    echo "difftiff: " $NEWRES/"$i"n"$j".tif $OLDRES/"$i"n"$j".tif
-	    $DIFFTIFF $NEWRES/"$i"n"$j".tif $OLDRES/"$i"n"$j".tif
+	if [ -f $NEWRES/"$i"-"$j".tif ] ; then
+	    echo "difftiff: " $NEWRES/"$i"-"$j".tif $OLDRES/"$i"-"$j".tif
+	    $DIFFTIFF $NEWRES/"$i"-"$j".tif $OLDRES/"$i"-"$j".tif
 	else
-	    echo "!! No file " $NEWRES/"$i"n"$j".tif $OLDRES/"$i"n"$j".tif
+	    echo "!! No file " $NEWRES/"$i"-"$j".tif $OLDRES/"$i"-"$j".tif
 	fi
     done
 
     for (( j=0; j<$NUM_LEVELS; j++ )) ; do
-	if [ -f $NEWRES/"$i"n"$j".tif ] ; then
-	    echo "difftiff: " $NEWRES/"$i"n-MARKED-"$j".tif $OLDRES/"$i"n-MARKED-"$j".tif
-	    $DIFFTIFF $NEWRES/"$i"n-MARKED-"$j".tif $OLDRES/"$i"n-MARKED-"$j".tif
+	if [ -f $NEWRES/"$i"-MARKED-"$j".tif ] ; then
+	    echo "difftiff: " $NEWRES/"$i"-MARKED-"$j".tif $OLDRES/"$i"-MARKED-"$j".tif
+	    $DIFFTIFF $NEWRES/"$i"-MARKED-"$j".tif $OLDRES/"$i"-MARKED-"$j".tif
 	else
-	    echo "!! No file " $NEWRES/"$i"n-MARKED-"$j".tif $OLDRES/"$i"n-MARKED-"$j".tif
+	    echo "!! No file " $NEWRES/"$i"-MARKED-"$j".tif $OLDRES/"$i"-MARKED-"$j".tif
 	fi
     done
 

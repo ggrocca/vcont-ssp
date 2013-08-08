@@ -311,7 +311,7 @@ int main (int argc, char *argv[])
 	    iw.draw_points (&(ssp->critical[i]));
 	    if (do_ilines)
 		iw.draw_lines (&(ssp->ilines[i]));
-	    iw.write (tiffnames, "-MARKED-", i);
+	    iw.write (tiffnames, "-MARKED", i);
 
 	    tprintp ("###$$$", "Finished writing tiff %d!\n", i);
 	}

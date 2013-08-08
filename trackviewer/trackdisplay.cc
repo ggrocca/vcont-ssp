@@ -301,12 +301,16 @@ void __draw_critical_track (Coord c, CriticalType t,
 {
     double scale_tol = tol_mult * (1.0 + tol);
 
+    // initial position original
     if (start && !special)
 	glColor3dv (green);
+    // initial position born
     else if (start && special)
 	glColor3dv (yellow);
+    // final position alive
     else if (!start && !special)
 	glColor3dv (cyan);
+    // final position dead
     else if (!start && special)
 	glColor3dv (blue);
 
