@@ -10,6 +10,10 @@ for (( k=0; k<2; k++ )) ; do
     fi
 
     if [ $k -eq 1 ]; then
+	if [ $DO_CHECK_FAST = "no" ]; then
+	    exit 0
+	fi
+
 	echo ""; echo ">>>> CHECK FAST <<<<"; echo ""
 	FILTER_CHECK=$FILTER_FAST
     fi

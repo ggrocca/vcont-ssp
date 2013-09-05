@@ -301,7 +301,6 @@ int main (int argc, char *argv[])
 	ssp = new ScaleSpace (dr, numlevel, opts);
 	delete dr;
     }
-
     else if (scalespace_read_name != NULL)
 	ssp = new ScaleSpace (scalespace_read_name, opts);
     else

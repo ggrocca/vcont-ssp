@@ -91,7 +91,7 @@ public:
 	return (x >= rhs.x && y >= rhs.y);
     }
 
-    bool operator==(const Coord& rhs)
+    bool operator==(const Coord& rhs) const
     {
 	return (x == rhs.x && y == rhs.y);
     }

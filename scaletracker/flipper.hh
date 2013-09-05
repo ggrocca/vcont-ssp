@@ -37,7 +37,7 @@ public:
     Edge (const Edge& e) : l (e.l), r (e.r) {}
     Edge (Coord l, Coord r) : l (l), r (r) {}
 
-    bool operator == (const Edge& e)
+    bool operator == (const Edge& e) const
     {
 	return l == e.l && r == e.r;	
     }
@@ -122,6 +122,7 @@ public:
     CriticalPair pair(Edge e);
 
     RelationType invert_relation (Edge e);
+    void update_relations (Dem* d, Coord c);
 
     void point_print (Coord c);
     void point_print (int scope, Coord c);
@@ -152,6 +153,14 @@ class Flip {
 	    return e < f.e;
 	return t < f.t; 
     }
+
+    bool operator == (const Flip& f) const
+    {
+	return t == f.t && e == f.e;
+    }
+
+    static Flip highest ();
+    static Flip lowest ();
 };
 
 
@@ -174,6 +183,7 @@ public:
     static void filter_slow (Dem* b, Dem* n, std::vector<CriticalPoint>& crits);
     static void filter_norm (Dem* b, Dem* n, std::vector<CriticalPoint>& crits);
     static void filter_fast (Dem* b, Dem* n, std::vector<CriticalPoint>& crits);
+    // static void filter_check (Dem* b, Dem* n, std::vector<CriticalPoint>& crits);
 };
 
 #endif // _FLIPPER_HH

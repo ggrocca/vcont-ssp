@@ -172,6 +172,19 @@ RelationType Map::invert_relation (Edge e)
     return a_rel;
 }
 
+void Map::update_relations (Dem* d, Coord c)
+{
+    for (int k = 0; k < 6; k++)
+    {
+	Coord r;
+	c.round_trip_6 (&r);
+
+	(*this)(c).set_rel (k, d->point_relation (c, r));
+	if (r.is_inside (width, height))
+	    (*this)(r).set_rel (r.linear_index (c), d->point_relation (r, c));
+    }
+}
+
 void Map::point_print (Coord c)
 {
     point_print (SCOPE_ALWAYS, c);
@@ -428,7 +441,9 @@ void init_critical_lines (std::vector<CriticalPoint>& critical,
 
 // check if there are invalid flips and correct them in next dem
 int control_filter_slow (std::vector<Flip>& flips, Map* map, Dem* b, Dem* n);
-int control_filter_norm (std::vector<Flip>& flips, Map* map, Dem* b, Dem* n);
+int control_filter_norm (std::vector<Flip>& flips, Map* map, Dem* b, Dem* n, int iter);
+int control_filter_fast (int* f_idx_out, std::vector<Flip>& flips,
+			 Map* map, Dem* b, Dem* n, int iter);
 
 void Flipper::filter (Dem* b, Dem* n, int filter_algo,
 		      std::vector<CriticalPoint>& crits)
@@ -465,7 +480,7 @@ void Flipper::filter_slow (Dem* b, Dem* n, std::vector<CriticalPoint>& crits)
     int i = 0;
     while (control_filter_slow (fs, map, b, n) >= 0)
     {
-	tprintsp (SCOPE_FILTER, "<scope|filter> >>", "IN. Iteration: %d.\n", i++);
+	oprints (SCOPE_FILTER, "IN. Iteration: %d.\n", i++);
 	delete map;
 	map = new Map (*b, lines);
 	create_flips (b, n, fs);
@@ -486,21 +501,74 @@ void Flipper::filter_norm (Dem* b, Dem* n, std::vector<CriticalPoint>& crits)
 
     int i = 0;
     int f = -1;
-    while ((f = control_filter_norm (fs, map, b, n)) >= 0)
+    while ((f = control_filter_norm (fs, map, b, n, i)) >= 0)
     {
-	tprintsp (SCOPE_FILTER, "<scope|filter> >>", "IN. Iteration: %d.\n", i++);
-
-	// delete map;
-	// map = new Map (*b, lines);
-	// create_flips (b, n, fs);
+	oprints (SCOPE_FILTER, "IN. Iteration: %d.\n", i++);
     }
 
     delete map;
 }
 
+// void Flipper::filter_check (Dem* b, Dem* n, std::vector<CriticalPoint>& crits)
+// {
+//     Dem* n_norm = new Dem (*n);
+//     Dem* n_slow = new Dem (*n);
+
+//     std::vector<Flip> fs_norm, fs_slow;
+//     std::vector<TrackLine> lines;
+
+//     init_critical_lines (crits, lines);
+    
+//     Map* map_norm = new Map (*b, lines);
+//     Map* map_slow = new Map (*b, lines);
+//     create_flips (b, n, fs_norm);
+//     create_flips (b, n, fs_slow);
+
+//     int i = 0;
+//     int f_idx_norm = -1;
+//     int f_idx_slow = -1;
+
+//     while (true)
+//     {
+// 	f_idx_norm = control_filter_norm (fs_norm, map_norm, b, n_norm, i);
+// 	f_idx_slow = control_filter_slow (fs_slow, map_slow, b, n_slow);
+
+// 	tprintsp (SCOPE_FILTER, "<scope|filter_check> >>", "IN. Iteration: %d.\n", i++);
+
+// 	delete map_slow;
+// 	map_slow = new Map (*b, lines);
+// 	create_flips (b, n, fs_slow);
+
+// 	// check n
+// 	// check map
+// 	// check fs
+//     }
+
+//     delete map_norm;
+//     delete map_slow;
+//     delete n_norm;
+//     delete n_slow;
+// }
+
 void Flipper::filter_fast (Dem* b, Dem* n, std::vector<CriticalPoint>& crits)
 {
-    eprintx (42, "%s", "NOOOOOHHH\n");
+    std::vector<Flip> fs;
+    std::vector<TrackLine> lines;
+
+    init_critical_lines (crits, lines);
+    
+    Map* map = new Map (*b, lines);
+    create_flips (b, n, fs);
+
+    int i = 0;
+    int f = -1;
+    int f_idx = 0;
+    while ((f = control_filter_fast (&f_idx, fs, map, b, n, i)) >= 0)
+    {
+	oprints (SCOPE_FILTER, "IN. Iteration: %d.\n", i++);
+    }
+
+    delete map;
 }
 
 
@@ -516,6 +584,7 @@ bool check_flip (Dem* b, Dem* n, Edge e)
     return ((prev_rel == GT && succ_rel == LT) ||
 	    (prev_rel == LT && succ_rel == GT) );
 }
+
 double get_flip_time (Dem* b, Dem* n, Edge e)
 {
     double Za, Za_i, Zb, Zb_i;
@@ -1252,6 +1321,10 @@ void control_dem (Flip f, Dem* b, Dem* n)
     }
     else
 	eprint ("%s", "Impossible correction.\n");
+
+    if ( ! ( ((*n)(f.e.l) > (*n)(f.e.r)) || ((*n)(f.e.l) < (*n)(f.e.r)) ) )
+	eprintx (34, "%s", "Equal values after correction.\n");
+
 }
 
 bool check_map_dem_relations (Flip f, Map* m, Dem* d)
@@ -1281,7 +1354,7 @@ int control_filter_slow (std::vector<Flip>& flips, Map* map, Dem* b, Dem* n)
 {
     for (unsigned i = 0; i < flips.size(); i++)
     {
-	CriticalPair before, after, control;
+	CriticalPair before, after;
 
 	before = map->pair (flips[i].e);
 	map->invert_relation (flips[i].e);
@@ -1293,23 +1366,23 @@ int control_filter_slow (std::vector<Flip>& flips, Map* map, Dem* b, Dem* n)
 	    control_dem (flips[i], b, n);
 
 	    // GG here control critical type of flipped points is back to normal
-	    control.a = n->point_type (flips[i].e.l);
-	    control.b = n->point_type (flips[i].e.r);
-
-	    if (before != control)
-		tprintsp (SCOPE_FILTER, "<scope|filter> >>", "flip: %d. "
-			"before: %c%c. after: %c%c. control: %c%c.\n", i,
-			critical2char (before.a), critical2char (before.b), 
-			critical2char (after.a), critical2char (after.b), 
-			critical2char (control.a), critical2char (control.b));
+	    // CriticalPair control;
+	    // control.a = n->point_type (flips[i].e.l);
+	    // control.b = n->point_type (flips[i].e.r);
+	    // if (before != control)
+	    // 	tprintsp (SCOPE_FILTER, "<scope|filter> >>", "flip: %d. "
+	    // 		"before: %c%c. after: %c%c. control: %c%c.\n", i,
+	    // 		critical2char (before.a), critical2char (before.b), 
+	    // 		critical2char (after.a), critical2char (after.b), 
+	    // 		critical2char (control.a), critical2char (control.b));
 
 	    // // GG here control that relations are back to before
 	    // // (confront with map after inverted again)
-	    map->invert_relation (flips[i].e);
+	    // map->invert_relation (flips[i].e);
 	    // if (!check_map_dem_relations (flips[i], map, n))
 	    // 	eprint ("Not the same relations as before, flip: %d.\n", i);
 
-	    tprintsp (SCOPE_FILTER, "<scope|filter> >>", "OUT. Reached: %d/%zu.\n",
+	    tprintsp (SCOPE_FILTER, "<scope|filter_slow> >>", "OUT. Reached: %d/%zu.\n",
 		      i, flips.size());
 	    return i;
 	}
@@ -1376,35 +1449,135 @@ void get_local_flips (Edge e, Dem* b, Dem *n, std::vector<Flip>& fs)
 	}
 }
 
-void match_flips (std::vector<Flip>& old_fs, std::vector<Flip>& new_fs,
-		  std::vector<Flip>& all_fs)
+int binary_search_flip (std::vector<Flip>& fs, Flip f)
 {
-    if (old_fs.size() != 8 || old_fs.size() != new_fs.size())
+    int start = 0;
+    int end = fs.size ();
+
+    while (end > start)
+    {
+	int i = ((end - start) / 2) + start;
+
+	if (fs[i] == f)
+	    return i;
+	else if (f < fs[i]) // first half
+	    end = i;
+	else // second half
+	    start = i+1;
+    }
+
+    return -1;
+}
+
+// GG: non trova i flip perche' nn ha inserito un flip che avrebbe dovuto inserire
+
+Flip Flip::highest ()
+{
+    Flip f;
+    f.t = DBL_MAX;
+    f.e.l = f.e.r = Coord (INT_MAX, INT_MAX);
+    return f;
+}
+Flip Flip::lowest ()
+{
+    Flip f;
+    f.t = -DBL_MAX;
+    f.e.l = f.e.r = Coord (INT_MIN, INT_MIN);
+    return f;
+
+}
+
+Flip match_flips (Flip f_curr, std::vector<Flip>& old_fs, std::vector<Flip>& new_fs,
+		  std::vector<Flip>& all_fs, int iteration, int flip_count)
+{
+    old_fs.push_back (f_curr);
+    f_curr.t = -1.0;
+    new_fs.push_back (f_curr);
+
+    if (old_fs.size() != 11 || old_fs.size() != new_fs.size())
 	eprint ("Wrong local flips size. old: %zu, new: %zu\n", 
 		old_fs.size(), new_fs.size());
 
-    for (int i = 0; i < 8; i++)
+    int delete_flips_count = 0;
+
+    int mark[11];
+    Flip lower_new_f = (flip_count+1 >= (int) all_fs.size())?
+	Flip::highest() : all_fs[flip_count+1];
+
+    for (int i = 0; i < 11; i++)
     {
+	mark[i] = -4;
+
+	assert (old_fs[i].e == new_fs[i].e);
+
+	if (new_fs[i].t >= 0.0 && new_fs[i] < lower_new_f)
+	    lower_new_f = new_fs[i];
+
 	// if old and not new
-	// search using old_t and delete (new_t > 1.0)
-	
+	if (old_fs[i].t >= 0.0 && new_fs[i].t < 0.0)
+	{
+	    // search using old_t and delete (new_t > 1.0)
+	    int idx = binary_search_flip (all_fs, old_fs[i]);
+
+	    if (idx < 0)
+		eprintx (35, "Flip not found. flip %d, flip_count %d, iteration %d."
+			 " old and not new\n", i, flip_count, iteration);
+
+	    mark[i] = idx;
+	    new_fs[i].t = 2.0;
+	    delete_flips_count++;
+	}
 	// if old and new, and old_t != new_t
-	// search using old_t, change to new_t
-	
+	else if (old_fs[i].t >= 0.0 && new_fs[i].t >= 0.0 && old_fs[i].t != new_fs[i].t)
+	{	    
+	    // search using old_t, change to new_t
+	    int idx = binary_search_flip (all_fs, old_fs[i]);
+
+	    if (idx < 0)
+		eprintx (35, "Flip not found. flip %d, flip_count %d, iteration %d."
+			 " old and new\n", i, flip_count, iteration);
+
+	    mark[i] = idx;
+	    //all_fs[idx].t = new_fs[i].t;
+	}
 	// if not old and new
-	// pushback with new_t
-	
-	// sort all flips
-	
-	// resize all to delete flips with t > 1.0
+	else if (old_fs[i].t < 0.0 && new_fs[i].t >= 0.0)
+	    mark[i] = -1; // pushback with new_t
+	// nothing to do
+	else if ((old_fs[i].t >= 0.0 && new_fs[i].t >= 0.0 &&
+		  old_fs[i].t == new_fs[i].t)
+		 ||
+		 (old_fs[i].t < 0.0 && new_fs[i].t < 0.0 ) )
+		 mark[i] = -2;
+	// error
+	else
+	    mark[i] = -3;
     }
+
+    for (int i = 0; i < 11; i++)
+    {
+	if (mark[i] >= 0)
+	    all_fs[ mark[i] ].t = new_fs[i].t;
+	else if (mark[i] == -1)
+	    all_fs.push_back (new_fs[i]);
+	else if (mark[i] != -2)
+	    eprintx (91, "Bad mark value. mark[%d] = %d", i, mark[i]);
+    }
+
+    // sort all flips
+    std::sort (all_fs.begin(), all_fs.end()); 
+    
+    // resize all to delete flips with t > 1.0
+    all_fs.resize (all_fs.size() - delete_flips_count);
+
+    return lower_new_f;
 }
 
-int control_filter_norm (std::vector<Flip>& flips, Map* map, Dem* b, Dem* n)
+int control_filter_norm (std::vector<Flip>& flips, Map* map, Dem* b, Dem* n, int iter)
 {
     for (unsigned i = 0; i < flips.size(); i++)
     {
-	CriticalPair before, after, control;
+	CriticalPair before, after;
 
 	before = map->pair (flips[i].e);
 	map->invert_relation (flips[i].e);
@@ -1421,22 +1594,82 @@ int control_filter_norm (std::vector<Flip>& flips, Map* map, Dem* b, Dem* n)
 	    // correct in Dem* n
 	    control_dem (flips[i], b, n);
 
+	    //////////// correct map
+	    for (int k = i; k >= 0; k--)
+		map->invert_relation (flips[k].e);
+	    // map->invert_relation (flips[i].e);
+	    // GG local update of relations was bullshit
+	    // map->update_relations (n, flips[i].e.l);
+	    // map->update_relations (n, flips[i].e.r);
+
 	    ////////// correct flips
 
 	    // GG get new neighbours flip
 	    get_local_flips (flips[i].e, b, n, new_flips);
 
-	    // GG match old and new
-	    match_flips (old_flips, new_flips, flips);
+	    // GG match old and new, delete current
+	    match_flips (flips[i], old_flips, new_flips, flips, iter, i);
+
+	    oprints (SCOPE_FILTER, "OUT. Reached: %d/%zu.\n", i, flips.size());
+	    return i;
+	}
+    }
+
+    return -1;
+}
+
+int control_filter_fast (int* f_idx_out, std::vector<Flip>& flips,
+			  Map* map, Dem* b, Dem* n, int iter)
+{
+    int f_idx = *f_idx_out;
+
+    for (unsigned i = f_idx; i < flips.size(); i++)
+    {
+	CriticalPair before, after;
+
+	before = map->pair (flips[i].e);
+	map->invert_relation (flips[i].e);
+	after = map->pair (flips[i].e);
+
+	if (!critical_pair_legality (before, after))
+	{
+	    std::vector<Flip> old_flips;
+	    std::vector<Flip> new_flips;
+	    
+	    // GG get old edge neighbours flips
+	    get_local_flips (flips[i].e, b, n, old_flips);
+
+	    // correct in Dem* n
+	    control_dem (flips[i], b, n);
 
 	    //////////// correct map
+	    for (int k = i; k >= f_idx; k--)
+		map->invert_relation (flips[k].e);
+	    // map->invert_relation (flips[i].e);
+	    // GG local update of relations was bullshit
+	    // map->update_relations (n, flips[i].e.l);
+	    // map->update_relations (n, flips[i].e.r);
 
-	    // update relations in edge neighbours
-	    // easy: round_trip aroung both points of edge
-	    // get relation in dem n, update in map
+	    ////////// correct flips
 
-	    tprintsp (SCOPE_FILTER, "<scope|filter> >>", "OUT. Reached: %d/%zu.\n",
-		      i, flips.size());
+	    // GG get new neighbours flip
+	    get_local_flips (flips[i].e, b, n, new_flips);
+
+	    // GG match old and new, delete current
+	    Flip lf = match_flips (flips[i], old_flips, new_flips, flips, iter, i);
+
+	    if (lf == Flip::highest())
+	    {
+		*f_idx_out = flips.size();
+		i = -1;
+	    }
+	    else if ((*f_idx_out = binary_search_flip (flips, lf)) < 0)
+		eprintx (35, "Flip not found. i %d, iteration %d. f_idx_out: %d, "
+			 "flip.t = %lf, f.e.l (%d, %d), f.e.r (%d,%d)\n",
+			 i, iter, *f_idx_out,
+			 lf.t, lf.e.l.x, lf.e.l.y, lf.e.r.x, lf.e.r.y);
+
+	    oprints (SCOPE_FILTER, "OUT. Reached: %d/%zu.\n", i, flips.size());
 	    return i;
 	}
     }
