@@ -5,6 +5,7 @@ scaletracker/scaletracker
 trackviewer/trackviewer
 analyzers/difftiff/difftiff
 analyzers/difftrack/difftrack
+util/mesher/mesher
 *.oo
 *.dd
 *.o

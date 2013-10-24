@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "rastertiff.h"
+#include <assert.h>
 
 ////////////////////////////////////
 /// raster rgb 8 bit per channel ///
@@ -371,7 +372,10 @@ raster16_t raster16_read (TIFF* image, uint32 w, uint32 h)
 		raster_pos++;
 	    }
 	    else
+	    {
 		fprintf (stderr, "raster16_read: warning, there's more strips than raster space.\n");
+		assert (0);
+	    }
 	}
     }
 
@@ -422,7 +426,11 @@ void raster16_write (TIFF* image, raster16_t raster, uint32 w, uint32 h)
 		raster_pos++;
 	    }
 	    else
+	    {
 		fprintf (stderr, "raster16_write: warning, there's more strips than raster space.\n");
+		assert (0);
+	    }
+
 	    *(uint16*)(buf + i) = r;
 	    *(uint16*)(buf + i + 2) = g;
 	    *(uint16*)(buf + i + 4) = b;
