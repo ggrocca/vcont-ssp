@@ -41,13 +41,14 @@ int stage = 0;
 int tiff_mult = 0;
 bool do_control = false;
 int filter_algo = 0;
+bool check_plateaus = false;
 
 void print_help (FILE* f)
 {
     fprintf (f, "Usage: smoother\n"
 	     "-n numlevel : number of levels\n"
 	     "[-i imagefile] : supported inputs formats hgt, png, bmp\n"
-	     "[-r scalespace.ssp] : read scalespace in binary format"
+	     "[-r scalespace.ssp] : read scalespace in binary format\n"
 	     "[-o outname] : write files outname.trk, outname.crt, outname.ssp\n"
 	     "[-t tiffnames] : write a tiff for every level\n"
 	     "[-p amplitude seed] : randomly perturb data\n"
@@ -59,6 +60,7 @@ void print_help (FILE* f)
 	     "[-s] : perform presmoothing of data\n"
 	     "[-f N] : controlled filtering. 0: slow. 1: normal. 2: fast.\n"
 	     "[-m mult] : multiply tiff output values by mult. Default auto mode\n"
+	     "[-a] : check for flat areas\n"
 	     "\n"
 	     );
 }
@@ -111,6 +113,10 @@ void app_init(int argc, char *argv[])
 
 	    case 's':
 		do_presmooth = true;
+		break;
+
+	    case 'a':
+		check_plateaus = true;
 		break;
 
             case 'n':
@@ -306,6 +312,11 @@ int main (int argc, char *argv[])
     else
 	eprintx (1, "%s","No image or scalespace input given.\n");
 
+
+    if (check_plateaus)
+	for (int i = 0; i < ssp->levels; i++)
+	    if (ssp->dem[i]->has_plateaus())
+		eprintx (2, "Dem at level %d has flat areas. Aborting.\n", i);
 
     if (stage == 2)
 	exit (0);

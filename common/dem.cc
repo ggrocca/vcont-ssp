@@ -247,7 +247,7 @@ bool Dem::is_equal (Coord a, Coord b)
     return true;
 }
 
-bool Dem::has_plateus ()
+bool Dem::has_plateaus ()
 {
     for (int i = 0; i < width; i++)
 	for (int j = 0; j < height; j++)

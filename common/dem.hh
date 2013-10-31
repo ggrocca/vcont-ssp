@@ -39,7 +39,7 @@ public:
     bool is_clip (int x, int y);
 
     bool is_equal (Coord a, Coord b);                // given points have equal value
-    bool has_plateus ();             // this dem has adjacent points with equal value
+    bool has_plateaus ();            // this dem has adjacent points with equal value
 
     RelationType point_relation (Coord a, Coord b);  // relation between adyacent a,b
     CriticalType point_type (Coord c);                       // classify point, coord
