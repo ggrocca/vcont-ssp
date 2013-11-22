@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "strlcat.h"
+
  #define ___STR1(x)  #x
  #define GGSTR(x)  ___STR1(x)
 
