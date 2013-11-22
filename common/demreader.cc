@@ -22,7 +22,7 @@ void DEMReader::set_maxmin ()
 
 const char* DEMSelector::fmts[] = {"png", "bmp", "tif", "hgt", "\0"};
 
-PNGReader::PNGReader(char *filename)
+PNGReader::PNGReader(const char *filename)
 {
     img.assign (filename);
     width = img.width ();
@@ -58,7 +58,7 @@ void PNGReader::print_info (char *filename)
     return;
 }
 
-BMPReader::BMPReader (char *filename)
+BMPReader::BMPReader (const char *filename)
 {
     img.assign (filename);
     width = img.width ();
@@ -94,7 +94,7 @@ void BMPReader::print_info (char *filename = 0)
     return;
 }
 
-TIFReader::TIFReader (char *filename)
+TIFReader::TIFReader (const char *filename)
 {
     img.assign (filename);
     width = img.width ();
@@ -136,7 +136,7 @@ HGTReader::~HGTReader ()
     free (data);
 }
 
-HGTReader::HGTReader(char* filename)
+HGTReader::HGTReader(const char* filename)
 {
     FILE* fp;
     int byte;

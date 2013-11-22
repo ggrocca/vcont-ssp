@@ -1,6 +1,7 @@
 syntax: glob
 
 .DS_Store
+
 scaletracker/scaletracker
 trackviewer/trackviewer
 analyzers/difftiff/difftiff
@@ -10,3 +11,7 @@ util/mesher/mesher
 *.dd
 *.o
 *.d
+
+common/custom_debug.h
+
+*/.file_old_goal

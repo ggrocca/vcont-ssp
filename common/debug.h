@@ -38,17 +38,11 @@
 ////// DEBUG CONFIGURATION //////
 //=///////////////////////////=//
 
-
-// if 1, perform an assert when a non critical error is reached.
-#define DO_ASSERT 1
-
-// Add here custom exit failure values.
-#define EXIT_GRID 3
-#define EXIT_RELATION 5
-
-
-// Add here custom scopes for trace debug prints.
-// Set them to 0/1 to disable/enable specific trace prints.
+/*********************************************************************
+ * Names of custom scopes for trace debug prints.  Values 0/1        *
+ * Disable/enable specific trace prints.  Do NOT modify them here.   *
+ * Use the custom_debug.h file, explained below.                     * 
+ *********************************************************************/
 
 #define SCOPE_NEVER 0
 #define SCOPE_ALWAYS 1
@@ -59,6 +53,47 @@
 #define SCOPE_POINTTYPE 0
 #define SCOPE_FLIP 0
 #define SCOPE_FILTER 1
+
+// if 1, perform an assert when a non critical error is reached.
+#define DO_ASSERT 1
+
+// choose if traces go on stdout or stderr
+#define TRACE_STREAM stdout
+
+#ifdef __CUSTOM_DEBUG_EXISTS
+#include "custom_debug.h"
+#endif
+
+/************************************************************************
+ *                                                                      *
+ *  If the file custom_debug.h is present, it will be automatically     *
+ *  included by the makefile.                                           *
+ *                                                                      *
+ *  Do NOT check the file into the repository.                          *
+ *                                                                      *
+ *  Use it to modify the defines above with custom values, remembering  *
+ *  to undef them prior to redefine them.                               *
+ *                                                                      *
+ ************************************************************************/
+
+/* custom_debug.h example syntax
+
+#undef SCOPE_PLATEUS
+#define SCOPE_PLATEUS 1
+
+*/
+
+
+
+//=//////////////////////////=//
+////// CUSTOM EXIT VALUES //////
+//=//////////////////////////=//
+
+// Add here custom exit failure values.
+#define EXIT_GRID 3
+#define EXIT_RELATION 5
+
+
 
 
 //=////////////////////////////=//
@@ -106,35 +141,35 @@
 #define tprint(fmt, ...)						\
     do {								\
 	if (_TRACE_TEST)						\
-	    fprintf(stdout, "%s:%d: %s(): " fmt, __FILE__,		\
+	    fprintf(TRACE_STREAM, "%s:%d: %s(): " fmt, __FILE__,		\
 		    __LINE__, _FUNC, __VA_ARGS__);			\
     } while (0)
 
 #define tprintp(preamble, fmt, ...)					\
     do {								\
 	if (_TRACE_TEST)						\
-	    fprintf(stdout, preamble " %s:%d: %s(): " fmt, __FILE__,	\
+	    fprintf(TRACE_STREAM, preamble " %s:%d: %s(): " fmt, __FILE__,	\
 		    __LINE__, _FUNC, __VA_ARGS__);			\
     } while (0)
 
 #define tprints(scope, fmt, ...)					\
     do {								\
 	if (_TRACE_TEST && (scope))					\
-	    fprintf(stdout, "%s:%d: %s(): " fmt, __FILE__,		\
+	    fprintf(TRACE_STREAM, "%s:%d: %s(): " fmt, __FILE__,		\
 		    __LINE__, _FUNC, __VA_ARGS__);			\
     } while (0)
 
 #define tprintsp(scope, preamble, fmt, ...)				\
     do {								\
 	if (_TRACE_TEST && (scope))					\
-	    fprintf(stdout, preamble " %s:%d: %s(): " fmt, __FILE__,	\
+	    fprintf(TRACE_STREAM, preamble " %s:%d: %s(): " fmt, __FILE__,	\
 		    __LINE__, _FUNC, __VA_ARGS__);			\
     } while (0)
 
 #define oprints(scope, fmt, ...)					\
     do {								\
 	if (_TRACE_TEST && (scope))					\
-	    fprintf(stdout, fmt, __VA_ARGS__);				\
+	    fprintf(TRACE_STREAM, fmt, __VA_ARGS__);				\
     } while (0)
 
 #endif // _DEBUG_H

@@ -298,7 +298,7 @@ ScaleSpace::ScaleSpace (DEMReader* base, int levels, ScaleSpaceOpts opts)
     }
 }
 
-ScaleSpace::ScaleSpace(char* filename, ScaleSpaceOpts opts)
+ScaleSpace::ScaleSpace(const char* filename, ScaleSpaceOpts opts)
 {
     FILE* fp = fopen (filename, "r");
 

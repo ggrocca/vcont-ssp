@@ -12,6 +12,7 @@
 
 #include <vector>
 
+#include "utils.hh"
 #include "CImg.h"
 #include "debug.h"
 
@@ -35,7 +36,7 @@ public:
     int length;
     short int* data;
 
-    HGTReader (char *filename);
+    HGTReader (const char *filename);
     virtual ~HGTReader ();
     int get_pixel (unsigned int x, unsigned int y);
     void print_info (char* filename);
@@ -45,7 +46,7 @@ public:
 class PNGReader : public DEMReader {
     cimg_library::CImg<unsigned short> img;
 public:
-    PNGReader (char *filename);
+    PNGReader (const char *filename);
     virtual ~PNGReader ();
     int get_pixel (unsigned int x, unsigned int y);
     void print_info (char* filename);
@@ -55,7 +56,7 @@ public:
 class BMPReader : public DEMReader {
     cimg_library::CImg<unsigned short> img;
 public:
-    BMPReader (char *filename);
+    BMPReader (const char *filename);
     virtual ~BMPReader ();
     int get_pixel (unsigned int x, unsigned int y);
     void print_info (char* filename);
@@ -65,7 +66,7 @@ public:
 class TIFReader : public DEMReader {
     cimg_library::CImg<unsigned short> img;
 public:
-    TIFReader (char *filename);
+    TIFReader (const char *filename);
     virtual ~TIFReader ();
     int get_pixel (unsigned int x, unsigned int y);
     void print_info (char* filename);
@@ -78,9 +79,9 @@ public:
     typedef enum {PNG=0, BMP, TIF, HGT} Format;
     static const char* fmts[];
 
-    static DEMReader* get (char* filename)
+    static DEMReader* get (const char* filename)
     {
-	char *ext = get_ext (filename);
+	char *ext = get_ext ((char*)filename);
 	int fmtnum = 0;
 	for (const char** p = fmts; **p != '\0'; p++, fmtnum++)
 	    if (!strcmp (*p, ext))
@@ -89,7 +90,7 @@ public:
 	return 0;
     }
 
-    static DEMReader* get (char* filename, Format fmt)
+    static DEMReader* get (const char* filename, Format fmt)
     {
 	switch (fmt)
 	{
@@ -111,19 +112,6 @@ public:
     {
 	delete demr;
     }
-
-private:
-    
-    static char* get_ext (char* fn)
-    {
-	char* p;
-	char* r = 0;
-	for (p = fn; *p != '\0'; p++)
-	    if (*p == '.')
-		r = p + 1;
-	return r;
-    }
-
 };
 
 

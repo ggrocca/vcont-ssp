@@ -251,15 +251,26 @@ bool Dem::has_plateaus ()
 {
     for (int i = 0; i < width; i++)
 	for (int j = 0; j < height; j++)
-	    for (int k = 0; k < 2; k++)
-		for (int w = 0; w < 2; w++)
-		    if ((k != 0 || w != 0) && is_equal (Coord(i, j), Coord(i+k, j+w)))
-		    {
-			tprintsp (SCOPE_PLATEUS, "----> PLATEUS:",
-				  "[%d,%d]==[%d,%d]   __ %d,%d\n",
-				  i, j, i+k, j+w, k, w);
-			return true;
-		    }
+	{
+	    Coord c,nc;
+	    c = Coord (i,j);
+	    
+	    if (is_clip (c))
+	    	continue;
+
+	    for (int k = 0; k < 6; k++)
+	    {
+		c.round_trip_6 (&nc);
+		if (is_equal (c, nc))
+		{
+		    tprintsp (SCOPE_PLATEUS, "----> PLATEUS:",
+			      "[%d,%d]==[%d,%d]. Values: %lf,%lf\n",
+			      c.x, c.y, nc.x, nc.y, (*this)(c), (*this)(nc));
+		    return true;
+		}
+	    }
+	}
+
     return false;
 }
 

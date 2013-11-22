@@ -94,7 +94,7 @@ public:
     Track ();
     ~Track ();
     // Track (ScaleSpace& ss); // should be implemented as flipper algorithm
-    Track (char *filename);
+    Track (const char *filename);
 
     void write (char *filename);    
     void query (double t, std::vector<TrackRenderingEntry>& v, bool verbose = true);

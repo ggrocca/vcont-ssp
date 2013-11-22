@@ -172,7 +172,7 @@ double Track::time_of_life;
 Track::Track () {}
 Track::~Track () {}
 // Track (ScaleSpace& ss); // should be implemented as flipper algorithm
-Track::Track (char *filename)
+Track::Track (const char *filename)
 {
     FILE *f = fopen (filename, "r");
 

@@ -65,7 +65,7 @@ public:
     int levels;
 
     ScaleSpace (DEMReader* base, int levels, ScaleSpaceOpts opts);
-    ScaleSpace (char* filename, ScaleSpaceOpts opts);
+    ScaleSpace (const char* filename, ScaleSpaceOpts opts);
     ~ScaleSpace ();
 
     double operator() (int level, Coord c);
