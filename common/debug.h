@@ -52,10 +52,10 @@
 #define SCOPE_PLATEUS 0
 #define SCOPE_POINTTYPE 0
 #define SCOPE_FLIP 0
-#define SCOPE_FILTER 1
+#define SCOPE_FILTER 0
 
 // if 1, perform an assert when a non critical error is reached.
-#define DO_ASSERT 1
+#define DO_ASSERT 0
 
 // choose if traces go on stdout or stderr
 #define TRACE_STREAM stdout
@@ -121,7 +121,8 @@
     do {								\
 	fprintf(stderr, "Fatal. %s:%d: %s(): " fmt, __FILE__,	\
 		__LINE__, _FUNC, __VA_ARGS__);				\
-	assert (0);							\
+	if (DO_ASSERT)							\
+	    assert (0);							\
 	exit (exit_value);						\
     } while (0)
 

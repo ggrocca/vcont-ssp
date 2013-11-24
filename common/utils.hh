@@ -114,9 +114,9 @@ static inline void list_dir (const char *name, std::vector<std::string>* entries
 
     entries->clear();
 
-    if (pDIR = opendir (dir_name))
+    if ((pDIR = opendir (dir_name)))
     {
-	while (entry = readdir(pDIR))
+	while ((entry = readdir(pDIR)))
 	{
 	    if ((strlen (entry->d_name) == 0) ||
 		(strlen (entry->d_name) >= 1 && entry->d_name[0] == '.') ||

@@ -371,11 +371,17 @@ raster16_t raster16_read (TIFF* image, uint32 w, uint32 h)
 		raster[raster_pos].b = b;
 		raster_pos++;
 	    }
-	    else
-	    {
-		fprintf (stderr, "raster16_read: warning, there's more strips than raster space.\n");
-		assert (0);
-	    }
+
+	    /* This could occur if number of strips is not divisible
+	       by image height and is not really and error nor a
+	       problem. */
+
+	    /* else */
+	    /* { */
+	    /* 	fprintf (stderr, "raster16_read: warning, there's more strips than raster space" */
+	    /* 		 " raster_pos: %d, npixels: %d\n", raster_pos, npixels); */
+	    /* 	assert (0); */
+	    /* } */
 	}
     }
 
@@ -425,11 +431,17 @@ void raster16_write (TIFF* image, raster16_t raster, uint32 w, uint32 h)
 		b = raster[raster_pos].b;
 		raster_pos++;
 	    }
-	    else
-	    {
-		fprintf (stderr, "raster16_write: warning, there's more strips than raster space.\n");
-		assert (0);
-	    }
+
+	    /* This could occur if number of strips is not divisible
+	       by image height and is not really and error nor a
+	       problem. */
+
+	    /* else */
+	    /* { */
+	    /* 	fprintf (stderr, "raster16_write: warning, there's more strips than raster space." */
+	    /* 		 " raster_pos: %d, npixels: %d\n", raster_pos, npixels); */
+	    /* 	assert (0); */
+	    /* } */
 
 	    *(uint16*)(buf + i) = r;
 	    *(uint16*)(buf + i + 2) = g;
