@@ -384,8 +384,8 @@ void TrackDisplay::draw (int dem_idx)
 	double max = clip_white;
 
 	glBegin (GL_TRIANGLES);
-	for (int i = 0; i < dem->width - 1; i++)
-	    for (int j = 0; j < dem->height - 1; j++)
+	for (unsigned int i = 0; i < dem->width - 1; i++)
+	    for (unsigned int j = 0; j < dem->height - 1; j++)
 	    {
 		double vij = dem->get_pixel (i, j);
 		double vipj = dem->get_pixel (i+1, j);

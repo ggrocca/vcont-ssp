@@ -61,10 +61,12 @@ public:
     Pair (const T x, const T y) : x (x), y (y) {}
     Pair (const Pair<T>& p) : x (p.x), y (p.y) {}
 
-    Pair operator=(const Pair& rhs)
+    Pair& operator=(const Pair& rhs)
     {
 	x = rhs.x;
 	y = rhs.y;
+
+	return *this;
     }
     
     bool is_inside (const T w, const T h)
