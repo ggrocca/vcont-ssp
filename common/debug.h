@@ -60,6 +60,9 @@
 // choose if traces go on stdout or stderr
 #define TRACE_STREAM stdout
 
+// choose if other prints go on stdout or stderr
+#define OTHER_STREAM stdout
+
 #ifdef __CUSTOM_DEBUG_EXISTS
 #include "custom_debug.h"
 #endif

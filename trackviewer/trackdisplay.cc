@@ -73,6 +73,14 @@ void TrackDisplay::getbb (double* cx, double* cy, double* diam)
     *diam = dems[0]->width * 1.2;
 }
 
+void TrackDisplay::getbb (Point* a, Point* b)
+{
+    *a = Point (0.0, 0.0);
+    b->x = (double) dems[0]->width;
+    b->y = (double) dems[0]->height;
+}
+
+
 double __map (double v, double min, double max)
 {
     v = v < min? min : v;

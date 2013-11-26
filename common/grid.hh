@@ -51,55 +51,99 @@ template<> struct GenericType <double> {
 //////////////////
 
 
-class Coord
+template <class T> class Pair
 {
-    
 public:
+
+    T x, y;
+
+    Pair () : x (0), y (0) {}
+    Pair (const T x, const T y) : x (x), y (y) {}
+    Pair (const Pair<T>& p) : x (p.x), y (p.y) {}
+
+    Pair operator=(const Pair& rhs)
+    {
+	x = rhs.x;
+	y = rhs.y;
+    }
     
-    int x, y;
-    
-    Coord () : x (0), y (0) {}
-    Coord (int x, int y) : x (x), y (y) {}
-    
-    bool is_inside (const int w, const int h)
+    bool is_inside (const T w, const T h)
     {
 	return x >= 0 && x < w && y >= 0 && y < h;
     }
 
-    bool is_outside (const int w, const int h)
+    bool is_outside (const T w, const T h)
     {
 	return !is_inside (w, h);
     }
     
-    bool operator<(const Coord& rhs)
+    bool operator<(const Pair& rhs)
     {
 	return (x < rhs.x && y < rhs.y);
     }
 
-    bool operator>(const Coord& rhs)
+    bool operator>(const Pair& rhs)
     {
 	return (x > rhs.x && y > rhs.y);
     }
 
-    bool operator<=(const Coord& rhs)
+    bool operator<=(const Pair& rhs)
     {
 	return (x <= rhs.x && y <= rhs.y);
     }
 
-    bool operator>=(const Coord& rhs)
+    bool operator>=(const Pair& rhs)
     {
 	return (x >= rhs.x && y >= rhs.y);
     }
 
-    bool operator==(const Coord& rhs) const
+    bool operator==(const Pair& rhs) const
     {
 	return (x == rhs.x && y == rhs.y);
     }
 
-    bool operator!=(const Coord& rhs)
+    bool operator!=(const Pair& rhs)
     {
 	return (! (*this == rhs));
     }
+
+    Pair operator+(const Pair& rhs)
+    {
+	return Pair (x + rhs.x, y + rhs.y);
+    }
+
+};
+
+// template <class T>
+// Pair<T>& operator+(const Pair<T>& lhs, const Pair<T>& rhs)
+// {
+//     return Pair<T> (lhs.x + rhs.x, lhs.y + rhs.y);
+// }
+
+
+typedef Pair<double> Point;
+
+// class Point : public Pair<double>
+// {
+// public:
+//     Point () : Pair<double>() {}
+//     Point (double x, double y) : Pair<double>(x, y) {}
+//     Point (const Point& p) : Pair<double>(p) {}
+
+//     Point operator=(const Point rhs)
+//     {
+//     	x = rhs.x;
+//     	y = rhs.y;
+//     }
+// };
+
+class Coord : public Pair<int>
+{
+    
+public:
+    Coord () : Pair<int>() {}
+    Coord (int x, int y) : Pair<int>(x, y) {}
+    Coord (const Coord& c) : Pair<int>(c) {}
 
     /**
                      <2>           <3>
@@ -156,10 +200,10 @@ public:
 	static int pc = 0;
 	static int ps = 1;
 
-    static int _x = INT_MIN;
-    static int _y = INT_MIN;
+	static int _x = INT_MIN;
+	static int _y = INT_MIN;
 
-    if (_x == INT_MIN && _y == INT_MIN)
+	if (_x == INT_MIN && _y == INT_MIN)
 	{
 	    _x = x;
 	    _y = y;

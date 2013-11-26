@@ -42,6 +42,7 @@ int tiff_mult = 0;
 bool do_control = false;
 int filter_algo = 0;
 bool check_plateaus = false;
+bool do_final_query = false;
 
 void print_help (FILE* f)
 {
@@ -61,6 +62,7 @@ void print_help (FILE* f)
 	     "[-f N] : controlled filtering. 0: slow. 1: normal. 2: fast.\n"
 	     "[-m mult] : multiply tiff output values by mult. Default auto mode\n"
 	     "[-a] : check for flat areas\n"
+	     "[-q] : do final tracking query.\n"
 	     "\n"
 	     );
 }
@@ -113,6 +115,10 @@ void app_init(int argc, char *argv[])
 
 	    case 's':
 		do_presmooth = true;
+		break;
+
+	    case 'q':
+		do_final_query = true;
 		break;
 
 	    case 'a':
@@ -357,7 +363,7 @@ int main (int argc, char *argv[])
 	    if (ssp->critical[i][j].t == SA3)
 		num_sad += 2;
 	}
-	printf ("\nlevel %d, num_max = %d, num_min = %d, num_sad = %d\n"
+	fprintf (OTHER_STREAM, "\nlevel %d, num_max = %d, num_min = %d, num_sad = %d\n"
 		"\tnum_max - num_min = %d, num_max + num_min = %d\n"
 		"\t\tnum_max + num_min - num_sad = %d\n",
 		i, num_max, num_min, num_sad,
@@ -382,7 +388,8 @@ int main (int argc, char *argv[])
 	
     track->write (tracking_name);
 
-    print_final_stats (track, false);
+    if (do_final_query)
+	print_final_stats (track, false);
 
     delete track;
 

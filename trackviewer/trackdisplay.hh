@@ -9,6 +9,7 @@
 
 #include "track.hh"
 #include "demreader.hh"
+#include "grid.hh"
 
 using namespace std;
 
@@ -24,6 +25,7 @@ public:
     void read_track (char *file);
     void query (double t);
     void getbb (double* cx, double* cy, double* diam);
+    void getbb (Point* a, Point* b);
     void draw (int dem_idx);
     void draw_line_test (double d);
 

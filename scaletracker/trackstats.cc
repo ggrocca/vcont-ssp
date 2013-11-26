@@ -85,7 +85,7 @@ void trackstring_print (std::list<elem> & trackstring)
 
     trackstring.sort (_sort_elem_count);
 
-    printf ("R: regular; M: maximum; m: minimum; 1: 1-saddle; 2: 2-saddle\n");
+    fprintf (OTHER_STREAM, "R: regular; M: maximum; m: minimum; 1: 1-saddle; 2: 2-saddle\n");
 
     for (std::list<elem>::iterator i = trackstring.begin();
 	 i != trackstring.end(); ++i)
@@ -95,13 +95,13 @@ void trackstring_print (std::list<elem> & trackstring)
 	int before, after;
 	(*i).values (&before, &after);
 
-	printf ("!!! Eq:%d == %c%c -> %c%c  == [%d]\t\t"
+	fprintf (OTHER_STREAM, "!!! Eq:%d == %c%c -> %c%c  == [%d]\t\t"
 		"before.sum: %d, after.sum: %d.\n",
 		before == after,
 		(*i).move[0], (*i).move[1], (*i).move[2], (*i).move[3], 
 		(*i).count, before, after);
     }
-    printf ("!!! trackstring: total moves %d, found %d different types\n",
+    fprintf (OTHER_STREAM, "!!! trackstring: total moves %d, found %d different types\n",
 	    total, size);
 
     trackstring.sort();
@@ -123,15 +123,15 @@ void TrackString::print ()
 {
     for (unsigned i = 0; i < local.size(); i++)
     {
-	printf ("\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n");
-	printf ("$$$$$$$ TRACKSTRING LOCAL, LEVEL %d\n", i);
+	fprintf (OTHER_STREAM, "\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n");
+	fprintf (OTHER_STREAM, "$$$$$$$ TRACKSTRING LOCAL, LEVEL %d\n", i);
 	trackstring_print (local[i]);
-	printf ("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n");
+	fprintf (OTHER_STREAM, "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n");
     }
-    printf ("\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n");
-    printf ("$$$$$$$ TRACKSTRING GLOBAL\n");    
+    fprintf (OTHER_STREAM, "\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n");
+    fprintf (OTHER_STREAM, "$$$$$$$ TRACKSTRING GLOBAL\n");    
     trackstring_print (global);
-    printf ("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n");
+    fprintf (OTHER_STREAM, "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n");
 }
 
 
@@ -272,45 +272,45 @@ void print_stats (std::vector<TrackLine>& cps)
     av_travel_alive /= ((double) alive_num);
     av_travel_original_alive /= ((double) original_alive);
 
-    printf ("\n");
-    printf ("************************\n");
-    printf ("\n");
-    printf ("total:             %d\n", total);
-    printf ("original_num:      %d\n", original_num);
-    printf ("born_num:          %d\n", born_num);
-    printf ("dead_num:          %d\n", dead_num);
-    printf ("alive_num:         %d\n", alive_num);
-    printf ("born_dead:         %d\n", born_dead);
-    printf ("born_alive:        %d\n", born_alive);
-    printf ("original_dead:     %d\n", original_dead);
-    printf ("original_alive:    %d\n", original_alive);
-    printf ("\n");
-    printf ("------------------------\n");
-    printf ("\n");
-    printf ("av_lifetime_born_alive:       %lf\n", av_lifetime_born_alive);
-    printf ("max_lifetime_born_alive:      %.20lf\n", max_lifetime_born_alive);
-    printf ("min_lifetime_born_alive:      %lf\n", min_lifetime_born_alive);
-    printf ("\n");
-    printf ("av_lifetime_dead:             %lf\n", av_lifetime_dead);
-    printf ("max_lifetime_dead:            %lf\n", max_lifetime_dead);
-    printf ("min_lifetime_dead:            %.20lf\n", min_lifetime_dead);
-    printf ("\n");
-    printf ("av_lifetime_born_dead:        %lf\n", av_lifetime_born_dead);
-    printf ("av_lifetime_original_dead:    %lf\n", av_lifetime_original_dead);
-    printf ("\n");
-    printf ("av_travel:                    %lf\n", av_travel);
-    printf ("max_travel:                   %lf\n", max_travel);
-    printf ("min_travel:                   %.20lf\n", min_travel);
-    printf ("\n");
-    printf ("av_travel_alive:              %lf\n", av_travel_alive);
-    printf ("max_travel_alive:             %lf\n", max_travel_alive);
-    printf ("min_travel_alive:             %.20lf\n", min_travel_alive);
-    printf ("\n");
-    printf ("av_travel_original_alive:     %lf\n", av_travel_original_alive);
-    printf ("max_travel_original_alive:    %lf\n", max_travel_original_alive);
-    printf ("min_travel_original_alive:    %.20lf\n", min_travel_original_alive);
-    printf ("\n");
-    printf ("************************\n");
-    printf ("\n");
+    fprintf (OTHER_STREAM, "\n");
+    fprintf (OTHER_STREAM, "************************\n");
+    fprintf (OTHER_STREAM, "\n");
+    fprintf (OTHER_STREAM, "total:             %d\n", total);
+    fprintf (OTHER_STREAM, "original_num:      %d\n", original_num);
+    fprintf (OTHER_STREAM, "born_num:          %d\n", born_num);
+    fprintf (OTHER_STREAM, "dead_num:          %d\n", dead_num);
+    fprintf (OTHER_STREAM, "alive_num:         %d\n", alive_num);
+    fprintf (OTHER_STREAM, "born_dead:         %d\n", born_dead);
+    fprintf (OTHER_STREAM, "born_alive:        %d\n", born_alive);
+    fprintf (OTHER_STREAM, "original_dead:     %d\n", original_dead);
+    fprintf (OTHER_STREAM, "original_alive:    %d\n", original_alive);
+    fprintf (OTHER_STREAM, "\n");
+    fprintf (OTHER_STREAM, "------------------------\n");
+    fprintf (OTHER_STREAM, "\n");
+    fprintf (OTHER_STREAM, "av_lifetime_born_alive:       %lf\n", av_lifetime_born_alive);
+    fprintf (OTHER_STREAM, "max_lifetime_born_alive:      %.20lf\n", max_lifetime_born_alive);
+    fprintf (OTHER_STREAM, "min_lifetime_born_alive:      %lf\n", min_lifetime_born_alive);
+    fprintf (OTHER_STREAM, "\n");
+    fprintf (OTHER_STREAM, "av_lifetime_dead:             %lf\n", av_lifetime_dead);
+    fprintf (OTHER_STREAM, "max_lifetime_dead:            %lf\n", max_lifetime_dead);
+    fprintf (OTHER_STREAM, "min_lifetime_dead:            %.20lf\n", min_lifetime_dead);
+    fprintf (OTHER_STREAM, "\n");
+    fprintf (OTHER_STREAM, "av_lifetime_born_dead:        %lf\n", av_lifetime_born_dead);
+    fprintf (OTHER_STREAM, "av_lifetime_original_dead:    %lf\n", av_lifetime_original_dead);
+    fprintf (OTHER_STREAM, "\n");
+    fprintf (OTHER_STREAM, "av_travel:                    %lf\n", av_travel);
+    fprintf (OTHER_STREAM, "max_travel:                   %lf\n", max_travel);
+    fprintf (OTHER_STREAM, "min_travel:                   %.20lf\n", min_travel);
+    fprintf (OTHER_STREAM, "\n");
+    fprintf (OTHER_STREAM, "av_travel_alive:              %lf\n", av_travel_alive);
+    fprintf (OTHER_STREAM, "max_travel_alive:             %lf\n", max_travel_alive);
+    fprintf (OTHER_STREAM, "min_travel_alive:             %.20lf\n", min_travel_alive);
+    fprintf (OTHER_STREAM, "\n");
+    fprintf (OTHER_STREAM, "av_travel_original_alive:     %lf\n", av_travel_original_alive);
+    fprintf (OTHER_STREAM, "max_travel_original_alive:    %lf\n", max_travel_original_alive);
+    fprintf (OTHER_STREAM, "min_travel_original_alive:    %.20lf\n", min_travel_original_alive);
+    fprintf (OTHER_STREAM, "\n");
+    fprintf (OTHER_STREAM, "************************\n");
+    fprintf (OTHER_STREAM, "\n");
 
 }

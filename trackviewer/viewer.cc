@@ -57,8 +57,8 @@ void display()
     // td.draw(mesh_draw_mode);
     td.draw (draw_dem_idx+1);
 
-    if (test)
-	td.draw_line_test (camera.diameter);
+    // if (test)
+    // 	td.draw_line_test (camera.diameter);
 
     camera.display_end();
 
@@ -106,13 +106,24 @@ void mouse_move(int x, int y)
     glutPostRedisplay();
 }
 
+void keyboard_up(unsigned char k, int x, int y)
+{
+    // printf ("UP! %c\n", k);
+    camera.key_up (k, x, y);
+
+}
+
+
 void keyboard(unsigned char k, int x, int y)
 {
     if (k == __ESC_GLUT)
 	quit();
 
-    if (!TwEventKeyboardGLUT(k, x, y))
-	camera.key (k, x, y);
+    if (TwEventKeyboardGLUT(k, x, y))
+	return;
+
+    // printf ("DOWN! %c\n", k);
+    camera.key (k, x, y);
 
     // if (k == 't')
     // 	test = !test;
@@ -207,10 +218,14 @@ int main (int argc, char *argv[])
     // m.bb();
     // m.initL();
 
-    double cx, cy, diam;
-    td.getbb (&cx, &cy, &diam);
-    camera.reset (cx, cy, diam);
-    camera.reshape (W, H);
+    // double cx, cy, diam;
+    // td.getbb (&cx, &cy, &diam);
+    // camera.reset (cx, cy, diam);
+    Point a,b;
+    td.getbb (&a, &b);
+    // camera.set_bb (a, b);
+    // camera.reshape (W, H);
+    camera.set (W, H, a, b);
 
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
@@ -235,7 +250,9 @@ int main (int argc, char *argv[])
     glutMotionFunc(mouse_move);
     glutPassiveMotionFunc(mouse_move);
     glutKeyboardFunc(keyboard);
+    glutKeyboardUpFunc(keyboard_up);
     glutSpecialFunc(special);
+    glutIgnoreKeyRepeat(1);
     TwGLUTModifiersFunc(glutGetModifiers);
 
     TwBar *cBar;

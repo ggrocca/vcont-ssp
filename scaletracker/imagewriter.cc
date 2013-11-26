@@ -16,7 +16,7 @@ ImageWriter::ImageWriter (Dem *dem, int mult) // == 0, that means auto
     int min = mult!= 0? 0 : (int) dem->min;
     int m = mult != 0? mult : (65536 / (max - min));
 
-    printf ("max: %d, min: %d, multiplier: %d\n", max, min, m);
+    fprintf (OTHER_STREAM, "max: %d, min: %d, multiplier: %d\n", max, min, m);
 
     for (int i = 0; i < dem->width; i++)
     	for (int j = 0; j < dem->height; j++)

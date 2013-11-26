@@ -44,7 +44,7 @@ int PNGReader::get_pixel (unsigned int x, unsigned int y)
 
 void PNGReader::print_info (char *filename)
 {
-    printf ("PNGReader: ");
+    fprintf (OTHER_STREAM, "PNGReader: ");
     // print file only if not null
     char* empty = "";
     char* prev = "file ";
@@ -53,7 +53,7 @@ void PNGReader::print_info (char *filename)
     char* s = filename? succ : empty;
     char* f = filename? filename : empty;
 	
-    printf ("%s%s%s""width %d, height %d, max %d, min %d.\n",
+    fprintf (OTHER_STREAM, "%s%s%s""width %d, height %d, max %d, min %d.\n",
 	    p, f, s, width, height, max, min);
     return;
 }
@@ -80,7 +80,7 @@ int BMPReader::get_pixel (unsigned int x, unsigned int y)
 
 void BMPReader::print_info (char *filename = 0)
 {
-    printf ("BMPReader: ");
+    fprintf (OTHER_STREAM, "BMPReader: ");
     // print file only if not null
     char* empty = "";
     char* prev = "file ";
@@ -89,7 +89,7 @@ void BMPReader::print_info (char *filename = 0)
     char* s = filename? succ : empty;
     char* f = filename? filename : empty;
 	
-    printf ("%s%s%s""width %d, height %d, max %d, min %d.\n",
+    fprintf (OTHER_STREAM, "%s%s%s""width %d, height %d, max %d, min %d.\n",
 	    p, f, s, width, height, max, min);
     return;
 }
@@ -116,7 +116,7 @@ int TIFReader::get_pixel (unsigned int x, unsigned int y)
 
 void TIFReader::print_info (char *filename = 0)
 {
-    printf ("TIFReader: ");
+    fprintf (OTHER_STREAM, "TIFReader: ");
 
     // print file only if not null
     char* empty = "";
@@ -126,7 +126,7 @@ void TIFReader::print_info (char *filename = 0)
     char* s = filename? succ : empty;
     char* f = filename? filename : empty;
 	
-    printf ("%s%s%s""width %d, height %d, max %d, min %d.\n",
+    fprintf (OTHER_STREAM, "%s%s%s""width %d, height %d, max %d, min %d.\n",
 	    p, f, s, width, height, max, min);
     return;
 }
@@ -192,7 +192,7 @@ void HGTReader::print_info (char *filename = 0)
     char* s = filename? succ : empty;
     char* f = filename? filename : empty;
 	
-    printf ("HGTReader: %s%s%s length %d, byte_length %d, "
+    fprintf (OTHER_STREAM, "HGTReader: %s%s%s length %d, byte_length %d, "
 	    "width %d, height %d, max %d, min %d.\n",
 	    p, f, s,
 	    length, byte_length, width, height,

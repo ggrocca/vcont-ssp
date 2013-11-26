@@ -417,8 +417,8 @@ void raster16_write (TIFF* image, raster16_t raster, uint32 w, uint32 h)
     raster_pos = 0;
 
     buf = _TIFFmalloc(bufsize = TIFFStripSize(image));
-    printf ("bufsize: %d, numberOfStrips: %d, stripSize: %d\n", (int) bufsize,
-	    (int) TIFFNumberOfStrips(image), (int) TIFFStripSize(image));
+    /* printf ("bufsize: %d, numberOfStrips: %d, stripSize: %d\n", (int) bufsize, */
+    /* 	    (int) TIFFNumberOfStrips(image), (int) TIFFStripSize(image)); */
     for (strip = 0; strip < TIFFNumberOfStrips(image); strip++)
     {
 	for (i = 0; i+5 < bufsize; i = i + 6)
