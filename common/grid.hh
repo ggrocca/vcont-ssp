@@ -340,10 +340,23 @@ public:
                 operator () (i,j) = t;
     }
 
+    static inline T __data (std::vector<T> data, Coord c, int width, int height)
+    {
+	    return data[(c.y * width) + c.x];
+	    // return data[(c.x * height) + c.y];
+
+    }
+
+#define __data(x, y)				\
+    (data[((y) * width) + (x)])
+    // (data[((x) * height) + (y)])
+
     T& operator() (Coord c, AccessType a = BOUND)
     {
 	if (c.is_inside (width, height))
-	    return data[(c.x * height) + c.y];
+	    return __data (c.x, c.y);
+	    // return data[(c.y * width) + c.x];
+	    // return data[(c.x * height) + c.y];
 
 	switch (a)
 	{
@@ -361,8 +374,10 @@ public:
 	    
 	case PLATEU:
 	    c.x = c.x < 0? 0 : width - 1;
-	    c.y = c.y < 0? 0 : height -1;
-	    return data[(c.x * height) + c.y];
+	    c.y = c.y < 0? 0 : height - 1;
+	    return __data (c.x, c.y);
+	    // return data[(c.y * width) + c.x];
+	    // return data[(c.x * height) + c.y];
 	    break;
 	    
 	default:

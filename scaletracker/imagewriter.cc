@@ -16,7 +16,8 @@ ImageWriter::ImageWriter (Dem *dem, int mult) // == 0, that means auto
     int min = mult!= 0? 0 : (int) dem->min;
     int m = mult != 0? mult : (65536 / (max - min));
 
-    fprintf (OTHER_STREAM, "max: %d, min: %d, multiplier: %d\n", max, min, m);
+    fprintf (OTHER_STREAM, "witdh: %d, height: %d\nmax: %d, min: %d, multiplier: %d\n", 
+	     width, height,max, min, m);
 
     for (int i = 0; i < dem->width; i++)
     	for (int j = 0; j < dem->height; j++)
@@ -69,6 +70,7 @@ void ImageWriter::write (char* name, char* mark, int count)
 
     TIFF* tiff_out = tiff_open_write (image_out);
     tiff16_tag_write (tiff_out, width, height);
+    // fprintf (OTHER_STREAM, "AAHHH %d %d\n", width, height);
     raster16_write (tiff_out, raster_out, width, height);
     TIFFClose (tiff_out);
 }

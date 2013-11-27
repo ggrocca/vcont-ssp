@@ -9,7 +9,7 @@ void DEMReader::set_maxmin ()
     min = INT_MAX;
 
     for (unsigned i = 0; i < width; i++)
-	for (unsigned j = 0; j < width; j++)
+	for (unsigned j = 0; j < height; j++)
 	{
 	    int v = get_pixel (i, j);
 	    if (v < min)
@@ -171,7 +171,8 @@ HGTReader::HGTReader(const char* filename)
 int HGTReader::get_pixel(unsigned int x, unsigned int y)
 {
     y = height - 1 - y;
-    short pixel = data[(y * height) + x];
+    // short pixel = data[(x * height) + y];
+    short pixel = data[(y * width) + x];
     
     if (pixel == SHRT_MIN)
     {

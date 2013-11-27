@@ -45,9 +45,17 @@ Dem::Dem (Dem& dem, Coord a, Coord b) : Grid<double> (b.x - a.x, b.y - a.y),
 {
     if (!(a < b) ||
 	!a.is_inside (dem.width, dem.height) ||
-	!b.is_inside (dem.width, dem.height)) 
-	eprint ("%s","Cropping constructor parameters problem.\n");
+	!b.is_inside (dem.width+1, dem.height+1)) 
+	eprint ("Cropping constructor parameters problem.\n"
+		"\tw: %d, h: %d.  a(%d,%d) - b(%d,%d).\n"
+		"\t!(a<b):%d, !a.is_inside():%d, !b.si_inside():%d\n",
+		dem.width, dem.height, a.x, a.y, b.x, b.y,
+		!(a < b),
+		!a.is_inside (dem.width, dem.height),
+		!b.is_inside (dem.width, dem.height));
 	
+    tprint ("CROP: width %d, height %d\n", b.x - a.x, b.y - a.y);
+
     for (int i = 0; i < width; i++)
 	for (int j = 0; j < height; j++)
 	{

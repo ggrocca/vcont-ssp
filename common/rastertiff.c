@@ -286,8 +286,9 @@ pix16_t raster16_get (raster16_t r, uint32 x, uint32 y, uint32 w, uint32 h)
     if (x < w && y < h)
     {
 	y = h - 1 - y;
-	//return r[(x * w) + y];
-	return r[(y * h) + x];
+	/* // return r[(x * w) + y]; */
+	return r[(y * w) + x];
+	/* return r[(x * h) + y]; */
     }
     
     fprintf (stderr, "raster16_get: out of raster pixel access\n");
@@ -299,8 +300,9 @@ void raster16_set (raster16_t r, uint32 x, uint32 y, uint32 w, uint32 h, pix16_t
     if (x < w && y < h)
     {
 	y = h - 1 - y;
-	//r[(x * w) + y] = v;
-	r[(y * h) + x] = v;
+	/* //r[(x * w) + y] = v; */
+	r[(y * w) + x] = v;
+	/* r[(x * h) + y] = v; */
     }
     else
 	fprintf (stderr, "raster16_set: out of raster pixel access. <%d, %d> <%d, %d>\n", x, y, w, h);	
