@@ -14,7 +14,7 @@
 
 ## set to true to make the project recompile if the makefile is changed
 # MAKEFILE_FORCEBUILD = true
-MAKEFILE_FORCEBUILD := true
+MAKEFILE_FORCEBUILD = true
 
 ## if the target you issue changes from one time to the next (e.g. you
 ## pass from debug to release or the other way round) force rebuild of
@@ -31,22 +31,23 @@ NEW_TARGET_FOCERBUILD_FILE := .file_old_goal
 
 ## executable name
 # TARGET = exe
-TARGET = scaletracker
+TARGET = gggis
 
 ## Directory where build junk goes. Comment this line out or leave
 ## empty if you want to build in the working directory.
 # BUILD_DIR = build-dir
 BUILD_DIR = build
 
-## Additional directories for source files 
+## Additional directories for source files
 # VPATH = add/dir1 ../add/dir2 ../../etc/
-VPATH = ../common
+VPATH = ../common ../scaletracker
 
 ## Directory for external libraries
 ## not used outside the configuration section and provided for your
 ## convenience when defining INCLUDES and LDFLAGS. Define as many as
 ## such variables as you need.
 # BASELIBS_DIR = ../../external/libs/dir
+BASELIBS_DIR = ../..
 
 ## C, CXX compiler
 # CXXC = g++
@@ -70,34 +71,32 @@ OBJ_EXT = oo
 ## conflict.
 # CPPSOURCES = file1.cc file2.cc
 # CSOURCES = file1.c file2.c
-CPPSOURCES = 	dem.cc demreader.cc gaussian.cc scalespace.cc track.cc \
-		flipper.cc imagewriter.cc trackstats.cc scaletracker_main.cc
-CSOURCES = rastertiff.c
+CPPSOURCES = gggis.cc datamanager.cc track.cc demreader.cc scalespace.cc dem.cc flipper.cc trackstats.cc
+CSOURCES =
 
 ## add directives -D__FILENAME_EXISTS for every file "filename.h" added here.
 ## purpose: untracked files with custom build configurations.
 # CUSTOM_HEADERS = custom_header.h
-CUSTOM_HEADERS = custom_debug.h
+CUSTOM_HEADERS = custom_header.h
 
 ## generic compilation configuration, to be used for both C++ and C
 ## on every OS. FLAGS are always used, while DEBUG_FLAGS are used
 ## instead of RELEASE flags when "make debug" is used.
-# override FLAGS += 
+# override FLAGS +=
 # override DEBUG_FLAGS +=
 # override TRACE_FLAGS +=
 # override RELEASE_FLAGS +=
 # override INCLUDES +=/
-# override DEFINES += 
-# override LDFLAGS += 
-# override FRAMEWORKS += 
-override FLAGS += 
-override DEBUG_FLAGS += -Wall -W -g
-override TRACE_FLAGS += -DDEBUGTRACE
-override RELEASE_FLAGS += -O2 -DNDEBUG
-override INCLUDES += -I../common/
-override DEFINES += 
-override LDFLAGS += -Dcimg_use_png -lpng -lz -ltiff -lm
-override FRAMEWORKS += 
+# override DEFINES +=
+# override LDFLAGS +=
+# override FRAMEWORKS +=
+FLAGS = 
+DEBUG_FLAGS = -Wall -W -g
+RELEASE_FLAGS = -O2 -DNDEBUG
+INCLUDES = -I../common/ -I${BASELIBS_DIR}/AntTweakBar/include/
+DEFINES = 
+LDFLAGS = -lpng -lz -lm -L${BASELIBS_DIR}/AntTweakBar/lib -lAntTweakBar
+FRAMEWORKS = 
 
 
 ####################################
@@ -109,19 +108,19 @@ override FRAMEWORKS +=
 
 # C specific conf
 # override CFLAGS +=
-# override CINCLUDES += 
-# override CDEFINES += 
-override CFLAGS += -std=gnu99
-override CINCLUDES += 
-override CDEFINES += 
+# override CINCLUDES +=
+# override CDEFINES +=
+CFLAGS = -std=gnu99
+CINCLUDES = 
+CDEFINES = 
 
 # C++ specific conf
 # override CXXFLAGS +=
-# override CXXINCLUDES += 
-# override CXXDEFINES += 
-override CXXFLAGS += -pipe  -D_THREAD_SAFE -pthread -Wno-write-strings
-override CXXINCLUDES += 
-override CXXDEFINES += 
+# override CXXINCLUDES +=
+# override CXXDEFINES +=
+CXXFLAGS = -pipe  -D_THREAD_SAFE -pthread -Wno-write-strings
+CXXINCLUDES = 
+CXXDEFINES = 
 
 
 ##################################
@@ -143,7 +142,7 @@ override CXXDEFINES +=
 # GENERIC = false
 # endif
 
-# # eventually add here other specific OSes, remembering to set 
+# # eventually add here other specific OSes, remembering to set
 # # `GENERIC = false' once you're done
 
 # # generic UNIX
@@ -159,12 +158,14 @@ ifeq ($(UNAME),Darwin) # MACOSX
 override FRAMEWORKS += 
 override INCLUDES += -I/opt/local/include
 override LDFLAGS += -L/opt/local/lib
+override FRAMEWORKS += -framework GLUT -framework OpenGL
+override INCLUDES += -I/System/Library/Frameworks/GLUT.framework/Headers/
 override LDFLAGS += -lm -lpthread -L/usr/X11R6/lib -lm -lpthread -lX11
 GENERIC = false
 endif
 
 ifeq ($(GENERIC),true) # UNIX/LINUX
-override LDFLAGS +=  -lX11 -lpthread
+override LDFLAGS += -lglut -lGLU -lX11 -lGL
 override INCLUDES += 
 endif
 
