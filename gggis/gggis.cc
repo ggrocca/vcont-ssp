@@ -9,21 +9,28 @@
 
 #include <sstream>
 
-#include "datamanager.hh"
 #include "../common/utils.hh"
+#include "camera.hh"
+#include "datamanager.hh"
+#include "displaymanager.hh"
+
+
+
+/////////////
+// GLOBALS //
+/////////////
 
 #define W 1260
 #define H 760
 
-
-DataManager* dm;
-
-
-
-
+DataManager* data_m;
+DisplayManager* disp_m;
+Camera camera;
 
 int width = W;
 int height = H;
+
+
 
 //////////
 // QUIT //
@@ -36,26 +43,25 @@ void quit()
 }
 
 
+
+
 ///////////////////
 // GLUT CALLBACK //
 ///////////////////
 
-// bool test = false;
+bool test = false;
 void display()
 {
     glClearColor(1.0f, 1.0f, 1.0f, 0);
     glClear(GL_COLOR_BUFFER_BIT);
     glDisable (GL_DEPTH_TEST);
     
-    // camera.display_begin();
+    camera.display_begin();
 
-    // // td.draw(mesh_draw_mode);
-    // td.draw (draw_dem_idx+1);
+    disp_m->display ();
 
-    // if (test)
-    // 	td.draw_line_test (camera.diameter);
 
-    // camera.display_end();
+    camera.display_end();
 
     TwDraw();
 
@@ -65,11 +71,11 @@ void display()
 
 void reshape(int w, int h)
 {
-    //     camera.reshape(w,h);
+    camera.reshape(w,h);
 
-    //     width = w;
-    //     height = h;
-    //     glViewport(0, 0, (GLsizei) w, (GLsizei) h);
+    width = w;
+    height = h;
+    glViewport(0, 0, (GLsizei) w, (GLsizei) h);
 
     TwWindowSize(w, h);
 
@@ -84,9 +90,9 @@ void mouse_click(int button, int state, int x, int y)
         return;
     }
 
-    // camera.mouse(button, state, x, y);
+    camera.mouse(button, state, x, y);
 
-    // glutPostRedisplay();
+    glutPostRedisplay();
 }
 
 void mouse_move(int x, int y)
@@ -97,17 +103,28 @@ void mouse_move(int x, int y)
         return;
     }
 
-    // camera.mouse_move(x,y);
-    // glutPostRedisplay();
+    camera.mouse_move(x,y);
+    glutPostRedisplay();
 }
+
+void keyboard_up(unsigned char k, int x, int y)
+{
+    // printf ("UP! %c\n", k);
+    camera.key_up (k, x, y);
+
+}
+
 
 void keyboard(unsigned char k, int x, int y)
 {
     if (k == __ESC_GLUT)
 	quit();
 
-    // if (!TwEventKeyboardGLUT(k, x, y))
-    // 	camera.key (k, x, y);
+    if (TwEventKeyboardGLUT(k, x, y))
+	return;
+
+    // printf ("DOWN! %c\n", k);
+    camera.key (k, x, y);
 
     // if (k == 't')
     // 	test = !test;
@@ -117,39 +134,17 @@ void keyboard(unsigned char k, int x, int y)
 
 void special(int k, int x, int y)
 {
-    // if (!TwEventSpecialGLUT(k, x, y))
-    // 	camera.special (k, x, y);
+    if (!TwEventSpecialGLUT(k, x, y))
+	camera.special (k, x, y);
 
     glutPostRedisplay();
 }
 
 
 
-int bar_num = 0;
-
-void TW_CALL set_bar_num (const void *value, void *)
-{
-    int new_bar_num = *(const int *) value;
-
-    printf ("BBBBBBBBBBB %d\n", new_bar_num);
-   
-    std::stringstream name;
-    name << "Plane_" << bar_num;
-    TwDefine ((name.str() + " visible=false").c_str());
- 
-    std::stringstream new_name;
-    new_name << "Plane_" << new_bar_num;
-    TwDefine ((new_name.str() + " visible=true").c_str());
- 
-    bar_num = new_bar_num;
-
-    glutPostRedisplay();
-}
-
-void TW_CALL get_bar_num (void *value, void *)
-{
-    *(int *) value = bar_num;
-}
+//////////
+// MAIN //
+//////////
 
 
 
@@ -157,42 +152,42 @@ int main (int argc, char *argv[])
 {
     if (argc != 2)
     {
-	fprintf (stderr, "Usage: ./viewer trackfile demnames N\n");
+	fprintf (stderr, "Usage: ./viewer datasets-directory\n");
 	exit (-1);
     }
 
-    dm = new DataManager (argv[1]);
+    data_m = new DataManager (argv[1]);
     
-    for (int i = 0; i < dm->datasets.size(); i++)
+    for (int i = 0; i < data_m->datasets.size(); i++)
     {
-	printf ("\nDataset: %s. Dir: %s\n", dm->datasets[i]->name.c_str(), dm->datasets[i]->dir.c_str());
+	printf ("\nDataset: %s. Dir: %s\n", data_m->datasets[i]->name.c_str(), data_m->datasets[i]->dir.c_str());
 
-	for (int j = 0; (dm->datasets[i]->planes.size()) > j; j++)
+	for (int j = 0; (data_m->datasets[i]->planes.size()) > j; j++)
 	{
 	    printf ("\tPlane: %s. Path: %s. Type: %s\n",
-		    dm->datasets[i]->planes[j]->filename.c_str(),
-		    dm->datasets[i]->planes[j]->pathname.c_str(),
-		    (ds_type2string (dm->datasets[i]->planes[j]->type)).c_str()
+		    data_m->datasets[i]->planes[j]->filename.c_str(),
+		    data_m->datasets[i]->planes[j]->pathname.c_str(),
+		    (ds_type2string (data_m->datasets[i]->planes[j]->type)).c_str()
 		    );
 	}
     }
     string exename = get_base (argv[0]);
 
-    int planes_num = dm->datasets[0]->planes.size();
 
 
-    // double cx, cy, diam;
-    // td.getbb (&cx, &cy, &diam);
-    // camera.reset (cx, cy, diam);
-    // camera.reshape (W, H);
+    Point a,b;
+    data_m->getbb (&a, &b);
+    camera.set (W, H, a, b);
 
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
     glutInitWindowSize(W, H);
-    glutCreateWindow(exename.c_str());
+    glutCreateWindow("gggis");
 
     TwInit(TW_OPENGL, NULL);
     TwWindowSize(W, H);
+
+    disp_m = new DisplayManager (data_m);
 
     glClearColor(0, 0, 0, 0);
     glEnable(GL_NORMALIZE);
@@ -200,53 +195,17 @@ int main (int argc, char *argv[])
     //glEnable(GL_CULL_FACE);
     glFrontFace(GL_CCW);
 
-    // camera.SetLighting(4);
-    // camera.gCameraReset(m.diagonal, m.center);
-
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
     glutMouseFunc(mouse_click);
     glutMotionFunc(mouse_move);
     glutPassiveMotionFunc(mouse_move);
     glutKeyboardFunc(keyboard);
+    glutKeyboardUpFunc(keyboard_up);
     glutSpecialFunc(special);
+    glutIgnoreKeyRepeat(1);
     TwGLUTModifiersFunc(glutGetModifiers);
-
-    TwBar* cBar;
-
-    cBar = TwNewBar("Controller");
-    TwDefine("Controller size='250 350'");
-    TwDefine("Controller valueswidth=80");
-    TwDefine("Controller color='192 255 192' text=dark ");
-
-    vector<TwBar*> bars;
-
-    for (int i = 0; i < planes_num; i++)
-    {
-	std::stringstream name;
-	name << "Plane_" << i;
-
-	bars.push_back (TwNewBar(name.str().c_str()));
-
-	if (i != 0)
-	    TwDefine ((name.str() + " visible=false").c_str());
-    }
-
-
-
-#define __FNLEN 512
-    char plane_num_bounds[__FNLEN] = {'\0'};
-    snprintf (plane_num_bounds, __FNLEN, "min=0 max=%d step=1 "
-	      "keydecr='<' keyincr='>'", planes_num-1);
-    TwAddVarCB(cBar, "select plane", TW_TYPE_INT32,
-    	       set_bar_num, get_bar_num,
-    	       NULL, plane_num_bounds);
-#undef __FNLEN
-
-
 
     glutMainLoop();
     exit (-1);
-
-
 }

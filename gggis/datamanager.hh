@@ -121,6 +121,9 @@ public:
     // read files inside dir, all registered to _GEOREF.txt
     DataSet (string dir);
     ~DataSet ();
+
+    // GG should implement bb class
+    void getbb (Point* a, Point* b);
 };
 
 
@@ -133,6 +136,9 @@ public:
     // read a dir and load all datasets inside it.
     DataManager (char *dir);
     ~DataManager ();
+
+    // GG should implement bb class
+    void getbb (Point* a, Point* b);
 };
 
 

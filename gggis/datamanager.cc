@@ -23,6 +23,35 @@ DataManager::~DataManager ()
         delete datasets[i];
 }
 
+// GG should implement bb class
+// GG WARN currently working on pixels indices from first dataset only
+void DataManager::getbb (Point* a, Point* b)
+{
+    datasets[0]->getbb (a, b);
+    
+
+    // GG this should work with latlon
+    // *a = Point::highest ();
+    // *b = Point::lowest ();
+
+    // for (int i = 0; i < datasets.size(); i++)
+    // {
+    // 	Point ai, bi;
+
+    // 	// tprint ("ai (%lf, %lf) __ bi () (%lf, %lf)\n", ai.x, ai.y, bi.x, bi.y);
+
+    // 	datasets[i]->getbb (&ai, &bi);
+
+    // 	if (ai < *a)
+    // 	    *a = ai;
+	
+    // 	if (bi > *b)
+    // 	    *b = bi;
+
+    // 	// tprint ("ai (%lf, %lf) __ bi () (%lf, %lf)\n", ai.x, ai.y, bi.x, bi.y);
+    // }
+}
+
 
 DataSet::DataSet (string dir) : dir (dir), name (get_base (dir))
 {
@@ -67,6 +96,16 @@ DataSet::~DataSet ()
 {
     for (int i = 0; i < planes.size(); i++)
         delete planes[i];    
+}
+
+// GG should implement bb class
+void DataSet::getbb (Point* a, Point* b)
+{
+    // GG WARN should return latlon
+    a->x = map.la.x;
+    a->y = map.la.y;
+    b->x = map.lb.x;
+    b->y = map.lb.y;    
 }
 
 

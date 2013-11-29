@@ -7,6 +7,7 @@ trackviewer/trackviewer
 analyzers/difftiff/difftiff
 analyzers/difftrack/difftrack
 util/mesher/mesher
+gggis/gggis
 *.oo
 *.dd
 *.o

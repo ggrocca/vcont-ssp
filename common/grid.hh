@@ -114,6 +114,25 @@ public:
 	return Pair (x + rhs.x, y + rhs.y);
     }
 
+    static Pair lowest()
+    {
+	T bogus;
+
+	if (std::numeric_limits<T>::is_integer)
+	    bogus = std::numeric_limits<T>::min();
+	else 
+	    bogus = GenericType<T>::lowest();
+
+	return Pair (bogus, bogus);
+    }
+
+    static Pair highest()
+    {
+	T bogus;
+	bogus = std::numeric_limits<T>::max();
+
+	return Pair (bogus, bogus);
+    }
 };
 
 // template <class T>
