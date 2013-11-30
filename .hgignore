@@ -4,8 +4,8 @@ syntax: glob
 
 scaletracker/scaletracker
 trackviewer/trackviewer
-analyzers/difftiff/difftiff
-analyzers/difftrack/difftrack
+util/difftiff/difftiff
+util/difftrack/difftrack
 util/mesher/mesher
 gggis/gggis
 *.oo

@@ -19,7 +19,19 @@ fi
 
 STARTDIR=`pwd`
 
-DIRS="analyzers/difftiff analyzers/difftrack util/mesher scaletracker trackviewer"
+#DIRS="analyzers/difftiff analyzers/difftrack util/mesher scaletracker trackviewer"
+
+DIRS=""
+MAKES=`find . -name Makefile`
+
+for m in $MAKES; do
+    MD=`dirname $m`
+#    echo $MD
+    DIRS="$DIRS $MD"
+done
+#echo $DIRS
+
+#exit 0
 
 FAILSTAGE=-1;
 
