@@ -8,52 +8,39 @@
 char* DST_strings[] = __DST_STRINGS;
 char* DST_extensions[][_DM_EXT_NUM] = __DST_EXTENSIONS;
 
-DataManager::DataManager (char *dir)
+DataManager::DataManager (char *dir, DataOrganization org)
 {
-    vector<string> es;
-    list_dir (dir, &es);
+    if (org == MULTIPLE)
+    {
+	vector<string> es;
+	list_dir (dir, &es);
     
-    for (int i = 0; i < es.size(); i++)
-	datasets.push_back (new DataSet (es[i]));
+	for (unsigned i = 0; i < es.size(); i++)
+	    datasets.push_back (new DataSet (es[i], org));
+    }
+
+    if (org == SINGLE)
+	datasets.push_back (new DataSet (dir, org));
+    
 }
 
 DataManager::~DataManager ()
 {
-    for (int i = 0; i < datasets.size(); i++)
+    for (unsigned i = 0; i < datasets.size(); i++)
         delete datasets[i];
 }
 
-// GG should implement bb class
-// GG WARN currently working on pixels indices from first dataset only
-void DataManager::getbb (Point* a, Point* b)
+BoundingBox DataManager::getbb ()
 {
-    datasets[0]->getbb (a, b);
-    
+    vector <BoundingBox> all;
+    for (unsigned i = 0; i < datasets.size(); i++)
+	    all.push_back (datasets[i]->getbb_world());
 
-    // GG this should work with latlon
-    // *a = Point::highest ();
-    // *b = Point::lowest ();
-
-    // for (int i = 0; i < datasets.size(); i++)
-    // {
-    // 	Point ai, bi;
-
-    // 	// tprint ("ai (%lf, %lf) __ bi () (%lf, %lf)\n", ai.x, ai.y, bi.x, bi.y);
-
-    // 	datasets[i]->getbb (&ai, &bi);
-
-    // 	if (ai < *a)
-    // 	    *a = ai;
-	
-    // 	if (bi > *b)
-    // 	    *b = bi;
-
-    // 	// tprint ("ai (%lf, %lf) __ bi () (%lf, %lf)\n", ai.x, ai.y, bi.x, bi.y);
-    // }
+    return BoundingBox (all);    
 }
 
 
-DataSet::DataSet (string dir) : dir (dir), name (get_base (dir))
+DataSet::DataSet (string dir, DataOrganization org) : dir (dir), name (get_base (dir))
 {
     /*
       nome di directory in input
@@ -80,34 +67,136 @@ DataSet::DataSet (string dir) : dir (dir), name (get_base (dir))
     */
     
     vector<string> es;
-    list_dir (dir.c_str(), &es);
+    bool have_georef_in_list_dir;
+    string georef_file;
 
-    if (!ends_with (es[0], "__GEOREF.txt"))
-        eprintx (2, "No georef file in dataset %s\n", dir.c_str());
+    if (org == PLANE) // we open a single file
+    {
+	es.push_back (dir);
+	have_georef_in_list_dir = false;
+	georef_file = dir + DM_GEOREF_FILE;
+    }
+    else // we open a dir
+    {
+	list_dir (dir.c_str(), &es);
+	if (have_georef_in_list_dir = ends_with (es[0], DM_GEOREF_FILE))
+	    georef_file = es[0];
+    }    
 
-    map = GeoMapping (es[0]);
-
-    for (int i = 1; i < es.size(); i++)
+    // save all possible planes
+    for (unsigned i = have_georef_in_list_dir? 1 : 0; i < es.size(); i++)
 	planes.push_back (new Plane (es[i]));
 
+    FILE *fp = fopen (georef_file.c_str(), "r");
+    if (fp != NULL) // test presence of georef file
+    {
+	fclose (fp);
+	map = GeoMapping (georef_file.c_str());
+    }
+    else if (org == MULTIPLE) // multiple datasets and no file, exit
+	eprintx (2, "No georef file in dataset %s\n", dir.c_str());	    
+    else // single dataset, no file, we get the bounding box
+	map = GeoMapping (getbb_local(), getbb_local());
+
+
+
+
+    // 	planes.push_back (new Plane (es[i]));
+	
+    // 	string georef = 
+
+    // }
+    // else
+    // {
+
+    // 	bool have_georef = 
+
+    // 	map = NULL;
+
+    // 	if (have_georef)
+    // 	    map = new GeoMapping (es[0]);
+
+    // }
 }
 
 DataSet::~DataSet ()
 {
-    for (int i = 0; i < planes.size(); i++)
+    for (unsigned i = 0; i < planes.size(); i++)
         delete planes[i];    
 }
 
-// GG should implement bb class
-void DataSet::getbb (Point* a, Point* b)
+BoundingBox DataSet::getbb_local ()
 {
-    // GG WARN should return latlon
-    a->x = map.la.x;
-    a->y = map.la.y;
-    b->x = map.lb.x;
-    b->y = map.lb.y;    
+    vector <BoundingBox> all;
+    for (unsigned i = 0; i < planes.size(); i++)
+	all.push_back (planes[i]->getbb());
+
+    return BoundingBox (all);
 }
 
+BoundingBox DataSet::getbb_world ()
+{
+    return map.world;
+}
+
+BoundingBox Plane::getbb ()
+{
+    switch (type)
+    {
+    case DEM:
+	{
+	    // DEMReader
+	    Point a (0,0);
+	    Point b;
+	    b.x = ((DEMReader*) data)->width;
+	    b.y = ((DEMReader*) data)->height;
+	    return BoundingBox (a, b);
+	}
+    case IMG:
+	{
+	    // CImg
+	    Point a (0,0);
+	    Point b;
+	    b.x = ((cimg_library::CImg<unsigned char>*) data)->width ();
+	    b.y = ((cimg_library::CImg<unsigned char>*) data)->height ();
+	    return BoundingBox (a, b);
+	}
+    case CRT:
+    	// build a critical points loader if needs arise
+	return BoundingBox::emptiest ();
+
+    case TRK:
+    	// Track
+	return BoundingBox::emptiest ();
+
+    case SSP:
+	{
+	    // ScaleSpace
+	    Point a (0,0);
+	    Point b;
+	    b.x = ((ScaleSpace*) data)->dem[0]->width;
+	    b.y = ((ScaleSpace*) data)->dem[0]->height;
+	    return BoundingBox (a, b);
+	}
+    case CRV:
+    	// TODO
+	return BoundingBox::emptiest ();
+
+    case EXM:
+    	// TODO
+	return BoundingBox::emptiest ();
+
+    case INL:
+    	// TODO
+	return BoundingBox::emptiest ();
+
+    case UKW:
+    default:
+    	eprintx (45, "Unrecognized file type for file %s.\n", filename.c_str());
+	return BoundingBox::emptiest ();
+    }
+
+}
 
 Plane::Plane (string pathname) : pathname (pathname), filename (get_base (pathname)) 
 {

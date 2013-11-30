@@ -5,16 +5,57 @@
 #include "grid.hh"
 #include <math.h>
 #include <string>
+#include <vector>
 
-class LatLon
+class BoundingBox
 {
+
 public:
 
-    double p, l;
+    Point a,b;
+    
+    BoundingBox () : a (), b () {}
 
-    LatLon () : p (0), l (0) {}
-    LatLon (double p, double l) : p (p), l (l) {}
+    BoundingBox (Point a, Point b) : a (a), b(b) {}
+
+    BoundingBox (std::vector<BoundingBox> all)
+    {
+	a = Point::highest ();
+	b = Point::lowest ();
+	
+	for (unsigned i = 0; i < all.size(); i++)
+	{
+		Point ai, bi;
+	
+		ai = all[i].a;
+		bi = all[i].b;
+	
+		if (ai < a)
+		    a = ai;
+	
+		if (bi > b)
+		    b = bi;
+	
+		// tprint ("ai (%lf, %lf) __ bi () (%lf, %lf)\n", ai.x, ai.y, bi.x, bi.y);
+	}
+    }
+
+    static BoundingBox emptiest ()
+    {
+	return BoundingBox (Point::highest (), Point::lowest ());
+    }
 };
+
+
+// class LatLon
+// {
+// public:
+
+//     double p, l;
+
+//     LatLon () : p (0), l (0) {}
+//     LatLon (double p, double l) : p (p), l (l) {}
+// };
 
 static inline double __s_tr (double s, double sa, double sb, double ea, double eb)
 {
@@ -34,11 +75,10 @@ class GeoMapping
 {
 public:
 
-    Coord la, lb;
-    LatLon wa, wb;
+    BoundingBox local, world;
 
     GeoMapping () :
-	la (), lb (), wa (), wb () {}
+	local (), world () {}
 
     // xl,yl:lat,lon
     // xu,yu:lat,lon
@@ -50,31 +90,31 @@ public:
 	    eprintx (2, "Could not open file %s\n", filename.c_str());
 
 	fscanf (fp,
-		"%d , %d : %lf , %lf \n "
-		"%d , %d : %lf , %lf \n ",
-		&la.x, &la.y, &wa.p, &wa.l,
-		&lb.x, &lb.y, &wb.p, &wb.l
+		"%lf , %lf : %lf , %lf \n "
+		"%lf , %lf : %lf , %lf \n ",
+		&local.a.x, &local.a.y, &world.a.x, &world.a.y,
+		&local.b.x, &local.b.y, &world.b.x, &world.b.y
 		);
 
 	fclose (fp);
     }
 
-    GeoMapping (Coord la, Coord lb, LatLon wa, LatLon wb) :
-	la (la), lb (lb), wa (wa), wb (wb) {}
+    GeoMapping (BoundingBox local, BoundingBox world) :
+	local (local), world (world) {}
 
-    LatLon l2w (Coord lp)
+    Point l2w (Coord lp)
     {
-	LatLon wp;
-	wp.p = __s_tr (lp.x, la.x, lb.x, wa.p, wb.p);
-	wp.l = __s_tr (lp.y, la.y, lb.y, wa.l, wb.l);
+	Point wp;
+	wp.x = __s_tr (lp.x, local.a.x, local.b.x, world.a.x, world.b.x);
+	wp.y = __s_tr (lp.y, local.a.y, local.b.y, world.a.y, world.b.y);
 	return wp;
     }
 
-    Coord w2l (LatLon wp)
+    Coord w2l (Point wp)
     {
 	Coord lp;
-	lp.x = /*floor*/ (__s_tr (wp.p, wa.p, wb.p, la.x, lb.x));
-	lp.y = /*floor*/ (__s_tr (wp.l, wa.l, wb.l, la.y, lb.y));
+	lp.x = /*floor*/ (__s_tr (wp.x, world.a.x, world.b.x, local.a.x, local.b.x));
+	lp.y = /*floor*/ (__s_tr (wp.y, world.a.y, world.b.y, local.a.y, local.b.y));
 	return lp;
     }
 };

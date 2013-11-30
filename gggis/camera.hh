@@ -13,16 +13,17 @@
 #endif
 
 #include "grid.hh"
+#include "geomapping.hh"
 
 class Camera {
 public:
 
     Camera ();
-    Camera (int w, int h, Point a, Point b);
+    Camera (int w, int h, BoundingBox bb);
     ~Camera ();
 
-    void set (int w, int h, Point a, Point b);
-    void set_bb (Point a, Point b);
+    void set (int w, int h, BoundingBox bb);
+    void set_bb (BoundingBox bb);
     void reset ();
     void display_begin (void);
     void display_end (void);
@@ -37,7 +38,7 @@ public:
     int width, height;
     double aspect;
 
-    Point box_a,box_b;
+    BoundingBox box;
     Point box_center;
     double x_dim, y_dim;
     double short_dim, long_dim;

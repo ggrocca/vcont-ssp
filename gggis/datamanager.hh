@@ -93,6 +93,7 @@ static inline string ext2ds_string (string ext)
 }
 
 
+typedef enum {MULTIPLE, SINGLE, PLANE} DataOrganization;
 
 
 class Plane
@@ -106,9 +107,10 @@ public:
 
     Plane (string pathname);
     ~Plane ();
+    BoundingBox getbb ();
 };
 
-
+#define DM_GEOREF_FILE "__GEOREF.txt"
 
 class DataSet
 {
@@ -119,11 +121,12 @@ public:
     string name;
 
     // read files inside dir, all registered to _GEOREF.txt
-    DataSet (string dir);
+    DataSet (string dir, DataOrganization org);
     ~DataSet ();
 
     // GG should implement bb class
-    void getbb (Point* a, Point* b);
+    BoundingBox getbb_local ();
+    BoundingBox getbb_world ();
 };
 
 
@@ -134,11 +137,11 @@ public:
     vector<DataSet*> datasets;
 
     // read a dir and load all datasets inside it.
-    DataManager (char *dir);
+    DataManager (char *dir, DataOrganization org);
     ~DataManager ();
 
     // GG should implement bb class
-    void getbb (Point* a, Point* b);
+    BoundingBox getbb ();
 };
 
 

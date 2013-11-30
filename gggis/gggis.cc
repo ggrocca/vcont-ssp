@@ -146,38 +146,91 @@ void special(int k, int x, int y)
 // MAIN //
 //////////
 
+char *path = NULL;
+DataOrganization org;
+
+void print_help (FILE* f)
+{
+    fprintf (f, "Usage: smoother -m DIR | -s DIR | -p FILE\n"
+	     "[-m DIR]: load multiple datasets from DIR.\n"
+	     "[-s DIR]: load single dataset in DIR.\n"
+	     "[-p FILE]: load single plane from FILE.\n"
+	     );
+}
+
+void app_init(int argc, char *argv[])
+{
+    for (argc--, argv++; argc--; argv++)
+    {
+        if( (*argv)[0] == '-')
+        {
+            switch( (*argv)[1] )
+            {
+	    case 'h':
+		print_help (stdout);
+		exit (0);
+
+	    case 'm':
+		org = MULTIPLE;
+                path = *++argv;
+                argc--;
+		break;
+
+	    case 's':
+		org = SINGLE;
+                path = *++argv;
+                argc--;
+		break;
+
+	    case 'p':
+		org = PLANE;
+                path = *++argv;
+                argc--;
+		break;
+
+	    }
+	}
+    }
+
+    if (path == NULL)
+    {
+	print_help (stderr);
+	exit (-1);
+    }
+}
 
 
 int main (int argc, char *argv[])
 {
-    if (argc != 2)
-    {
-	fprintf (stderr, "Usage: ./viewer datasets-directory\n");
-	exit (-1);
-    }
+    app_init (argc, argv);
 
-    data_m = new DataManager (argv[1]);
+    data_m = new DataManager (path, org);
     
-    for (int i = 0; i < data_m->datasets.size(); i++)
+    BoundingBox lbb,wbb;
+    for (unsigned i = 0; i < data_m->datasets.size(); i++)
     {
-	printf ("\nDataset: %s. Dir: %s\n", data_m->datasets[i]->name.c_str(), data_m->datasets[i]->dir.c_str());
+	lbb = data_m->datasets[i]->getbb_local ();
+	wbb = data_m->datasets[i]->getbb_world ();
+	printf ("\nDataset: %s. Dir: %s. lbb((%lf,%lf),(%lf,%lf)) wbb((%lf,%lf),(%lf,%lf))\n",
+		data_m->datasets[i]->name.c_str(), data_m->datasets[i]->dir.c_str(),
+		lbb.a.x, lbb.a.y, lbb.b.x, lbb.b.y, wbb.a.x, wbb.a.y, wbb.b.x, wbb.b.y);
 
-	for (int j = 0; (data_m->datasets[i]->planes.size()) > j; j++)
+	for (unsigned j = 0; (data_m->datasets[i]->planes.size()) > j; j++)
 	{
-	    printf ("\tPlane: %s. Path: %s. Type: %s\n",
+	    lbb = data_m->datasets[i]->planes[j]->getbb ();
+	    printf ("\tPlane: %s. Path: %s. Type: %s. bb ((%lf,%lf),(%lf,%lf))\n",
 		    data_m->datasets[i]->planes[j]->filename.c_str(),
 		    data_m->datasets[i]->planes[j]->pathname.c_str(),
-		    (ds_type2string (data_m->datasets[i]->planes[j]->type)).c_str()
+		    (ds_type2string (data_m->datasets[i]->planes[j]->type)).c_str(),
+		    lbb.a.x, lbb.a.y, lbb.b.x, lbb.b.y
 		    );
 	}
     }
     string exename = get_base (argv[0]);
 
-
-
-    Point a,b;
-    data_m->getbb (&a, &b);
-    camera.set (W, H, a, b);
+    BoundingBox bb = data_m->getbb ();
+    printf ("FINAL BB: (%lf, %lf), (%lf, %lf)\n", bb.a.x, bb.a.y, bb.b.x, bb.b.y);
+    camera.set (W, H, bb);
 
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);

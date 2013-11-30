@@ -9,9 +9,9 @@
 Camera::Camera(){}
 
 
-Camera::Camera(int w, int h, Point a, Point b)
+Camera::Camera(int w, int h, BoundingBox box)
 {
-    set (w, h, a, b);
+    set (w, h, box);
     
     zooming_in = false;
     zooming_out = false;
@@ -19,27 +19,26 @@ Camera::Camera(int w, int h, Point a, Point b)
 }
 
 
-void Camera::set (int w, int h, Point a, Point b)
+void Camera::set (int w, int h, BoundingBox box)
 {
     reshape (w, h);
-    set_bb (a, b);
+    set_bb (box);
     reset ();
 }
 
 Camera::~Camera(){}
 
 
-void Camera::set_bb (Point a, Point b)
+void Camera::set_bb (BoundingBox box) 
 {
-    box_a = a;
-    box_b = b;
+    this->box = box;
 
-    x_dim = b.x - a.x;
-    y_dim = b.y - a.y;
+    x_dim = box.b.x - box.a.x;
+    y_dim = box.b.y - box.a.y;
 
     short_dim = (x_dim < y_dim? x_dim : y_dim);
     long_dim = (x_dim > y_dim? x_dim : y_dim);
-    box_center = box_a + Point (x_dim/2.0, y_dim/2.0);
+    box_center = box.a + Point (x_dim/2.0, y_dim/2.0);
 }
 
 void Camera::reset ()

@@ -45,12 +45,13 @@ class DisplayPlane
 
 public:
 
+    int sidx, pidx;
     TwBar* bar;
     string bar_name;
     GeoMapping* map;
     int order;
     
-    DisplayPlane (int sidx, int pidx) 
+    DisplayPlane (int sidx, int pidx) : sidx (sidx), pidx (pidx)
     {
 	// base interface
 	
@@ -110,9 +111,11 @@ public:
     ~DisplayManager ();
 
     void display ();
-    void reorder_display();
+    void reorder_display ();
+    void mute_current ();
+    int find_current ();
 
-    int sidx,pidx;
+    int sidx, pidx;
     vector<int> p_pidx;
 };
 
