@@ -1,3 +1,7 @@
+#!/bin/bash
+
+source conf.sh
+
 EXE=../scaletracker/scaletracker
 RES=../../scalespace-results/filter
 
@@ -41,6 +45,3 @@ TRK=trk
 SSP=ssp
 FILETYPES="$CRT $TRK $SSP"
 
-DIFFTIFF="../analyzers/difftiff/difftiff -v 0"
-DIFFTRAC="../analyzers/difftrack/difftrack -v 0"
-DIFF="diff -q"
