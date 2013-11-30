@@ -28,7 +28,7 @@ public:
 
     DEMReader* dr;
     
-    DisplayDem (Plane* p, GeoMapping* m, int idx);
+    DisplayDem (Plane* p, GeoMapping* m, int pidx, int sidx);
     ~DisplayDem ();
 
     void display ();

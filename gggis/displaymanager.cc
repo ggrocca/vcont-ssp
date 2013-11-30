@@ -20,33 +20,61 @@
 
 
 // code to make bar visible
-void __bar_visibility (int idx, bool visible)
+void __bar_visibility (int sidx, int pidx, bool visible)
 {
     stringstream name;
-    name << "bar_plane_" << idx;
+    name << "bar_plane_" << sidx <<"_"<< pidx;
     string bar_name = name.str();
     string is_vis = visible? " visible=true" : " visible=false";
 	
     TwDefine ((bar_name + is_vis).c_str());
+
+    TwBar* b = TwGetBarByName(bar_name.c_str());
+    TwRefreshBar (b);
 }
 
 
-void TW_CALL tw_setbarnum (const void *value, void *cd)
+void TW_CALL tw_set_sidx (const void *value, void *cd)
 {
-    int new_bar_num = *(const int *) value;
+    int new_sidx = *(const int *) value;
+    int new_pidx = ((DisplayManager*) cd)->p_pidx[new_sidx];
 
-    __bar_visibility (((DisplayManager*) cd)->bar_num, false);
-    __bar_visibility (new_bar_num, true);
+    __bar_visibility (((DisplayManager*) cd)->sidx, ((DisplayManager*) cd)->pidx, false);
+    __bar_visibility (new_sidx, new_pidx, true);
 
-    ((DisplayManager*) cd)->bar_num = new_bar_num;
+    ((DisplayManager*) cd)->sidx = new_sidx;
+    ((DisplayManager*) cd)->pidx = new_pidx;
+
+    stringstream ss; ss<<"Controller/select_plane "<<" min=0 max="
+		       <<((int) (((DisplayManager*) cd)->dm->datasets[new_sidx]->planes.size ())) - 1;
+    TwDefine(ss.str().c_str());
 
     glutPostRedisplay();
 }
 
 
-void TW_CALL tw_getbarnum (void *value, void *cd)
+void TW_CALL tw_get_sidx (void *value, void *cd)
 {
-    *(int *) value = ((DisplayManager*) cd)->bar_num;
+    *(int *) value = ((DisplayManager*) cd)->sidx;
+}
+
+void TW_CALL tw_set_pidx (const void *value, void *cd)
+{
+    int new_pidx = *(const int *) value;
+
+    __bar_visibility (((DisplayManager*) cd)->sidx, ((DisplayManager*) cd)->pidx, false);
+    __bar_visibility (((DisplayManager*) cd)->sidx, new_pidx, true);
+
+    ((DisplayManager*) cd)->pidx = new_pidx;
+    ((DisplayManager*) cd)->p_pidx[((DisplayManager*) cd)->sidx] = new_pidx;
+
+    glutPostRedisplay();
+}
+
+
+void TW_CALL tw_get_pidx (void *value, void *cd)
+{
+    *(int *) value = ((DisplayManager*) cd)->pidx;
 }
 
 
@@ -59,17 +87,20 @@ void TW_CALL tw_reorder (void *cd)
 
 DisplayManager::DisplayManager (DataManager* dm) : dm (dm)
 {
-    int k = 0;
     for (int i = 0; i < dm->datasets.size(); i++)
+    {
 	for (int j = 0; j < dm->datasets[i]->planes.size(); j++)
-	    all_dp.push_back (selector (dm->datasets[i]->planes[i],
-					&(dm->datasets[i]->map), k++) );
+	{
+	    all_dp.push_back (selector (dm->datasets[i]->planes[j],
+					&(dm->datasets[i]->map), i, j) );
+	    // __bar_visibility (i, j, false);
 
+	}
+	p_pidx.push_back(0);
+    }
     reorder_display ();
 
-    bar_num = 0;
-    for (int i = 0; i < all_dp.size(); i++)
-	__bar_visibility (i, !i);
+    pidx = sidx = 0;
 
     TwBar* cbar;
 
@@ -77,12 +108,18 @@ DisplayManager::DisplayManager (DataManager* dm) : dm (dm)
     TwDefine("Controller size='250 350'");
     TwDefine("Controller valueswidth=80");
     TwDefine("Controller color='192 255 192' text=dark ");
-
-    stringstream ss; ss << "min=0 max="<< ((int)all_dp.size())-1 <<" step=1 keydecr='<' keyincr='>'";
+    TwDefine("Controller position='10 10'");
+    
+    stringstream ss; ss << "min=0 max="<< ((int) dm->datasets.size ()) - 1 <<" step=1 keydecr='<' keyincr='>'";
     string s = ss.str();
-    TwAddVarCB(cbar, "select plane", TW_TYPE_INT32, tw_setbarnum, tw_getbarnum, this, s.c_str());
+    TwAddVarCB(cbar, "select_dataset", TW_TYPE_INT32, tw_set_sidx, tw_get_sidx, this, s.c_str());
+    ss.str(""); ss.clear(); ss << "min=0 max="<< ((int) dm->datasets[0]->planes.size ()) - 1 <<" step=1 keydecr='[' keyincr=']'";
+    s = ss.str();
+    TwAddVarCB(cbar, "select_plane", TW_TYPE_INT32, tw_set_pidx, tw_get_pidx, this, s.c_str());
 
     TwAddButton(cbar, "vis_reorder", tw_reorder, this, "");
+
+    __bar_visibility (sidx, pidx, true);
 }
 
 DisplayManager::~DisplayManager () {}
@@ -121,13 +158,13 @@ void DisplayManager::reorder_display ()
 
 
 
-DisplayPlane* selector (Plane* p, GeoMapping* m, int idx)
+DisplayPlane* selector (Plane* p, GeoMapping* m, int sidx, int pidx)
 {
     switch (p->type)
     {
     case DEM:
 	// DEMReader
-	return new DisplayDem (p, m, idx);
+	return new DisplayDem (p, m, sidx, pidx);
 	break;
 
     case IMG:
@@ -166,6 +203,6 @@ DisplayPlane* selector (Plane* p, GeoMapping* m, int idx)
 	break;
     }
 
-    return new DisplayPlane (idx);
+    return new DisplayPlane (sidx, pidx);
 }
 

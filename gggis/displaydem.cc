@@ -14,7 +14,7 @@
 // }
 
 
-DisplayDem::DisplayDem (Plane* p, GeoMapping* m, int idx) : DisplayPlane (idx)
+DisplayDem::DisplayDem (Plane* p, GeoMapping* m, int sidx, int pidx) : DisplayPlane (sidx, pidx)
 {
     // data
     
@@ -39,7 +39,7 @@ DisplayDem::DisplayDem (Plane* p, GeoMapping* m, int idx) : DisplayPlane (idx)
 	       "min=1.0 max=256.0 step=1.0");
     multiply = 1.0;
     
-    order = idx? -1 : 0;
+    // order = idx? -1 : 0;
 }
 
 DisplayDem::~DisplayDem () {}

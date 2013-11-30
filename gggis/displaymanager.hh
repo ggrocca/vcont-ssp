@@ -50,15 +50,23 @@ public:
     GeoMapping* map;
     int order;
     
-    DisplayPlane (int idx) 
+    DisplayPlane (int sidx, int pidx) 
     {
 	// base interface
 	
-	std::stringstream ss; ss << "bar_plane_" << idx;
+	std::stringstream ss; ss << "bar_plane_" << sidx <<"_"<< pidx;
 	
 	bar_name = ss.str();
 	
 	bar = TwNewBar(bar_name.c_str());
+
+	string s = bar_name + " "
+	    "size='250 350' valueswidth=80 "
+	    "color='192 192 255' text=dark "
+	    "position='270 10' "
+	    "visible=false";
+	TwDefine(s.c_str());
+
 
 	order = -1;
 
@@ -72,7 +80,7 @@ public:
 };
 
 
-DisplayPlane* selector (Plane* p, GeoMapping* m, int idx);
+DisplayPlane* selector (Plane* p, GeoMapping* m, int sidx, int pidx);
 
 /*
 class DisplayManager
@@ -104,7 +112,8 @@ public:
     void display ();
     void reorder_display();
 
-    int bar_num;
+    int sidx,pidx;
+    vector<int> p_pidx;
 };
 
 
