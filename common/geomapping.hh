@@ -25,18 +25,22 @@ public:
 	
 	for (unsigned i = 0; i < all.size(); i++)
 	{
-		Point ai, bi;
+	    Point ai, bi;
 	
-		ai = all[i].a;
-		bi = all[i].b;
+	    ai = all[i].a;
+	    bi = all[i].b;
 	
-		if (ai < a)
-		    a = ai;
+	    if (ai.x < a.x)
+		a.x = ai.x;
+	    if (ai.y < a.y)
+		a.y = ai.y;
 	
-		if (bi > b)
-		    b = bi;
+	    if (bi.x > b.x)
+		b.x = bi.x;
+	    if (bi.y > b.y)
+		b.y = bi.y;
 	
-		// tprint ("ai (%lf, %lf) __ bi () (%lf, %lf)\n", ai.x, ai.y, bi.x, bi.y);
+	    tprint ("ai (%lf, %lf) __ bi () (%lf, %lf)\n", ai.x, ai.y, bi.x, bi.y);
 	}
     }
 
@@ -116,6 +120,11 @@ public:
 	lp.x = /*floor*/ (__s_tr (wp.x, world.a.x, world.b.x, local.a.x, local.b.x));
 	lp.y = /*floor*/ (__s_tr (wp.y, world.a.y, world.b.y, local.a.y, local.b.y));
 	return lp;
+    }
+
+    bool is_identity ()
+    {
+	return local.a == world.a && local.b == world.b;
     }
 };
 

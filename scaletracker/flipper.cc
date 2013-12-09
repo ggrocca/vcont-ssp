@@ -194,15 +194,16 @@ void Map::point_print (int scope, Coord c)
 {
     MapEntry me = (*this)(c);
     
-    tprintsp (scope, "@@", " map entry %d %d. tr[0]:%d _ tr[1]:%d @@\n",
+    tprintsp (scope, "\n@@", " map entry %d %d. tr[0]:%d _ tr[1]:%d @@\n",
 	       c.x, c.y, me.tr[0], me.tr[1]);
-    tprints (scope, "     %c %c\n"
-	             "   %c %c %c\n"
-	             "   %c %c\n",
-	           relation2char (me.get_rel (2)), relation2char (me.get_rel (3)),
-	      relation2char (me.get_rel (1)), '*', relation2char (me.get_rel (4)),
-	      relation2char (me.get_rel (0)), relation2char (me.get_rel (5))
-	    );
+    tprints (scope, "\n" 
+	     "     %c %c\n"
+	     "   %c %c %c\n"
+	     "   %c %c\n",
+	     relation2char (me.get_rel (2)), relation2char (me.get_rel (3)),
+	     relation2char (me.get_rel (1)), '*', relation2char (me.get_rel (4)),
+	     relation2char (me.get_rel (0)), relation2char (me.get_rel (5))
+	     );
 }
 
 
@@ -793,8 +794,8 @@ void process_flips (std::vector<Flip>& flips, Map* map,
 
 	ts.insert (base, before, after);
 
-	if (before.sum() != after.sum())
-	    FlipperDebug::print_flip_interpolated (flips[i], before, after, map, base);
+	// if (SCOPE_TRACKING && (before.sum() != after.sum()))
+	//     FlipperDebug::print_flip_interpolated (flips[i], before, after, map, base);
 
 	// if (i == __debug_flip)
 	//     tracking_debug_print (fs[i], before, after, map, base);
@@ -1104,20 +1105,26 @@ void pair_insert (std::vector<TrackLine>& lines, Map* map, Flip f,
     bl = before.a;
     br = before.b;
     al = after.a;
-    ar = after.b;
+   ar = after.b;
 
     TrackEntry el (f.e.l, f.t + ((double) base));
     TrackEntry er (f.e.r, f.t + ((double) base));
 
     if (before.sum() != after.sum())
+    {
+	eprint ("%s", "Different sum, Euler formula not respected.\n");
 	goto exit_error;
+    }
 
     if (bl == al && br == ar)
     {
 	if ((bl == REG || bl == SA2) && (br == REG || br == SA2))
 	    goto exit_success;
 	else
-	    goto exit_error;		
+	{
+	    eprint ("%s", "Should have been regular.\n");
+	    goto exit_error;
+	}
     }
 
     if (bl == ar && br == al)
@@ -1146,6 +1153,7 @@ void pair_insert (std::vector<TrackLine>& lines, Map* map, Flip f,
 	    move_3 (lines, map, er, el);
 	    goto exit_success;
 	}
+	eprint ("%s", "Should have been a normal move.\n");
 	goto exit_error;
     }
 
@@ -1205,8 +1213,9 @@ void pair_insert (std::vector<TrackLine>& lines, Map* map, Flip f,
     eprint ("%s", "Same sum, uncatched move.\n");
 
  exit_error:
-    eprint ("%s", "Exit error!\n");
-    FlipperDebug::print_flip_interpolated (f, before, after, map, base);
+    if (SCOPE_TRACKING)
+    	FlipperDebug::print_flip_interpolated (f, before, after, map, base);
+    eprintx (42, "%s", "Exit error!\n");
 
  exit_success:
     return;

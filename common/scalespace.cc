@@ -437,11 +437,11 @@ void ScaleSpace::point_print_interpolated (int scope, int level, double t, Coord
     s  = lerp (t, b_s, m_s);
     se = lerp (t, b_se, m_se);
 
-    oprints (scope, "--POINT %d %d  -----\n", x, y);
+    oprints (scope, "\n--POINT %d %d  -----\n", x, y);
     oprints (scope,
-	     "  % 6.8lf % 6.8lf % 6.8lf\n"
-	     "  % 6.8lf % 6.8lf % 6.8lf\n"
-	     "  % 6.8lf % 6.8lf % 6.8lf\n",
+	     "  % 6.50lf % 6.50lf % 6.50lf\n"
+	     "  % 6.50lf % 6.50lf % 6.50lf\n"
+	     "  % 6.50lf % 6.50lf % 6.50lf\n",
 	             nw,      n,     ne,
 	              w,      c,      e,
 	             sw,      s,     se);

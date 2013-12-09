@@ -46,7 +46,7 @@ bool do_final_query = false;
 
 void print_help (FILE* f)
 {
-    fprintf (f, "Usage: smoother\n"
+    fprintf (f, "Usage: scaletracker\n"
 	     "-n numlevel : number of levels\n"
 	     "[-i imagefile] : supported inputs formats hgt, png, bmp\n"
 	     "[-r scalespace.ssp] : read scalespace in binary format\n"
