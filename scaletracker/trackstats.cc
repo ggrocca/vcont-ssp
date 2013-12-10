@@ -153,8 +153,8 @@ void FlipperDebug::print_flip_interpolated (Flip f,
     el.c = f.e.l;
     er.c = f.e.r;
 
-    tprints (SCOPE_TRACKING, "%s", "======================\n");
-    tprints (SCOPE_TRACKING, "flip: t=%f, (%d,%d)--(%d,%d)",
+    oprints (SCOPE_TRACKING, "%s", "\n\n======================\n");
+    tprints (SCOPE_TRACKING, "flip: t=%f, (%d,%d)--(%d,%d)\n",
 	     f.t, el.c.x, el.c.y, er.c.x, er.c.y);
     tprints (SCOPE_TRACKING, "type: %c,%c ---> %c,%c. before: %d, after %d \n",
 	    critical2char(bl),critical2char(br),
@@ -168,7 +168,7 @@ void FlipperDebug::print_flip_interpolated (Flip f,
     dem->point_print (SCOPE_TRACKING, er.c);
     next->point_print (SCOPE_TRACKING, er.c);
     _ss->point_print_interpolated (SCOPE_TRACKING, base, f.t, er.c);
-    tprints (SCOPE_TRACKING, "%s", "======================\n");
+    oprints (SCOPE_TRACKING, "%s", "======================\n");
 }
 
 void FlipperDebug::eprint_invert_map_flip (Coord a, Coord b,
