@@ -32,7 +32,7 @@ using std::string;
 */
 
 #define _DM_STR_LEN 10 // max length of strings in type and extensions
-#define _DM_EXT_NUM 4  // max num of etensions associated to a type, terminator included
+#define _DM_EXT_NUM 10  // max num of etensions associated to a type, terminator included
 #define _DM_TERM "___"
 #define _DM_TYPEFILE_EXT ".type" // extension to be appended at files containing type assignment
 // 0 unknown/unsupported type
@@ -50,8 +50,8 @@ typedef enum            {UKW=0, DEM=1, IMG=2, CRT=3, TRK=4, SSP=5, CRV=6, EXM=7,
 #define __DST_EXTENSIONS					\
     {								\
 	/* 0 */    {"UKW",_DM_TERM},				\
-	    /* 1 */    {"hgt","png",_DM_TERM},			\
-	    /* 2 */    {"tif","tiff",_DM_TERM},			\
+	    /* 1 */    {"hgt","tif","png",_DM_TERM},		\
+	    /* 2 */    {"tiff","jpg",_DM_TERM},			\
 	    /* 3 */    {"crt",_DM_TERM},			\
 	    /* 4 */    {"trk",_DM_TERM},			\
 	    /* 5 */    {"ssp",_DM_TERM},			\

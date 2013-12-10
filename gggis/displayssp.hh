@@ -1,8 +1,8 @@
-#ifndef _DISPLAYDEM_HH
-#define _DISPLAYDEM_HH
+#ifndef _DISPLAYSSP_HH
+#define _DISPLAYSSP_HH
 
 #include "displaymanager.hh"
-
+#include "scalespace.hh"
 
 
 // class DisplayPlane
@@ -18,7 +18,7 @@
 //     static inline DisplayPlane* selector (Plane* p)
 
 
-class DisplayDem : public DisplayPlane
+class DisplaySSP : public DisplayPlane
 {
     // TwBar* bar;
     // string bar_name;
@@ -26,16 +26,17 @@ class DisplayDem : public DisplayPlane
     // int order;
 public:
 
-    DEMReader* dr;
+    ScaleSpace *ssp;
     
-    DisplayDem (Plane* p, GeoMapping* m, int sidx, int pidx);
-    ~DisplayDem ();
+    DisplaySSP (Plane* p, GeoMapping* m, int sidx, int pidx);
+    ~DisplaySSP ();
 
     void display ();
 
+    int level;
     double clip_black;
     double clip_white;
     double multiply;
 };
 
-#endif // _DISPLAYDEM.HH
+#endif // _DISPLAYSSP.HH

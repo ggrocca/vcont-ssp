@@ -1,32 +1,39 @@
-#include "displaydem.hh"
+#include "displayssp.hh"
 
-// class DisplayDem : public DisplayPlane
+// class DisplaySSP : public DisplayPlane
 // {
 //     // TwBar* bar;
 //     // string bar_name;
 //     // GeoMapping* map;
 //     // int order;
     
-//     DisplayDem (Plane* p);
-//     ~DisplayDem ();
+//     DisplaySSP (Plane* p);
+//     ~DisplaySSP ();
 
 //     void display ();
 // }
 
 
-DisplayDem::DisplayDem (Plane* p, GeoMapping* m, int sidx, int pidx) : DisplayPlane (sidx, pidx)
+DisplaySSP::DisplaySSP (Plane* p, GeoMapping* m, int sidx, int pidx) : DisplayPlane (sidx, pidx)
 {
     // data
     
     map = m;
 
-    if (p->type != DEM)
+    if (p->type != SSP)
 	eprintx (6, "Abort, %s wrong type for me.\n", (ds_type2string(p->type)).c_str());
 
-    dr = (DEMReader*) p->data;
+    ssp = (ScaleSpace*) p->data;
 
 
     // interface
+
+    level = 0;
+
+    stringstream ss; ss << "min=0 max="<< ssp->levels - 1 <<" step=1";
+    string s = ss.str();
+
+    TwAddVarRW(bar, "level", TW_TYPE_INT32, &level, s.c_str());
 
     clip_black = 0.0;
     TwAddVarRW(bar, "clip_black", TW_TYPE_DOUBLE, &clip_black,
@@ -34,6 +41,7 @@ DisplayDem::DisplayDem (Plane* p, GeoMapping* m, int sidx, int pidx) : DisplayPl
     clip_white = 65535.0;
     TwAddVarRW(bar, "clip_white", TW_TYPE_DOUBLE, &clip_white,
 	       "min=0.0 max=65536.0 step=10.0");
+
     multiply = 1.0;
     TwAddVarRW(bar, "mult factor", TW_TYPE_DOUBLE, &multiply,
 	       "min=1.0 max=256.0 step=1.0");
@@ -41,7 +49,7 @@ DisplayDem::DisplayDem (Plane* p, GeoMapping* m, int sidx, int pidx) : DisplayPl
     // order = idx? -1 : 0;
 }
 
-DisplayDem::~DisplayDem () {}
+DisplaySSP::~DisplaySSP () {}
 
 
 static double __clip (double v, double min, double max, double mul)
@@ -54,20 +62,21 @@ static double __clip (double v, double min, double max, double mul)
     return (v - min) / (max - min);
 }
 
-void DisplayDem::display ()
+void DisplaySSP::display ()
 {
     double min = clip_black;
     double max = clip_white;
     double mul = multiply;
 
     glBegin (GL_TRIANGLES);
-    for (unsigned int i = 0; i < dr->width - 1; i++)
-	for (unsigned int j = 0; j < dr->height - 1; j++)
+    for (int i = 0; i < ssp->dem[level]->width - 1; i++)
+	for (int j = 0; j < ssp->dem[level]->height - 1; j++)
 	{
-	    double vij = dr->get_pixel (i, j);
-	    double vipj = dr->get_pixel (i+1, j);
-	    double vijp = dr->get_pixel (i, j+1);
-	    double vipjp = dr->get_pixel (i+1, j+1);
+
+	    double vij = (*ssp->dem[level]) (i, j);
+	    double vipj = (*ssp->dem[level]) (i+1, j);
+	    double vijp = (*ssp->dem[level]) (i, j+1);
+	    double vipjp = (*ssp->dem[level]) (i+1, j+1);
 	    vij = __clip (vij, min, max, mul);
 	    vipj = __clip (vipj, min, max, mul);
 	    vijp = __clip (vijp, min, max, mul);

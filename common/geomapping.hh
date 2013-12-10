@@ -40,7 +40,7 @@ public:
 	    if (bi.y > b.y)
 		b.y = bi.y;
 	
-	    tprint ("ai (%lf, %lf) __ bi () (%lf, %lf)\n", ai.x, ai.y, bi.x, bi.y);
+	    tprints (SCOPE_BOUNDINGBOX, "ai (%lf, %lf) __ bi () (%lf, %lf)\n", ai.x, ai.y, bi.x, bi.y);
 	}
     }
 

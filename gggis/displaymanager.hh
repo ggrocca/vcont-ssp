@@ -51,33 +51,12 @@ public:
     GeoMapping* map;
     int order;
     
-    DisplayPlane (int sidx, int pidx) : sidx (sidx), pidx (pidx)
-    {
-	// base interface
-	
-	std::stringstream ss; ss << "bar_plane_" << sidx <<"_"<< pidx;
-	
-	bar_name = ss.str();
-	
-	bar = TwNewBar(bar_name.c_str());
-
-	string s = bar_name + " "
-	    "size='250 350' valueswidth=80 "
-	    "color='192 192 255' text=dark "
-	    "position='270 10' "
-	    "visible=false";
-	TwDefine(s.c_str());
-
-
-	order = -1;
-
-	TwAddVarRW(bar, "vis_order", TW_TYPE_INT32, &order,
-		   "min=-1 max=256 step=1");
-    }
-
+    DisplayPlane (int sidx, int pidx);
     
-    virtual ~DisplayPlane () {}
-    virtual void display () {}
+    virtual ~DisplayPlane ();
+    virtual void display ();
+    virtual void push_transform ();
+    virtual void pop_transform ();
 };
 
 

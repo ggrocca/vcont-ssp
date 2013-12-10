@@ -1,5 +1,5 @@
-#ifndef _DISPLAYDEM_HH
-#define _DISPLAYDEM_HH
+#ifndef _DISPLAYIMG_HH
+#define _DISPLAYIMG_HH
 
 #include "displaymanager.hh"
 
@@ -18,7 +18,7 @@
 //     static inline DisplayPlane* selector (Plane* p)
 
 
-class DisplayDem : public DisplayPlane
+class DisplayIMG : public DisplayPlane
 {
     // TwBar* bar;
     // string bar_name;
@@ -26,10 +26,10 @@ class DisplayDem : public DisplayPlane
     // int order;
 public:
 
-    DEMReader* dr;
+    cimg_library::CImg<unsigned char>* img;
     
-    DisplayDem (Plane* p, GeoMapping* m, int sidx, int pidx);
-    ~DisplayDem ();
+    DisplayIMG (Plane* p, GeoMapping* m, int sidx, int pidx);
+    ~DisplayIMG ();
 
     void display ();
 
@@ -38,4 +38,4 @@ public:
     double multiply;
 };
 
-#endif // _DISPLAYDEM.HH
+#endif // _DISPLAYIMG.HH

@@ -13,7 +13,7 @@
 #include "camera.hh"
 #include "datamanager.hh"
 #include "displaymanager.hh"
-
+#include "debug.h"
 
 
 /////////////
@@ -30,6 +30,16 @@ Camera camera;
 int width = W;
 int height = H;
 
+
+void TW_CALL BreakOnError(const char *errorMessage)
+{ 
+    if (errorMessage == NULL)
+	assert (0); 
+    else
+    {
+	eprintx (3, "%s\n", errorMessage);
+    }
+}
 
 
 //////////
@@ -206,30 +216,37 @@ int main (int argc, char *argv[])
 
     data_m = new DataManager (path, org);
     
-    BoundingBox lbb,wbb;
-    for (unsigned i = 0; i < data_m->datasets.size(); i++)
+    if (_TRACE_TEST && SCOPE_BOUNDINGBOX)
     {
-	lbb = data_m->datasets[i]->getbb_local ();
-	wbb = data_m->datasets[i]->getbb_world ();
-	printf ("\nDataset: %s. Dir: %s. lbb((%lf,%lf),(%lf,%lf)) wbb((%lf,%lf),(%lf,%lf))\n",
-		data_m->datasets[i]->name.c_str(), data_m->datasets[i]->dir.c_str(),
-		lbb.a.x, lbb.a.y, lbb.b.x, lbb.b.y, wbb.a.x, wbb.a.y, wbb.b.x, wbb.b.y);
-
-	for (unsigned j = 0; (data_m->datasets[i]->planes.size()) > j; j++)
+	BoundingBox lbb,wbb;
+	for (unsigned i = 0; i < data_m->datasets.size(); i++)
 	{
-	    lbb = data_m->datasets[i]->planes[j]->getbb ();
-	    printf ("\tPlane: %s. Path: %s. Type: %s. bb ((%lf,%lf),(%lf,%lf))\n",
-		    data_m->datasets[i]->planes[j]->filename.c_str(),
-		    data_m->datasets[i]->planes[j]->pathname.c_str(),
-		    (ds_type2string (data_m->datasets[i]->planes[j]->type)).c_str(),
-		    lbb.a.x, lbb.a.y, lbb.b.x, lbb.b.y
-		    );
+	    lbb = data_m->datasets[i]->getbb_local ();
+	    wbb = data_m->datasets[i]->getbb_world ();
+	    tprints (SCOPE_BOUNDINGBOX, "\nDataset: %s. Dir: %s. lbb((%lf,%lf),(%lf,%lf)) wbb((%lf,%lf),(%lf,%lf))\n",
+		     data_m->datasets[i]->name.c_str(), data_m->datasets[i]->dir.c_str(),
+		     lbb.a.x, lbb.a.y, lbb.b.x, lbb.b.y, wbb.a.x, wbb.a.y, wbb.b.x, wbb.b.y);
+
+	    for (unsigned j = 0; (data_m->datasets[i]->planes.size()) > j; j++)
+	    {
+		lbb = data_m->datasets[i]->planes[j]->getbb ();
+		tprints (SCOPE_BOUNDINGBOX, "\tPlane: %s. Path: %s. Type: %s. bb ((%lf,%lf),(%lf,%lf))\n",
+			 data_m->datasets[i]->planes[j]->filename.c_str(),
+			 data_m->datasets[i]->planes[j]->pathname.c_str(),
+			 (ds_type2string (data_m->datasets[i]->planes[j]->type)).c_str(),
+			 lbb.a.x, lbb.a.y, lbb.b.x, lbb.b.y
+			 );
+	    }
 	}
+
     }
+
     string exename = get_base (argv[0]);
 
     BoundingBox bb = data_m->getbb ();
-    printf ("FINAL BB: (%lf, %lf), (%lf, %lf)\n", bb.a.x, bb.a.y, bb.b.x, bb.b.y);
+
+    tprints (SCOPE_BOUNDINGBOX, "FINAL BB: (%lf, %lf), (%lf, %lf)\n", bb.a.x, bb.a.y, bb.b.x, bb.b.y);
+
     camera.set (W, H, bb);
 
     glutInit(&argc, argv);
@@ -239,6 +256,7 @@ int main (int argc, char *argv[])
 
     TwInit(TW_OPENGL, NULL);
     TwWindowSize(W, H);
+    TwHandleErrors(BreakOnError);
 
     disp_m = new DisplayManager (data_m);
 

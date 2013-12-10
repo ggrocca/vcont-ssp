@@ -53,6 +53,8 @@
 #define SCOPE_POINTTYPE 0
 #define SCOPE_FLIP 0
 #define SCOPE_FILTER 0
+#define SCOPE_BOUNDINGBOX 0
+#define SCOPE_CAMERA 0
 
 // if 1, perform an assert when a non critical error is reached.
 #define DO_ASSERT 0
@@ -136,10 +138,6 @@
 #else
 #define _TRACE_TEST 0
 #endif
-
-// GG HACK
-#undef _TRACE_TEST
-#define _TRACE_TEST 1
 
 
 #define tprint(fmt, ...)						\

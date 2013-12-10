@@ -72,6 +72,7 @@ OBJ_EXT = oo
 # CPPSOURCES = file1.cc file2.cc
 # CSOURCES = file1.c file2.c
 CPPSOURCES = gggis.cc datamanager.cc displaymanager.cc camera.cc displaydem.cc
+CPPSOURCES += displayssp.cc displayimg.cc displaytrack.cc
 CPPSOURCES += track.cc demreader.cc scalespace.cc dem.cc flipper.cc trackstats.cc
 CSOURCES =
 
