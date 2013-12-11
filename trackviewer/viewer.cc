@@ -225,8 +225,7 @@ int main (int argc, char *argv[])
     td.getbb (&a, &b);
     // camera.set_bb (a, b);
     // camera.reshape (W, H);
-    camera.set (W, H, a, b);
-
+    
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
     glutInitWindowSize(W, H);
@@ -262,6 +261,8 @@ int main (int argc, char *argv[])
     TwDefine("Camera_Rendering color='192 255 192' text=dark ");
 
     TwAddButton(cBar, "quit", call_quit, NULL, "");
+
+	camera.set (W, H, a, b);
 
     // TwEnumVal draw_modeEV[VF_DRAW_MODE_NUM] = {
     //     { VF::FLAT, "Flat" }, { VF::POINTS, "Points" }, { VF::WIRE, "Wire" } }; 
