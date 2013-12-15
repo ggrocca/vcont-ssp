@@ -48,6 +48,26 @@ public:
     {
 	return BoundingBox (Point::highest (), Point::lowest ());
     }
+
+    bool is_inside (Coord c)
+    {
+	return is_inside (Point ((double) c.x, (double) c.y));
+    }
+
+    bool is_inside (Point p)
+    {
+	return p >= a && p <= b;
+    }
+
+    bool is_outside (Coord c)
+    {
+	return is_outside (Point ((double) c.x, (double) c.y));
+    }
+
+    bool is_outside (Point p)
+    {
+	return !is_inside (p);
+    }
 };
 
 

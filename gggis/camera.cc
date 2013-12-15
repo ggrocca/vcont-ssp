@@ -4,7 +4,7 @@
 #include <stdlib.h>
  
 #include "camera.hh"
-
+#include "debug.h"
 
 Camera::Camera(){}
 
@@ -55,17 +55,6 @@ void Camera::reset ()
     virtual_center = box_center;
     // virtual_center.x -= (((virtual_width * aspect) - virtual_width) / 2.0) / aspect;
     //virtual_center.x -= (((virtual_width * ) - virtual_width) / 2.0);
-
-    tprints (SCOPE_CAMERA, "virtual dim %lf, vcent(%lf, %lf), aspect %lf\n",
-	     virtual_width, virtual_center.x, virtual_center.y, aspect);
-
-    tprints (SCOPE_CAMERA, "GLORTHO: %lf, %lf, %lf, %lf\n",
-	    (virtual_center.x - (( virtual_width / 2.0) * aspect)),
-	    (virtual_center.x + (( virtual_width / 2.0) * aspect)),
-	    // (virtual_center.x - ( virtual_width / 2.0)) * aspect,
-	    // (virtual_center.x + ( virtual_width / 2.0)) * aspect,
-	    virtual_center.y - ( virtual_height / 2.0),
-	    virtual_center.y + ( virtual_height / 2.0) );
 
     // virtual_center.x += (long_dim - short_dim) * start_zoom_out;
 }
@@ -152,6 +141,17 @@ void Camera::mouse (int button, int state, int mx, int mmy)
         virtual_center.x += (preX - postX);
         virtual_center.y += (preY - postY);
     }
+
+    tprints (SCOPE_CAMERA, "virtual dim %lf, vcent(%lf, %lf), aspect %lf\n",
+	     virtual_width, virtual_center.x, virtual_center.y, aspect);
+
+    tprints (SCOPE_CAMERA, "GLORTHO: %lf, %lf, %lf, %lf\n\n\n",
+	    (virtual_center.x - (( virtual_width / 2.0) * aspect)),
+	    (virtual_center.x + (( virtual_width / 2.0) * aspect)),
+	    // (virtual_center.x - ( virtual_width / 2.0)) * aspect,
+	    // (virtual_center.x + ( virtual_width / 2.0)) * aspect,
+	    virtual_center.y - ( virtual_height / 2.0),
+	    virtual_center.y + ( virtual_height / 2.0) );
 
     glutPostRedisplay();
 }

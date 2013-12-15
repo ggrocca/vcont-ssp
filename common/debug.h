@@ -55,6 +55,7 @@
 #define SCOPE_FILTER 0
 #define SCOPE_BOUNDINGBOX 0
 #define SCOPE_CAMERA 0
+#define SCOPE_SEEK 0
 
 // if 1, perform an assert when a non critical error is reached.
 #define DO_ASSERT 0
@@ -64,6 +65,12 @@
 
 // choose if other prints go on stdout or stderr
 #define OTHER_STREAM stdout
+
+#ifdef DEBUGTRACE
+#define _TRACE_TEST 1
+#else
+#define _TRACE_TEST 0
+#endif
 
 #ifdef __CUSTOM_DEBUG_EXISTS
 #include "custom_debug.h"
@@ -130,15 +137,6 @@
 	    assert (0);							\
 	exit (exit_value);						\
     } while (0)
-
-
-
-#ifdef DEBUGTRACE
-#define _TRACE_TEST 1
-#else
-#define _TRACE_TEST 0
-#endif
-
 
 #define tprint(fmt, ...)						\
     do {								\

@@ -1105,7 +1105,7 @@ void pair_insert (std::vector<TrackLine>& lines, Map* map, Flip f,
     bl = before.a;
     br = before.b;
     al = after.a;
-   ar = after.b;
+    ar = after.b;
 
     TrackEntry el (f.e.l, f.t + ((double) base));
     TrackEntry er (f.e.r, f.t + ((double) base));
@@ -1208,6 +1208,8 @@ void pair_insert (std::vector<TrackLine>& lines, Map* map, Flip f,
 	    move_12 (lines, map, el, er);
 	    goto exit_success;
 	}
+	eprint ("%s", "Should have been birth-death-2move.\n");
+	goto exit_error;
     }
 
     eprint ("%s", "Same sum, uncatched move.\n");

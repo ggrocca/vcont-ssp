@@ -82,6 +82,24 @@ bool TrackLine::is_alive () { return !is_dead(); }
 
 bool TrackLine::is_alive (unsigned j) { return !is_dead(j); }
 
+// bool TrackLine::is_active ()
+// {
+//     if (entries.size() < 1)
+//     {
+// 	eprint ("%s", "Empty line.\n");
+// 	return true;
+//     }
+
+//     return
+// 	!
+// 	(is_)
+// }
+
+// bool TrackLine::is_active (unsigned j)
+// {
+//     return !is_dead(j);
+// }
+
 bool TrackLine::is_original ()
 {
     if (entries.size() < 1)
@@ -145,12 +163,29 @@ void TrackLine::final_point (std::vector<TrackLine>& lines,
     else
     {
 	int life = entries.back().life;
-	// if (life == -1)
-	// 	fprintf (stderr, "AIUTO: %d.life = %d", i, life);
 	double lx = lines[life].entries.back().c.x;
 	double ly = lines[life].entries.back().c.y;
 	*fx = x + ((lx - x)/2.0);
 	*fy = y + ((ly - y)/2.0);
+    }
+}
+void TrackLine::start_point (std::vector<TrackLine>& lines, Point* d)
+{
+    double x =  entries[0].c.x;
+    double y =  entries[0].c.y;
+
+    if (!is_born ())
+    {
+	d->x = x;
+	d->y = y;
+    }
+    else
+    {
+	int life = entries[0].life;
+	double lx = lines[life].entries[0].c.x;
+	double ly = lines[life].entries[0].c.y;
+	d->x = x + ((lx - x)/2.0);
+	d->y = y + ((ly - y)/2.0);
     }
 }
 
@@ -266,4 +301,178 @@ void Track::query (double t, std::vector<TrackRenderingEntry>& v, bool verbose)
     }
     if (verbose)
 	tprintp ("!!!", "Found %zu criticals\n", v.size());
+}
+
+void TrackOrder::assign (Track* tr)
+{
+    track = tr;
+    current_event = 0;
+    current_time = 0.0;
+    previous_event = 0;
+    
+    int lines_num = track->lines.size();
+
+    // initialize current_pos at 0
+    for (int i = 0; i < lines_num; i++)
+    {
+	TrackOrderEntry toe;
+	toe.type = track->lines[i].type;
+	toe.c = track->lines[i].entries[0].c;
+	toe.active = !track->lines[i].is_born ();
+	toe.birth = false;
+	toe.death = false;
+	current_pos.push_back (toe);
+    }
+
+    // collect all events and order them
+    for (int i = 0; i < lines_num; i++)
+	for (unsigned j = 0; j < track->lines[i].entries.size(); j++)
+	{
+	    TrackEvent te;
+	    te.t = track->lines[i].entries[j].t;
+	    te.line = i;
+	    te.pos = j;
+	    te.birth = (j == 0 && track->lines[i].is_born ());
+	    te.death = (j == track->lines[i].entries.size() - 1 && track->lines[i].is_dead ());
+	    events.push_back (te);
+	}
+
+    // GG should sort in exactly same order as flips. (is that levels and coord?)
+    std::sort (events.begin(), events.end());
+}
+
+// returns true if it has handled life event.
+bool TrackOrder::update ()
+{
+    TrackEvent te = events[current_event];
+    TrackEvent lte = events[previous_event];
+    current_time = te.t;
+	
+    TrackLine* tl = &(track->lines[te.line]);
+    current_pos[te.line].type = tl->get_type (te.pos);
+    current_pos[te.line].c = tl->entries[te.pos].c;
+    current_pos[te.line].idx = te.pos;
+
+    current_pos[te.line].active = tl->is_alive (te.pos) || te.birth || te.death;
+    current_pos[te.line].birth = te.birth;
+    current_pos[te.line].death = te.death;
+
+    if (current_pos[te.line].birth)
+	tl->start_point (track->lines, &(current_pos[te.line].d));
+    if (current_pos[te.line].death)
+	tl->final_point (track->lines, &(current_pos[te.line].d.x), &(current_pos[te.line].d.y));
+
+    // update last event birth, active and death
+    if (previous_event - current_event == 1) // backward
+    {
+	if (current_pos[lte.line].birth)
+	    current_pos[lte.line].active = false;
+    }
+    else if (previous_event - current_event == -1) // forward 
+    {
+	if (current_pos[lte.line].death)
+	    current_pos[lte.line].active = false;
+    }
+    else if (previous_event != current_event)
+	eprintx (42, "%s", "Something wrong with previous and current event\n");
+
+    current_pos[lte.line].birth = false;
+    current_pos[lte.line].death = false;
+
+    previous_event = current_event;
+    last_event_c = current_pos[te.line].c;
+
+    return te.birth || te.death;
+}
+
+bool TrackOrder::seek (int new_event)
+{
+    if (new_event == current_event)
+	return true;
+
+    bool r = true;
+    if (new_event < 0)
+    {
+	if (current_event == 0)
+	    return false;
+
+	new_event = 0;
+	r = false;
+    }
+    if (new_event >= (int) events.size())
+    {
+	if (current_event == (int) events.size() - 1)
+	    return -1;
+
+	new_event = events.size() - 1;
+	r = false;
+    }
+
+    bool forward = current_event < new_event;
+
+    do 
+    {
+	update ();
+	current_event += forward? 1 : -1;
+    }
+    while (current_event != new_event);
+
+    return r;
+}
+
+bool TrackOrder::seek (bool forward = true)
+{
+    return seek (forward? current_event+1 : current_event-1);
+}
+
+bool TrackOrder::seek_bb (bool forward, BoundingBox bb)
+{
+    if (forward && current_event <= 0)
+	return false;
+
+    if (!forward && current_event >= (int) events.size()-1)
+	return false;
+
+    int i = 0;
+    do 
+    {
+	i++;
+	update ();
+	current_event += forward? 1 : -1;
+
+	oprints (SCOPE_SEEK, "SEEKBB. Moved %d. cur_ev %d."
+		 "bb((%lf,%lf),(%lf,%lf)). lc(%d,%d)\n",
+		 i, current_event, bb.a.x, bb.a.y, bb.b.x, bb.b.y,
+		 last_event_c.x, last_event_c.y);
+    }
+    while (current_event >= 0 &&
+	   current_event < (int) events.size()
+	   &&
+	   bb.is_outside (last_event_c)
+	   );
+
+
+    return true;
+}
+
+bool TrackOrder::seek_life_bb (bool forward, BoundingBox bb)
+{
+    if (forward && current_event <= 0)
+	return false;
+
+    if (!forward && current_event >= (int) events.size()-1)
+	return false;
+
+    bool life;
+    do 
+    {
+	life = update ();
+	current_event += forward? 1 : -1;
+    }
+    while (current_event >= 0 &&
+	   current_event < (int) events.size() &&
+	   // bb.is_outside (last_event_c) &&
+	   !life
+	   );
+    return true;
 }

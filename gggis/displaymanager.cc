@@ -145,7 +145,7 @@ DisplayManager::DisplayManager (DataManager* dm) : dm (dm)
     TwBar* cbar;
 
     cbar = TwNewBar("Controller");
-    TwDefine("Controller size='250 350'");
+    TwDefine("Controller size='250 250'");
     TwDefine("Controller valueswidth=170");
     TwDefine("Controller color='192 255 192' text=dark ");
     TwDefine("Controller position='10 10'");
@@ -195,6 +195,12 @@ void DisplayManager::display ()
 	vis_dp[i]->display ();
 	vis_dp[i]->pop_transform ();
     }
+}
+
+void DisplayManager::set_viewport (int w, int h)
+{
+    for (unsigned i = 0; i < all_dp.size(); i++)
+	all_dp[i]->set_viewport (w, h);
 }
 
 bool display_comparison (DisplayPlane* lp, DisplayPlane* rp)
@@ -300,9 +306,9 @@ DisplayPlane::DisplayPlane (int sidx, int pidx) : sidx (sidx), pidx (pidx)
     bar = TwNewBar(bar_name.c_str());
 
     string s = bar_name + " "
-	"size='250 350' valueswidth=80 "
+	"size='250 430' valueswidth=80 "
 	"color='192 192 255' text=dark "
-	"position='270 10' "
+	"position='10 270' "
 	"visible=false";
     TwDefine(s.c_str());
 
@@ -321,6 +327,14 @@ DisplayPlane::~DisplayPlane ()
 {
 
 }
+
+void DisplayPlane::set_viewport (int w, int h)
+{
+    viewport.a.x = viewport.a.y = 0.0;
+    viewport.b.x = (double) w;
+    viewport.b.y = (double) h;
+}
+
 
 void DisplayPlane::display ()
 {

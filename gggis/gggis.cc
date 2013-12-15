@@ -87,6 +87,8 @@ void reshape(int w, int h)
     height = h;
     glViewport(0, 0, (GLsizei) w, (GLsizei) h);
 
+    disp_m->set_viewport (w, h);
+
     TwWindowSize(w, h);
 
     glutPostRedisplay();
@@ -259,6 +261,7 @@ int main (int argc, char *argv[])
     TwHandleErrors(BreakOnError);
 
     disp_m = new DisplayManager (data_m);
+    disp_m->set_viewport (W, H);
 
     glClearColor(0, 0, 0, 0);
     glEnable(GL_NORMALIZE);

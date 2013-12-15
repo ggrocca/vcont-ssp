@@ -29,6 +29,8 @@ public:
 
     Track* track;
     std::vector<TrackRenderingEntry> vquery;
+    TrackOrder* track_order;
+    BoundingBox bb;
     
     DisplayTrack (Plane* p, GeoMapping* m, int sidx, int pidx);
     ~DisplayTrack ();
@@ -56,6 +58,12 @@ public:
 
     double scale_value;
     double time_value;
+
+    // ordered tracking
+    bool draw_order;
+    double order_mult;
+    int order_step;
+    double order_time;
 };
 
 #endif // _DISPLAYTRACK.HH

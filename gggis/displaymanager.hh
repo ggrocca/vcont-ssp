@@ -50,10 +50,12 @@ public:
     string bar_name;
     GeoMapping* map;
     int order;
-    
+    BoundingBox viewport;
+
     DisplayPlane (int sidx, int pidx);
-    
     virtual ~DisplayPlane ();
+
+    void set_viewport (int w, int h);
     virtual void display ();
     virtual void push_transform ();
     virtual void pop_transform ();
@@ -89,6 +91,7 @@ public:
     DisplayManager (DataManager* dm);
     ~DisplayManager ();
 
+    void set_viewport (int w, int h);
     void display ();
     void reorder_display ();
     void mute_current ();

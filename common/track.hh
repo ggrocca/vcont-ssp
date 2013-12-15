@@ -6,9 +6,10 @@
 #include "debug.h"
 #include "grid.hh"
 #include "scaletypes.hh"
+#include "geomapping.hh"
 
-
-class TrackEntry {
+class TrackEntry 
+{
 
 public:
 
@@ -30,7 +31,8 @@ public:
     // void reset_life { life = -1; }
 };
 
-class TrackRenderingEntry {
+class TrackRenderingEntry 
+{
 
 public:
     
@@ -46,7 +48,8 @@ public:
 };
 
 
-class TrackLine {
+class TrackLine 
+{
 
 public:
 
@@ -63,6 +66,8 @@ public:
     bool is_dead (unsigned j);
     bool is_alive ();
     bool is_alive (unsigned j);
+    // bool is_active ();
+    // bool is_active (unsigned j);
     bool is_original ();
     bool is_born ();
     double travel ();
@@ -71,10 +76,12 @@ public:
     // GG should be implemented in track
     void final_point (std::vector<TrackLine>& lines,
     		      double* fx, double* fy);
+    void start_point (std::vector<TrackLine>& lines, Point* d);
 };
 
 
-class Track {
+class Track 
+{
 
 public:
 
@@ -106,5 +113,71 @@ public:
     // originali e attuali.
 };
 
+
+class TrackEvent
+{
+ public:
+
+    double t;
+    int line;
+    int pos;
+    bool birth;
+    bool death;
+};
+inline bool operator< (const TrackEvent& lhs, const TrackEvent& rhs){ return lhs.t < rhs.t; }
+
+class TrackOrderEntry
+{
+ public:
+
+    CriticalType type; 
+    Coord c; // current position
+    Point d;
+    int idx; // index in Track.lines[i].entries
+    bool active; // after birth, before death
+    bool birth; // getting born now
+    bool death; // dying now
+};
+
+class TrackOrder
+{
+ public:
+
+    Track* track;
+    // current event index
+    int current_event;
+    // corrisponding time reached
+    double current_time;
+    
+    // situation of critical points at current time
+    std::vector<TrackOrderEntry> current_pos;
+    
+    // all events in tracking, ordered by time
+    std::vector<TrackEvent> events;
+
+    // build the events from track, initialize event and pos at 0
+    void assign (Track* track);
+
+    // seek from current position to new_event, updating positions
+    // when bounds are reached, stops and return false
+    bool seek (int new_event);
+    bool seek (bool forward);
+
+    bool seek_bb (bool forward, BoundingBox bb);
+    bool seek_life_bb (bool forward, BoundingBox bb);
+
+    // last event handled by seek
+    int previous_event;
+    // position of last event handled by seek
+    Coord last_event_c;
+
+    // GG TBD
+    // seek_next_life (); // go to next birth or death
+    // seek_prev_life ();
+    // int active_num; // number of active criticals.
+
+private:
+    bool update ();
+};
 
 #endif // _TRACK_HH

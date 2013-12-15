@@ -65,6 +65,88 @@ void TW_CALL tw_do_query(void* cd)
 }
 
 
+void TW_CALL tw_set_order_step (const void *value, void* cd)
+{
+    DisplayTrack* dt = (DisplayTrack*) cd;
+    dt->order_step = *(const int *) value;
+    dt->track_order->seek (dt->order_step);
+    dt->order_time = dt->track_order->current_time;
+    glutPostRedisplay();
+}
+
+void TW_CALL tw_get_order_step (void *value, void* cd)
+{
+    DisplayTrack* dt = (DisplayTrack*) cd;
+    *(int *) value = dt->order_step;
+}
+
+void TW_CALL tw_do_order(void* cd)
+{ 
+    DisplayTrack* dt = (DisplayTrack*) cd;
+
+    if (dt->track_order != NULL)
+	delete dt->track_order;
+
+    dt->track_order = new TrackOrder ();
+    dt->track_order->assign (dt->track);
+
+    fprintf (stderr, "ORDER %zu\n", dt->track_order->current_pos.size());
+    glutPostRedisplay();
+}
+
+
+    // faccio le interfaccie ai due nuovi seek - quattro bottoni
+    // bb fw
+    // bb bw
+    // life fw
+    // life bw
+
+void TW_CALL tw_bb_fw(void* cd)
+{ 
+    DisplayTrack* dt = (DisplayTrack*) cd;
+
+    dt->track_order->seek_bb (true, dt->bb);
+    dt->order_time = dt->track_order->current_time;
+    dt->order_step = dt->track_order->current_event;
+
+    glutPostRedisplay();
+}
+
+void TW_CALL tw_bb_bw(void* cd)
+{ 
+    DisplayTrack* dt = (DisplayTrack*) cd;
+
+    dt->track_order->seek_bb (false, dt->bb);
+    dt->order_time = dt->track_order->current_time;
+    dt->order_step = dt->track_order->current_event;
+
+    glutPostRedisplay();
+}
+
+void TW_CALL tw_life_bb_fw(void* cd)
+{ 
+    DisplayTrack* dt = (DisplayTrack*) cd;
+
+    dt->track_order->seek_life_bb (true, dt->bb);
+    dt->order_time = dt->track_order->current_time;
+    dt->order_step = dt->track_order->current_event;
+
+    glutPostRedisplay();
+}
+
+void TW_CALL tw_life_bb_bw(void* cd)
+{ 
+    DisplayTrack* dt = (DisplayTrack*) cd;
+
+    dt->track_order->seek_life_bb (false, dt->bb);
+    dt->order_time = dt->track_order->current_time;
+    dt->order_step = dt->track_order->current_event;
+
+    glutPostRedisplay();
+}
+
+
+
 DisplayTrack::DisplayTrack (Plane* p, GeoMapping* m, int sidx, int pidx) : DisplayPlane (sidx, pidx)
 {
     map = m;
@@ -91,40 +173,60 @@ DisplayTrack::DisplayTrack (Plane* p, GeoMapping* m, int sidx, int pidx) : Displ
     scale_value = 0.0;
     time_value = 0.0;
 
+    track_order = new TrackOrder ();
+    draw_order = false;
+    order_mult = 1.0;
+    order_step = 0;
 
-    TwAddVarRW(bar, "show tracking", TW_TYPE_BOOLCPP, &(draw_track), "");
-    TwAddVarRW(bar, "track scale", TW_TYPE_DOUBLE,
+    TwAddVarRW (bar, "show tracking", TW_TYPE_BOOLCPP, &(draw_track), "");
+    TwAddVarRW (bar, "track scale", TW_TYPE_DOUBLE,
 	       &(track_scale), "min=0.001 max=100.00 step=0.001");
-    TwAddVarRW(bar, "track life mult", TW_TYPE_DOUBLE, &(track_mult),
+    TwAddVarRW (bar, "track life mult", TW_TYPE_DOUBLE, &(track_mult),
 	       "min=0.0 max=100.00 step=0.05");
 
     TwAddSeparator (bar, 0, 0);
 
-    TwAddVarRW(bar, "show query", TW_TYPE_BOOLCPP, &(draw_query), "");
-    TwAddVarCB(bar, "query scale value", TW_TYPE_DOUBLE,
+    TwAddVarRW (bar, "show query", TW_TYPE_BOOLCPP, &(draw_query), "");
+    TwAddVarCB (bar, "query scale value", TW_TYPE_DOUBLE,
     	       tw_setScaleValue, tw_getScaleValue,
     	       this, "min=1.0000 max=4096.0000 step=1.0000");
-    TwAddVarCB(bar, "query time value", TW_TYPE_DOUBLE,
+    TwAddVarCB (bar, "query time value", TW_TYPE_DOUBLE,
     	       tw_setTimeValue, tw_getTimeValue,
     	       this, "min=0.0000 max=64.0000 step=0.25");
-    TwAddButton(bar, "DO QUERY", tw_do_query, this, "");
-    TwAddVarRW(bar, "query scale", TW_TYPE_DOUBLE,
+    TwAddButton (bar, "DO QUERY", tw_do_query, this, "");
+    TwAddVarRW (bar, "query scale", TW_TYPE_DOUBLE,
 	       &(query_scale), "min=0.001 max=100.00 step=0.001");
-    TwAddVarRW(bar, "query life mult", TW_TYPE_DOUBLE, &(query_mult),
+    TwAddVarRW (bar, "query life mult", TW_TYPE_DOUBLE, &(query_mult),
 	       "min=0.0 max=100.00 step=0.05");
-    TwAddVarRW(bar, "draw current pos", TW_TYPE_BOOLCPP, &(query_cur_pos), "");
-    TwAddVarRW(bar, "draw death point", TW_TYPE_BOOLCPP, &(query_death), "");
+    TwAddVarRW (bar, "draw current pos", TW_TYPE_BOOLCPP, &(query_cur_pos), "");
+    TwAddVarRW (bar, "draw death point", TW_TYPE_BOOLCPP, &(query_death), "");
 
     TwAddSeparator (bar, 0, 0);
 
-    TwAddVarRW(bar, "show lines", TW_TYPE_BOOLCPP, &(draw_lines), "");
-    TwAddVarRW(bar, "lines width", TW_TYPE_DOUBLE, &(lines_width),
+    TwAddVarRW (bar, "show lines", TW_TYPE_BOOLCPP, &(draw_lines), "");
+    TwAddVarRW (bar, "lines width", TW_TYPE_DOUBLE, &(lines_width),
 	       "min=0.1 max=100.00 step=0.1");
-    TwAddVarRW(bar, "lines size clip", TW_TYPE_UINT32, &(lines_size_clip),
+    TwAddVarRW (bar, "lines size clip", TW_TYPE_UINT32, &(lines_size_clip),
 	       "min=0 max=1000 step=1");
-    TwAddVarRW(bar, "lines life clip", TW_TYPE_DOUBLE, &(lines_life_clip),
+    TwAddVarRW (bar, "lines life clip", TW_TYPE_DOUBLE, &(lines_life_clip),
 	       "min=0.0 max=100.00 step=0.1");
-    TwAddVarRW(bar, "lines query", TW_TYPE_BOOLCPP, &(lines_query), "");    
+    TwAddVarRW (bar, "lines query", TW_TYPE_BOOLCPP, &(lines_query), "");
+
+    TwAddSeparator (bar, 0, 0);
+
+
+    TwAddButton (bar, "DO ORDER", tw_do_order, this, "");
+    TwAddVarRW (bar, "show order", TW_TYPE_BOOLCPP, &(draw_order), "");
+    TwAddVarRW (bar, "order mult", TW_TYPE_DOUBLE, &(order_mult),
+	       "min=0.0 max=100.00 step=0.05");
+    TwAddVarCB (bar, "order step", TW_TYPE_INT32,
+    	       tw_set_order_step, tw_get_order_step,
+    	       this, "step=1");
+    TwAddVarRO (bar, "step time", TW_TYPE_DOUBLE, &(order_time), "");
+    TwAddButton (bar, "seek-bb-fw", tw_bb_fw, this, "");
+    TwAddButton (bar, "seek-bb-bw", tw_bb_bw, this, "");
+    TwAddButton (bar, "seek-life-fw", tw_life_bb_fw, this, "");
+    TwAddButton (bar, "seek-life-bw", tw_life_bb_bw, this, "");
 };
 
 DisplayTrack::~DisplayTrack () {}
@@ -423,6 +525,27 @@ void __draw_critical_query (TrackRenderingEntry r,  double scale, double tol_mul
     }
 }
 
+void __draw_order (TrackOrderEntry& e, double mult)
+{
+    if (e.active)
+    {
+	glPushMatrix ();
+	glTranslated ((double) e.c.x, (double) e.c.y, 0.0);
+	glScaled (mult, mult, 1.0);
+	__draw_critical_color (e.type);
+	glPopMatrix();
+
+	if (e.death || e.birth)
+	{
+	    glPushMatrix ();
+	    glTranslated (e.d.x, e.d.y, 0.0);
+	    glScaled (mult, mult, 1.0);
+	    __draw_death (e.birth);
+	    glPopMatrix();
+	}    
+    }
+}
+
 
 void DisplayTrack::display ()
 {
@@ -431,6 +554,21 @@ void DisplayTrack::display ()
     glMatrixMode (GL_MODELVIEW);
     glPushMatrix ();
 
+    // GG transform viewport in bb using gluunproject, facendo la viewport un po' piu' stretta
+    GLint m_viewport[4];
+    glGetIntegerv (GL_VIEWPORT, m_viewport);
+    GLdouble matrix_m[16]; 
+    glGetDoublev (GL_MODELVIEW_MATRIX, matrix_m);
+    GLdouble matrix_p[16]; 
+    glGetDoublev (GL_PROJECTION_MATRIX, matrix_p);
+    double foo;
+
+    gluUnProject (viewport.a.x, viewport.a.y, 0.0,
+		  matrix_m, matrix_p, m_viewport,
+		  &bb.a.x, &bb.a.y, &foo);
+    gluUnProject (viewport.b.x, viewport.b.y, 0.0,
+		  matrix_m, matrix_p, m_viewport,
+		  &bb.b.x, &bb.b.y, &foo);
 
     if (draw_track)
     {
@@ -495,6 +633,10 @@ void DisplayTrack::display ()
 	    glEnd();
 	}
     }
+
+    if (track_order != NULL && draw_order)
+	for (unsigned i = 0; i < track_order->current_pos.size(); i++)
+	    __draw_order (track_order->current_pos[i], order_mult);
 
     glMatrixMode (GL_PROJECTION);
     glPopMatrix ();

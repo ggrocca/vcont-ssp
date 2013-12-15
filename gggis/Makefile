@@ -79,7 +79,7 @@ CSOURCES =
 ## add directives -D__FILENAME_EXISTS for every file "filename.h" added here.
 ## purpose: untracked files with custom build configurations.
 # CUSTOM_HEADERS = custom_header.h
-CUSTOM_HEADERS = custom_header.h
+CUSTOM_HEADERS = custom_debug.h
 
 ## generic compilation configuration, to be used for both C++ and C
 ## on every OS. FLAGS are always used, while DEBUG_FLAGS are used
@@ -92,13 +92,14 @@ CUSTOM_HEADERS = custom_header.h
 # override DEFINES +=
 # override LDFLAGS +=
 # override FRAMEWORKS +=
-FLAGS = 
-DEBUG_FLAGS = -Wall -W -g
-RELEASE_FLAGS = -O2 -DNDEBUG
-INCLUDES = -I../common/ -I${BASELIBS_DIR}/AntTweakBar/include/
-DEFINES = 
-LDFLAGS = -lpng -lz -lm -L${BASELIBS_DIR}/AntTweakBar/lib -lAntTweakBar
-FRAMEWORKS = 
+override FLAGS = 
+override DEBUG_FLAGS = -Wall -W -g
+override TRACE_FLAGS += -DDEBUGTRACE
+override RELEASE_FLAGS = -O2 -DNDEBUG
+override INCLUDES = -I../common/ -I${BASELIBS_DIR}/AntTweakBar/include/
+override DEFINES = 
+override LDFLAGS = -lpng -lz -lm -L${BASELIBS_DIR}/AntTweakBar/lib -lAntTweakBar
+override FRAMEWORKS = 
 
 
 ####################################
@@ -112,17 +113,17 @@ FRAMEWORKS =
 # override CFLAGS +=
 # override CINCLUDES +=
 # override CDEFINES +=
-CFLAGS = -std=gnu99
-CINCLUDES = 
-CDEFINES = 
+override CFLAGS = -std=gnu99
+override CINCLUDES = 
+override CDEFINES = 
 
 # C++ specific conf
 # override CXXFLAGS +=
 # override CXXINCLUDES +=
 # override CXXDEFINES +=
-CXXFLAGS = -pipe  -D_THREAD_SAFE -pthread -Wno-write-strings
-CXXINCLUDES = 
-CXXDEFINES = 
+override CXXFLAGS = -pipe  -D_THREAD_SAFE -pthread -Wno-write-strings
+override CXXINCLUDES = 
+override CXXDEFINES = 
 
 
 ##################################
