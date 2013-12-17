@@ -59,6 +59,11 @@ public:
 	return p >= a && p <= b;
     }
 
+    bool is_inside (BoundingBox b)
+    {
+	return is_inside (b.a) || is_inside (b.b);
+    }
+
     bool is_outside (Coord c)
     {
 	return is_outside (Point ((double) c.x, (double) c.y));
@@ -67,6 +72,11 @@ public:
     bool is_outside (Point p)
     {
 	return !is_inside (p);
+    }
+
+    bool is_outside (BoundingBox b)
+    {
+	return !is_inside (b);
     }
 };
 

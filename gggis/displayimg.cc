@@ -23,7 +23,7 @@ DisplayIMG::DisplayIMG (Plane* p, GeoMapping* m, int sidx, int pidx) : DisplayPl
     if (p->type != IMG)
 	eprintx (6, "Abort, %s wrong type for me.\n", (ds_type2string(p->type)).c_str());
 
-    img = (cimg_library::CImg<unsigned char>*) p->data;
+    img = (cimg_library::CImg<unsigned char>*) p->data[0];
 
     clip_black = 0.0;
     TwAddVarRW(bar, "clip_black", TW_TYPE_DOUBLE, &clip_black,

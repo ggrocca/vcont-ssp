@@ -57,7 +57,8 @@ void TrackDisplay::read_dem (char *file)
 
 void TrackDisplay::read_track (char *file)
 {
-    track = new Track (file);
+    track_reader (file, track, track_order);
+    // track = new Track (file);
 }
 
 void TrackDisplay::query (double t)
@@ -468,9 +469,8 @@ void TrackDisplay::draw (int dem_idx)
 		if (j == track->lines[i].entries.size() - 1)
 		{
 		    glVertex2d (te.c.x, te.c.y);
-		    double fx, fy;
-		    track->lines[i].final_point (track->lines, &fx, &fy);
-		    glVertex2d (fx, fy); 
+		    Point f = track->lines[i].final_point (track->lines);
+		    glVertex2d (f.x, f.y); 
 		}
 	    }
 	    glEnd();

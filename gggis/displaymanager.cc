@@ -171,6 +171,7 @@ DisplayManager::DisplayManager (DataManager* dm) : dm (dm)
 
 
     __bar_visibility (sidx, pidx, true);
+    reorder_display ();
 }
 
 DisplayManager::~DisplayManager () {}

@@ -148,8 +148,8 @@ BoundingBox Plane::getbb ()
 	    // DEMReader
 	    Point a (0,0);
 	    Point b;
-	    b.x = ((DEMReader*) data)->width;
-	    b.y = ((DEMReader*) data)->height;
+	    b.x = ((DEMReader*) data[0])->width;
+	    b.y = ((DEMReader*) data[0])->height;
 	    return BoundingBox (a, b);
 	}
     case IMG:
@@ -157,8 +157,8 @@ BoundingBox Plane::getbb ()
 	    // CImg
 	    Point a (0,0);
 	    Point b;
-	    b.x = ((cimg_library::CImg<unsigned char>*) data)->width ();
-	    b.y = ((cimg_library::CImg<unsigned char>*) data)->height ();
+	    b.x = ((cimg_library::CImg<unsigned char>*) data[0])->width ();
+	    b.y = ((cimg_library::CImg<unsigned char>*) data[0])->height ();
 	    return BoundingBox (a, b);
 	}
     case CRT:
@@ -174,8 +174,8 @@ BoundingBox Plane::getbb ()
 	    // ScaleSpace
 	    Point a (0,0);
 	    Point b;
-	    b.x = ((ScaleSpace*) data)->dem[0]->width;
-	    b.y = ((ScaleSpace*) data)->dem[0]->height;
+	    b.x = ((ScaleSpace*) data[0])->dem[0]->width;
+	    b.y = ((ScaleSpace*) data[0])->dem[0]->height;
 	    return BoundingBox (a, b);
 	}
     case CRV:
@@ -218,12 +218,12 @@ Plane::Plane (string pathname) : pathname (pathname), filename (get_base (pathna
     {
     case DEM:
     	// DEMReader
-    	data = (void*) DEMSelector::get (pathname.c_str());
+    	data.push_back ((void*) DEMSelector::get (pathname.c_str()));
     	break;
 
     case IMG:
     	// CImg
-    	data = (void*) new cimg_library::CImg<unsigned char>(pathname.c_str());
+    	data.push_back ((void*) new cimg_library::CImg<unsigned char>(pathname.c_str()));
     	// width = img.width ();
     	// height = img.height ();
     	// y = height - y - 1;
@@ -237,12 +237,17 @@ Plane::Plane (string pathname) : pathname (pathname), filename (get_base (pathna
     case TRK:
     	// Track
     	// data = (void*) new Track (pathname.c_str());
-    	data = new Track (pathname.c_str());
+	Track* track;
+	TrackOrdering* order;
+	track_reader (pathname.c_str(), &track, &order);
+    	data.push_back ((void*) track);
+	data.push_back ((void*) order);
+	tprints (SCOPE_TRACKING, "HERE: %zu\n", order->events.size());
     	break;
 
     case SSP:
     	// ScaleSpace
-    	data = (void*) new ScaleSpace (pathname.c_str(), ScaleSpaceOpts());
+    	data.push_back ((void*) new ScaleSpace (pathname.c_str(), ScaleSpaceOpts()));
     	break;
 
     case CRV:
@@ -272,12 +277,12 @@ Plane::~Plane ()
     {
     case DEM:
     	// DEMReader
-	delete (DEMReader*) data;
+	delete (DEMReader*) data[0];
     	break;
 
     case IMG:
     	// CImg
-	delete (cimg_library::CImg<unsigned char>*) data;
+	delete (cimg_library::CImg<unsigned char>*) data[0];
     	break;
 
     case CRT:
@@ -286,12 +291,13 @@ Plane::~Plane ()
 
     case TRK:
     	// Track
-	delete (Track*) data;
+	delete (Track*) data[0];
+	delete (TrackOrdering*) data[1];
     	break;
 
     case SSP:
     	// ScaleSpace
-	delete (ScaleSpace*) data;
+	delete (ScaleSpace*) data[0];
     	break;
 
     case CRV:

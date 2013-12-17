@@ -23,7 +23,7 @@ DisplaySSP::DisplaySSP (Plane* p, GeoMapping* m, int sidx, int pidx) : DisplayPl
     if (p->type != SSP)
 	eprintx (6, "Abort, %s wrong type for me.\n", (ds_type2string(p->type)).c_str());
 
-    ssp = (ScaleSpace*) p->data;
+    ssp = (ScaleSpace*) p->data[0];
 
 
     // interface
@@ -46,6 +46,7 @@ DisplaySSP::DisplaySSP (Plane* p, GeoMapping* m, int sidx, int pidx) : DisplayPl
     TwAddVarRW(bar, "mult factor", TW_TYPE_DOUBLE, &multiply,
 	       "min=1.0 max=256.0 step=1.0");
     
+    order = 0;
     // order = idx? -1 : 0;
 }
 

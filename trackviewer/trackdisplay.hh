@@ -61,6 +61,7 @@ public:
     std::vector<DEMReader*> dems;
     Track* track;
     std::vector<TrackRenderingEntry> vquery;
+    TrackOrdering *track_order;
 };
 
 #endif

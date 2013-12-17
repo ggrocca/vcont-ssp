@@ -103,7 +103,7 @@ public:
     string pathname;
     string filename;
     DataSetType type;
-    void* data;
+    vector<void*> data;
 
     Plane (string pathname);
     ~Plane ();

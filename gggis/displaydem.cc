@@ -23,7 +23,7 @@ DisplayDem::DisplayDem (Plane* p, GeoMapping* m, int sidx, int pidx) : DisplayPl
     if (p->type != DEM)
 	eprintx (6, "Abort, %s wrong type for me.\n", (ds_type2string(p->type)).c_str());
 
-    dr = (DEMReader*) p->data;
+    dr = (DEMReader*) p->data[0];
 
 
     // interface

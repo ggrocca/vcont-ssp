@@ -28,8 +28,8 @@ class DisplayTrack : public DisplayPlane
 public:
 
     Track* track;
+    TrackOrdering* track_order;
     std::vector<TrackRenderingEntry> vquery;
-    TrackOrder* track_order;
     BoundingBox bb;
     
     DisplayTrack (Plane* p, GeoMapping* m, int sidx, int pidx);
@@ -64,6 +64,7 @@ public:
     double order_mult;
     int order_step;
     double order_time;
+    int order_event;
 };
 
 #endif // _DISPLAYTRACK.HH

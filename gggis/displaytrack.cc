@@ -70,7 +70,8 @@ void TW_CALL tw_set_order_step (const void *value, void* cd)
     DisplayTrack* dt = (DisplayTrack*) cd;
     dt->order_step = *(const int *) value;
     dt->track_order->seek (dt->order_step);
-    dt->order_time = dt->track_order->current_time;
+    dt->order_time = dt->track_order->current_time ();
+    dt->order_event = dt->track_order->current_event;
     glutPostRedisplay();
 }
 
@@ -80,33 +81,49 @@ void TW_CALL tw_get_order_step (void *value, void* cd)
     *(int *) value = dt->order_step;
 }
 
-void TW_CALL tw_do_order(void* cd)
+// void TW_CALL tw_do_order(void* cd)
+// { 
+//     DisplayTrack* dt = (DisplayTrack*) cd;
+
+//     if (dt->track_order != NULL)
+// 	delete dt->track_order;
+
+//     dt->track_order = new TrackOrdering ();
+//     dt->track_order->assign (dt->track);
+
+//     fprintf (stderr, "ORDER %zu\n", dt->track_order->current_pos.size());
+//     glutPostRedisplay();
+// }
+
+
+void TW_CALL tw_fw(void* cd)
 { 
     DisplayTrack* dt = (DisplayTrack*) cd;
 
-    if (dt->track_order != NULL)
-	delete dt->track_order;
+    dt->track_order->seek (true);
+    dt->order_time = dt->track_order->current_time ();
+    dt->order_step = dt->track_order->current_event;
 
-    dt->track_order = new TrackOrder ();
-    dt->track_order->assign (dt->track);
-
-    fprintf (stderr, "ORDER %zu\n", dt->track_order->current_pos.size());
     glutPostRedisplay();
 }
 
+void TW_CALL tw_bw(void* cd)
+{ 
+    DisplayTrack* dt = (DisplayTrack*) cd;
 
-    // faccio le interfaccie ai due nuovi seek - quattro bottoni
-    // bb fw
-    // bb bw
-    // life fw
-    // life bw
+    dt->track_order->seek (false);
+    dt->order_time = dt->track_order->current_time ();
+    dt->order_step = dt->track_order->current_event;
+
+    glutPostRedisplay();
+}
 
 void TW_CALL tw_bb_fw(void* cd)
 { 
     DisplayTrack* dt = (DisplayTrack*) cd;
 
     dt->track_order->seek_bb (true, dt->bb);
-    dt->order_time = dt->track_order->current_time;
+    dt->order_time = dt->track_order->current_time ();
     dt->order_step = dt->track_order->current_event;
 
     glutPostRedisplay();
@@ -117,7 +134,7 @@ void TW_CALL tw_bb_bw(void* cd)
     DisplayTrack* dt = (DisplayTrack*) cd;
 
     dt->track_order->seek_bb (false, dt->bb);
-    dt->order_time = dt->track_order->current_time;
+    dt->order_time = dt->track_order->current_time ();
     dt->order_step = dt->track_order->current_event;
 
     glutPostRedisplay();
@@ -128,7 +145,7 @@ void TW_CALL tw_life_bb_fw(void* cd)
     DisplayTrack* dt = (DisplayTrack*) cd;
 
     dt->track_order->seek_life_bb (true, dt->bb);
-    dt->order_time = dt->track_order->current_time;
+    dt->order_time = dt->track_order->current_time ();
     dt->order_step = dt->track_order->current_event;
 
     glutPostRedisplay();
@@ -139,7 +156,7 @@ void TW_CALL tw_life_bb_bw(void* cd)
     DisplayTrack* dt = (DisplayTrack*) cd;
 
     dt->track_order->seek_life_bb (false, dt->bb);
-    dt->order_time = dt->track_order->current_time;
+    dt->order_time = dt->track_order->current_time ();
     dt->order_step = dt->track_order->current_event;
 
     glutPostRedisplay();
@@ -154,7 +171,10 @@ DisplayTrack::DisplayTrack (Plane* p, GeoMapping* m, int sidx, int pidx) : Displ
     if (p->type != TRK)
 	eprintx (6, "Abort, %s wrong type for me.\n", (ds_type2string(p->type)).c_str());
 
-    track = (Track*) p->data;
+    track = (Track*) p->data[0];
+    track_order = (TrackOrdering*) p->data[1];
+
+    tprints (SCOPE_TRACKING, "HERE: %zu\n", track_order->events.size());
 
     draw_track = false;
     draw_query = false;
@@ -173,7 +193,7 @@ DisplayTrack::DisplayTrack (Plane* p, GeoMapping* m, int sidx, int pidx) : Displ
     scale_value = 0.0;
     time_value = 0.0;
 
-    track_order = new TrackOrder ();
+    // track_order = new TrackOrdering ();
     draw_order = false;
     order_mult = 1.0;
     order_step = 0;
@@ -215,7 +235,7 @@ DisplayTrack::DisplayTrack (Plane* p, GeoMapping* m, int sidx, int pidx) : Displ
     TwAddSeparator (bar, 0, 0);
 
 
-    TwAddButton (bar, "DO ORDER", tw_do_order, this, "");
+    // TwAddButton (bar, "DO ORDER", tw_do_order, this, "");
     TwAddVarRW (bar, "show order", TW_TYPE_BOOLCPP, &(draw_order), "");
     TwAddVarRW (bar, "order mult", TW_TYPE_DOUBLE, &(order_mult),
 	       "min=0.0 max=100.00 step=0.05");
@@ -223,10 +243,15 @@ DisplayTrack::DisplayTrack (Plane* p, GeoMapping* m, int sidx, int pidx) : Displ
     	       tw_set_order_step, tw_get_order_step,
     	       this, "step=1");
     TwAddVarRO (bar, "step time", TW_TYPE_DOUBLE, &(order_time), "");
+    TwAddVarRO (bar, "step event", TW_TYPE_INT32, &(order_event), "");
+    TwAddButton (bar, "seek-fw", tw_fw, this, "");
+    TwAddButton (bar, "seek-bw", tw_bw, this, "");
     TwAddButton (bar, "seek-bb-fw", tw_bb_fw, this, "");
     TwAddButton (bar, "seek-bb-bw", tw_bb_bw, this, "");
     TwAddButton (bar, "seek-life-fw", tw_life_bb_fw, this, "");
     TwAddButton (bar, "seek-life-bw", tw_life_bb_bw, this, "");
+
+    order = 10;
 };
 
 DisplayTrack::~DisplayTrack () {}
@@ -525,25 +550,22 @@ void __draw_critical_query (TrackRenderingEntry r,  double scale, double tol_mul
     }
 }
 
-void __draw_order (TrackOrderEntry& e, double mult)
+void __draw_order (Point d, CriticalType type, double mult)
 {
-    if (e.active)
-    {
-	glPushMatrix ();
-	glTranslated ((double) e.c.x, (double) e.c.y, 0.0);
-	glScaled (mult, mult, 1.0);
-	__draw_critical_color (e.type);
-	glPopMatrix();
+    glPushMatrix ();
+    glTranslated ((double) d.x, (double) d.y, 0.0);
+    glScaled (mult, mult, 1.0);
+    __draw_critical_color (type);
+    glPopMatrix();
+}
 
-	if (e.death || e.birth)
-	{
-	    glPushMatrix ();
-	    glTranslated (e.d.x, e.d.y, 0.0);
-	    glScaled (mult, mult, 1.0);
-	    __draw_death (e.birth);
-	    glPopMatrix();
-	}    
-    }
+void __draw_order (Point d, bool birth, double mult)
+{
+    glPushMatrix ();
+    glTranslated (d.x, d.y, 0.0);
+    glScaled (mult, mult, 1.0);
+    __draw_death (birth);
+    glPopMatrix();
 }
 
 
@@ -625,9 +647,8 @@ void DisplayTrack::display ()
 		if (j == track->lines[i].entries.size() - 1)
 		{
 		    glVertex2d (te.c.x, te.c.y);
-		    double fx, fy;
-		    track->lines[i].final_point (track->lines, &fx, &fy);
-		    glVertex2d (fx, fy); 
+		    Point p = track->lines[i].final_point (track->lines);
+		    glVertex2d (p.x, p.y); 
 		}
 	    }
 	    glEnd();
@@ -635,8 +656,27 @@ void DisplayTrack::display ()
     }
 
     if (track_order != NULL && draw_order)
-	for (unsigned i = 0; i < track_order->current_pos.size(); i++)
-	    __draw_order (track_order->current_pos[i], order_mult);
+    {
+	for (unsigned i = 0; i < track_order->track_positions.size(); i++)
+	    if (track_order->is_point_active(i))
+		__draw_order (track_order->point_coord (i), track_order->point_type (i), order_mult);
+	
+	if (track_order->is_current_death () || track_order->is_current_birth ())
+	{
+	    vector<Point> cs = track_order->current_coords ();
+	    vector<CriticalType> ts = track_order->current_types ();
+
+	    for (unsigned i = 0; i < cs.size(); i++)
+		__draw_order (cs[i], ts[i], order_mult);
+
+	    if (track_order->is_current_death ())
+		__draw_order (track_order->current_final (), false, order_mult);
+	    if (track_order->is_current_birth ())
+		__draw_order (track_order->current_start (), true, order_mult);
+	}
+    }
+
+ 	    // __draw_order (track_order->current_pos[i], order_mult);
 
     glMatrixMode (GL_PROJECTION);
     glPopMatrix ();

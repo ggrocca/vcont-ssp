@@ -382,11 +382,14 @@ int main (int argc, char *argv[])
 
     Flipper* flipper = new Flipper (*ssp);
     
-    Track* track = flipper->track (*ssp);
+    Track* track = new Track ();
+    TrackOrdering* order = new TrackOrdering ();
+    flipper->track (*ssp, track, order);
     
     delete flipper;
 	
-    track->write (tracking_name);
+    //track->write (tracking_name, order);
+    track_writer (tracking_name, track, order);
 
     if (do_final_query)
 	print_final_stats (track, false);

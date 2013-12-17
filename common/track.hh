@@ -70,13 +70,13 @@ public:
     // bool is_active (unsigned j);
     bool is_original ();
     bool is_born ();
+    bool is_getting_born (unsigned j);
     double travel ();
     double lifetime ();
 
     // GG should be implemented in track
-    void final_point (std::vector<TrackLine>& lines,
-    		      double* fx, double* fy);
-    void start_point (std::vector<TrackLine>& lines, Point* d);
+    Point final_point (std::vector<TrackLine>& lines);
+    Point start_point (std::vector<TrackLine>& lines);
 };
 
 
@@ -98,13 +98,15 @@ public:
     // std::vector<int> flips_num;
     // int flips_total;
 
-    Track ();
-    ~Track ();
-    // Track (ScaleSpace& ss); // should be implemented as flipper algorithm
-    Track (const char *filename);
+    Track () {}
+    ~Track () {}
 
-    void write (char *filename);    
+    Track (FILE *f);
+    void write (FILE *f);
+    
     void query (double t, std::vector<TrackRenderingEntry>& v, bool verbose = true);
+
+    Track* afterlife ();
 
     // void print_stats ();
 
@@ -114,70 +116,154 @@ public:
 };
 
 
-class TrackEvent
+class TrackEntryPointer
 {
- public:
-
-    double t;
+public:
     int line;
-    int pos;
-    bool birth;
-    bool death;
-};
-inline bool operator< (const TrackEvent& lhs, const TrackEvent& rhs){ return lhs.t < rhs.t; }
+    int idx;
 
-class TrackOrderEntry
+    TrackEntryPointer () {}
+    TrackEntryPointer (int line, int idx) : line (line), idx (idx) {}
+};
+
+typedef enum {
+    DEATH_1, DEATH_2, BIRTH_1, BIRTH_2,
+    MOVE_1, MOVE_3, MOVE_12, MOVE_21
+} FlippingEventType;
+
+class FlippingEvent
 {
  public:
 
-    CriticalType type; 
-    Coord c; // current position
-    Point d;
-    int idx; // index in Track.lines[i].entries
-    bool active; // after birth, before death
-    bool birth; // getting born now
-    bool death; // dying now
+    FlippingEventType type;
+    double time;
+    std::vector<TrackEntryPointer> track_ptrs;
 };
 
-class TrackOrder
+// strange things:
+
+// births that seems deaths (points disappear after birth) and maybe versavice
+// last surviving points
+
+class TrackOrdering
 {
  public:
 
-    Track* track;
-    // current event index
+    std::vector<int> track_positions;
+    std::vector<FlippingEvent> events;
     int current_event;
-    // corrisponding time reached
-    double current_time;
-    
-    // situation of critical points at current time
-    std::vector<TrackOrderEntry> current_pos;
-    
-    // all events in tracking, ordered by time
-    std::vector<TrackEvent> events;
+    Track *track;
+    bool previous_forward;
 
-    // build the events from track, initialize event and pos at 0
-    void assign (Track* track);
+    TrackOrdering () {}
+    ~TrackOrdering () {}
 
-    // seek from current position to new_event, updating positions
-    // when bounds are reached, stops and return false
+    TrackOrdering (FILE *f);
+    void write (FILE *f);
+
+    // init positions from events and track pointer
+    void init (Track* t);
+    
+    // seek functions
     bool seek (int new_event);
     bool seek (bool forward);
 
     bool seek_bb (bool forward, BoundingBox bb);
     bool seek_life_bb (bool forward, BoundingBox bb);
 
-    // last event handled by seek
-    int previous_event;
-    // position of last event handled by seek
-    Coord last_event_c;
 
-    // GG TBD
-    // seek_next_life (); // go to next birth or death
-    // seek_prev_life ();
-    // int active_num; // number of active criticals.
+    // rendering: draws all tracking points at track_positions if they
+    // are not dead at those positions and already born at the time of
+    // current event; then draws birth point if current event is a
+    // birth or all the points involved and death point if it's a
+    // death.
 
-private:
-    bool update ();
+    // seek: ciclo da current event fino a dove si deve arrivare; per
+    // ogni evento aggiorna track_position[line] al nuovo idx per
+    // tutti i punti dell'evento.
+
+    // helper functions
+    double current_time ();
+    FlippingEventType current_type ();
+    BoundingBox current_bb ();
+    bool is_current_death ();
+    bool is_current_birth ();
+    Point current_final ();
+    Point current_start ();
+    std::vector<Point> current_coords ();
+    std::vector<CriticalType> current_types ();
+
+    bool is_point_active (int line);
+    Point point_coord (int line);
+    CriticalType point_type (int line);
+
+private:    
+    void update_positions (bool forward);
 };
+
+
+void track_writer (const char *filename, Track* track, TrackOrdering* order);
+void track_reader (const char *filename, Track** track, TrackOrdering** order);
+
+static inline const char* flip_event2string (FlippingEventType type)
+{
+    static const char* d1 = "D1";
+    static const char* d2 = "D2";
+    static const char* b1 = "B1";
+    static const char* b2 = "B2";
+    static const char* m1 = "M1";
+    static const char* m3 = "M3";
+    static const char* m12 = "12";
+    static const char* m21 = "21";
+
+    switch (type)
+    {
+    case DEATH_1:
+	return d1;
+    case DEATH_2:
+	return d2;
+    case BIRTH_1:
+	return b1;
+    case BIRTH_2:
+	return b2;
+    case MOVE_1:
+	return m1;
+    case MOVE_3:
+	return m3;
+    case MOVE_12:
+	return m12;
+    case MOVE_21:
+	return m21;
+    }
+
+    assert (0);
+    return m1;
+}
+
+static inline FlippingEventType string2flip_event (const char* s)
+{
+    std::string ss (s);
+
+    if (ss == "D1")
+	return DEATH_1;
+    if (ss == "D2")
+	return DEATH_2;
+    if (ss == "B1")
+	return BIRTH_1;
+    if (ss == "B2")
+	return BIRTH_2;
+    if (ss == "M1")
+	return MOVE_1;
+    if (ss == "M3")
+	return MOVE_3;
+    if (ss == "12")
+	return MOVE_12;
+    if (ss == "21")
+	return MOVE_21;
+
+    assert (0);
+    return MOVE_1;
+}
+
 
 #endif // _TRACK_HH
