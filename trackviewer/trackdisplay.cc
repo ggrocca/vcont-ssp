@@ -57,7 +57,7 @@ void TrackDisplay::read_dem (char *file)
 
 void TrackDisplay::read_track (char *file)
 {
-    track_reader (file, track, track_order);
+    track_reader (file, &track, &track_order);
     // track = new Track (file);
 }
 

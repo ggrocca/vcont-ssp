@@ -178,13 +178,13 @@ void scan_integral_lines (Dem* d, std::vector<CriticalPoint>& cp, Grid<char>& il
 }
  
 
-ScaleSpace::ScaleSpace (DEMReader* base, int levels, ScaleSpaceOpts opts)
+ScaleSpace::ScaleSpace (Dem& idem, int levels, ScaleSpaceOpts opts)
 {
     this->levels = levels;
     dem = std::vector<Dem*>(levels);
 
     TGaussianBlur<double> BlurFilter;
-    dem[0] = new Dem (base);
+    dem[0] = new Dem (idem);
 
     if (opts.check (ScaleSpaceOpts::PERTURB))
     {

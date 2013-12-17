@@ -64,7 +64,7 @@ public:
 
     int levels;
 
-    ScaleSpace (DEMReader* base, int levels, ScaleSpaceOpts opts);
+    ScaleSpace (Dem& base, int levels, ScaleSpaceOpts opts);
     ScaleSpace (const char* filename, ScaleSpaceOpts opts);
     ~ScaleSpace ();
 

@@ -17,6 +17,7 @@
 
 
 char *imagefile = 0;
+char *demfile = 0;
 char *out_name = 0;
 char *tracking_name = 0;
 char *critical_name = 0;
@@ -49,6 +50,7 @@ void print_help (FILE* f)
     fprintf (f, "Usage: scaletracker\n"
 	     "-n numlevel : number of levels\n"
 	     "[-i imagefile] : supported inputs formats hgt, png, bmp\n"
+	     "[-d demfile] : load dem in double raw format\n"
 	     "[-r scalespace.ssp] : read scalespace in binary format\n"
 	     "[-o outname] : write files outname.trk, outname.crt, outname.ssp\n"
 	     "[-t tiffnames] : write a tiff for every level\n"
@@ -140,6 +142,11 @@ void app_init(int argc, char *argv[])
                 argc--;
                 break;
 
+            case 'd':
+                demfile = (*++argv);
+                argc--;
+                break;
+
             case 'r':
                 scalespace_read_name = (*++argv);
                 argc--;
@@ -209,9 +216,9 @@ void app_init(int argc, char *argv[])
         }
     }
 
-    if (imagefile == NULL && scalespace_read_name == NULL)
+    if (imagefile == NULL && scalespace_read_name == NULL && demfile)
     {
-	fprintf (stderr, "No image or scalespace input given.\n");
+	fprintf (stderr, "No image, dem or scalespace input given.\n");
 	goto die;
     }
 
@@ -235,12 +242,22 @@ int main (int argc, char *argv[])
 {
     app_init (argc, argv);
     
+    Dem* idem = NULL;
     DEMReader* dr = NULL;
 
     if (imagefile != NULL)
     {
 	dr = DEMSelector::get (imagefile);
 	dr->print_info ();
+	idem = new Dem (dr);
+	delete dr;
+    }
+
+    if (demfile != NULL)
+    {
+	FILE *fp = fopen (demfile, "r");
+	idem = new Dem (fp);
+	fclose (fp);
     }
 
     tprintp ("###", "%s", "Start!\n");
@@ -285,9 +302,9 @@ int main (int argc, char *argv[])
 	opts.filter_algo = filter_algo;
     }
     
-    if (tiffnames && dr != NULL)
+    if (tiffnames && idem != NULL)
     {
-	Dem* d = new Dem (dr);
+	Dem* d = new Dem (*idem);
 	if (do_crop)
 	{
 	    Dem* c = new Dem (*d, crop_a, crop_b);
@@ -308,10 +325,10 @@ int main (int argc, char *argv[])
 
     ScaleSpace *ssp;
 
-    if (imagefile != NULL)
+    if (idem != NULL)
     {
-	ssp = new ScaleSpace (dr, numlevel, opts);
-	delete dr;
+	ssp = new ScaleSpace (*idem, numlevel, opts);
+	delete idem;
     }
     else if (scalespace_read_name != NULL)
 	ssp = new ScaleSpace (scalespace_read_name, opts);
