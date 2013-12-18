@@ -22,6 +22,12 @@ int TrackLine::get_entry (double t)
     return -1;
 }
 
+int Track::get_entry (int i, double t)
+{
+    return lines[i].get_entry (t);
+}
+
+
 CriticalType TrackLine::get_type ()
 {
     if (entries.size() < 1)
@@ -38,6 +44,12 @@ CriticalType TrackLine::get_type ()
     eprintx (42, "%s", "Returning wrong type.\n");
     return EQU;
 }
+
+CriticalType Track::get_type (int i)
+{
+    return lines[i].get_type ();
+}
+
 
 CriticalType TrackLine::get_type (unsigned j)
 {
@@ -56,6 +68,12 @@ CriticalType TrackLine::get_type (unsigned j)
     return EQU;
 }
 
+CriticalType Track::get_type (int i, unsigned j)
+{
+    return lines[i].get_type (j);
+}
+
+
 bool TrackLine::is_dead ()
 {
     if (entries.size() < 1)
@@ -65,6 +83,11 @@ bool TrackLine::is_dead ()
     }
 
     return (entries.size() > 1 && entries.back().life != -1);
+}
+
+bool Track::is_dead (int i)
+{
+    return lines[i].is_dead ();    
 }
 
 bool TrackLine::is_dead (unsigned j)
@@ -78,9 +101,32 @@ bool TrackLine::is_dead (unsigned j)
     return (j >= 1 && entries[j].life != -1);
 }
 
-bool TrackLine::is_alive () { return !is_dead(); }
+bool Track::is_dead (int i, unsigned j)
+{
+    return lines[i].is_dead (j);
+}
 
-bool TrackLine::is_alive (unsigned j) { return !is_dead(j); }
+
+bool TrackLine::is_alive ()
+{
+    return !is_dead();
+}
+
+bool Track::is_alive (int i)
+{
+    return lines[i].is_alive ();
+}
+
+
+bool TrackLine::is_alive (unsigned j)
+{
+    return !is_dead(j);
+}
+
+bool Track::is_alive (int i, unsigned j)
+{
+    return lines[i].is_alive (j);
+}
 
 // bool TrackLine::is_active ()
 // {
@@ -110,14 +156,30 @@ bool TrackLine::is_original ()
     return (entries[0].life == -1);
 }
 
+bool Track::is_original (int i)
+{
+    return lines[i].is_original ();    
+}
+
 bool TrackLine::is_born ()
 {
     return !is_original();
 }
 
+bool Track::is_born (int i)
+{
+    return lines[i].is_born ();    
+}
+
+
 bool TrackLine::is_getting_born (unsigned j)
 {
     return is_born () && j == 0;
+}
+
+bool Track::is_getting_born (int i, unsigned j)
+{
+    return lines[i].is_getting_born (j);        
 }
 
 double TrackLine::travel ()
@@ -143,26 +205,66 @@ double TrackLine::travel ()
     return t;
 }
 
-double TrackLine::lifetime ()
+double Track::travel (int i)
 {
-    if (is_dead())
-	return entries.back().t - entries[0].t; 
-    if (is_alive() && is_original())
-	return Track::time_of_life;
-    if (is_alive() && is_born())
-	return Track::time_of_life - entries[0].t;
+    return lines[i].travel ();            
+}
+
+// double TrackLine::lifetime ()
+// {
+//     if (is_dead())
+// 	return entries.back().t - entries[0].t; 
+//     if (is_alive() && is_original())
+// 	return Track::time_of_life;
+//     if (is_alive() && is_born())
+// 	return Track::time_of_life - entries[0].t;
+//     eprintx (42, "%s", "Time travel.\n");
+//     return 0.0;
+// }
+
+double Track::lifetime (int i)
+{
+    if (is_dead(i))
+	return lines[i].entries.back().t - lines[i].entries[0].t; 
+    if (is_alive(i) && is_original(i))
+	return time_of_life;
+    if (is_alive(i) && is_born(i))
+	return time_of_life - lines[i].entries[0].t;
     eprintx (42, "%s", "Time travel.\n");
     return 0.0;
 }
 
-// GG should be implemented in Track
-Point TrackLine::final_point (std::vector<TrackLine>& lines)
+
+// Point TrackLine::final_point (std::vector<TrackLine>& lines)
+// {
+//     Point p;
+//     double x =  entries.back().c.x;
+//     double y =  entries.back().c.y;
+
+//     if (is_alive())
+//     {
+// 	p.x = x;
+// 	p.y = y;
+//     }
+
+//     else
+//     {
+// 	int life = entries.back().life;
+// 	double lx = lines[life].entries.back().c.x;
+// 	double ly = lines[life].entries.back().c.y;
+// 	p.x = x + ((lx - x)/2.0);
+// 	p.y = y + ((ly - y)/2.0);
+//     }
+//     return p;
+// }
+
+Point Track::final_point (int i)
 {
     Point p;
-    double x =  entries.back().c.x;
-    double y =  entries.back().c.y;
+    double x =  lines[i].entries.back().c.x;
+    double y =  lines[i].entries.back().c.y;
 
-    if (is_alive())
+    if (is_alive(i))
     {
 	p.x = x;
 	p.y = y;
@@ -170,7 +272,7 @@ Point TrackLine::final_point (std::vector<TrackLine>& lines)
 
     else
     {
-	int life = entries.back().life;
+	int life = lines[i].entries.back().life;
 	double lx = lines[life].entries.back().c.x;
 	double ly = lines[life].entries.back().c.y;
 	p.x = x + ((lx - x)/2.0);
@@ -179,20 +281,43 @@ Point TrackLine::final_point (std::vector<TrackLine>& lines)
     return p;
 }
 
-Point TrackLine::start_point (std::vector<TrackLine>& lines)
+// Point TrackLine::start_point (std::vector<TrackLine>& lines)
+// {
+//     Point p;
+//     double x =  entries[0].c.x;
+//     double y =  entries[0].c.y;
+    
+//     if (!is_born ())
+//     {
+//         p.x = x;
+//         p.y = y;
+//     }
+//     else
+//     {
+// 	int life = entries[0].life;
+// 	double lx = lines[life].entries[0].c.x;
+// 	double ly = lines[life].entries[0].c.y;
+// 	p.x = x + ((lx - x)/2.0);
+// 	p.y = y + ((ly - y)/2.0);
+//     }
+    
+//     return p;
+// }
+
+Point Track::start_point (int i)
 {
     Point p;
-    double x =  entries[0].c.x;
-    double y =  entries[0].c.y;
+    double x =  lines[i].entries[0].c.x;
+    double y =  lines[i].entries[0].c.y;
 
-    if (!is_born ())
+    if (!is_born (i))
     {
 	p.x = x;
 	p.y = y;
     }
     else
     {
-	int life = entries[0].life;
+	int life = lines[i].entries[0].life;
 	double lx = lines[life].entries[0].c.x;
 	double ly = lines[life].entries[0].c.y;
 	p.x = x + ((lx - x)/2.0);
@@ -215,7 +340,7 @@ Point TrackLine::start_point (std::vector<TrackLine>& lines)
 // linea a un certo indice e tempo, poi posso ricostruire la
 // struttura a un certo tempo.
 
-double Track::time_of_life;
+// double Track::time_of_life;
 
 // Track::Track () {}
 // Track::~Track () {}
@@ -255,6 +380,13 @@ Track::Track (FILE *f)
     }
 }
 
+
+Track* Track::afterlife ()
+{
+    // Track* af = new Track();
+    return NULL;
+}
+
 void Track::write (FILE *f)
 {
     fprintf (f, "#lines: %zu\n", lines.size());
@@ -292,11 +424,12 @@ void Track::query (double t, std::vector<TrackRenderingEntry>& v, bool verbose)
 	    r.tc = lines[i].entries[j].c;
 	    r.oc = lines[i].entries[0].c;
 	    r.idx = j;
-	    r.tol = lines[i].lifetime();
+	    // r.tol = lines[i].lifetime();
+	    r.tol = lifetime(i);
 	    r.tob = lines[i].entries[0].t;
 	    r.is_born = lines[i].is_born ();
 	    r.is_alive = lines[i].is_alive ();
-	    Point p = lines[i].final_point(lines);
+	    Point p = final_point(i);
 	    r.fx = p.x; r.fy = p.y;
 	    v.push_back (r);
 	    lines[i].mark = true;
@@ -571,7 +704,7 @@ Point TrackOrdering::current_final ()
     std::vector<TrackEntryPointer>& ptrs = events[current_event].track_ptrs;
     for (unsigned i = 0; i < ptrs.size (); i++)
 	if (track->lines[ptrs[i].line].is_dead (ptrs[i].idx))
-	    return track->lines[ptrs[i].line].final_point (track->lines);
+	    return track->final_point (ptrs[i].line);
 
     eprintx (42, "%s", "No current point is dead.\n");
     return Point ();
@@ -582,7 +715,7 @@ Point TrackOrdering::current_start ()
     std::vector<TrackEntryPointer>& ptrs = events[current_event].track_ptrs;
     for (unsigned i = 0; i < ptrs.size (); i++)
 	if (track->lines[ptrs[i].line].is_getting_born (ptrs[i].idx))
-	    return track->lines[ptrs[i].line].start_point (track->lines);
+	    return track->start_point (ptrs[i].line);
 
     eprintx (42, "%s", "No current point is getting born.\n");
     return Point ();

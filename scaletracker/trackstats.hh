@@ -55,6 +55,7 @@ public:
     void print ();
 };
 
-void print_stats (std::vector<TrackLine>& cps);
+// void print_stats (std::vector<TrackLine>& cps);
+void print_stats (Track* track);
 
 #endif // _TRACKSTATS_HH

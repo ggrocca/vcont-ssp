@@ -408,7 +408,7 @@ Flipper::Flipper (ScaleSpace& ss) : flip (ss.levels - 1)
 
 
 void process_flips_all (std::vector< std::vector<Flip> >& flips,
-			std::vector<TrackLine>& lines,
+			Track* track, //std::vector<TrackLine>& lines,
 			std::vector<FlippingEvent>& events,
 			ScaleSpace& ss,
 			TrackString& ts);
@@ -427,7 +427,7 @@ void Flipper::track (ScaleSpace& ss, Track* track, TrackOrdering* order)
 
     TrackString ts = TrackString (ss.levels-1);
 
-    process_flips_all (flip, track->lines, order->events, ss, ts);
+    process_flips_all (flip, track, order->events, ss, ts);
 
     // for (unsigned i = 0; i < fs.size(); i++)
     // 	fs[i].clear();
@@ -663,12 +663,12 @@ void process_flips (std::vector<Flip>& flips, Map* map,
 
 /// process each level of flips
 void process_flips_all (std::vector< std::vector<Flip> >& flips,
-			std::vector<TrackLine>& lines,
+			Track* track, //std::vector<TrackLine>& lines,
 			std::vector<FlippingEvent>& events,
 			ScaleSpace& ss,
 			TrackString& ts)
 {
-    init_critical_lines (ss.critical[0], lines);
+    init_critical_lines (ss.critical[0], track->lines);
 
     Map* map = NULL;
     Map* oldmap;
@@ -677,7 +677,7 @@ void process_flips_all (std::vector< std::vector<Flip> >& flips,
     {
 	oldmap = (map)? map : NULL;
 
-	map = new Map (*(ss.dem[i]), lines);
+	map = new Map (*(ss.dem[i]), track->lines);
 
 	tprint ("begin_ check map, level %d\n", i);
 
@@ -708,7 +708,7 @@ void process_flips_all (std::vector< std::vector<Flip> >& flips,
 
 	// printf ("=============================================\n");
 	// printf ("begin_ tracking flips, level %d\n", i);
-    	process_flips (flips[i], map, lines, events, i, ts);
+    	process_flips (flips[i], map, track->lines, events, i, ts);
 	// printf ("end_ tracking flips, level %d\n", i);
 	// printf ("=============================================\n");
 
@@ -732,9 +732,9 @@ void process_flips_all (std::vector< std::vector<Flip> >& flips,
 
 	// // delete map;
 
-	Track::time_of_life = (double) i + 1;
+	track->time_of_life = (double) i + 1;
 	
-	print_stats (lines);
+	print_stats (track);
     }
 
     ts.print ();

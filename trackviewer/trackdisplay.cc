@@ -421,11 +421,11 @@ void TrackDisplay::draw (int dem_idx)
 	    CriticalType t = track->lines[i].type;
 	    __draw_critical_track (track->lines[i].entries[0].c, t, true,
 				   track->lines[i].is_born(),
-				   track->lines[i].lifetime(),
+				   track->lifetime(i),
 				   track_scale, track_mult);
 	    __draw_critical_track (track->lines[i].entries.back().c, t, false,
 				   track->lines[i].is_dead(),
-				   track->lines[i].lifetime(),
+				   track->lifetime(i),
 				   track_scale, track_mult);
 	}
     }
@@ -447,7 +447,7 @@ void TrackDisplay::draw (int dem_idx)
 	    if (track->lines[i].entries.size() < lines_size_clip)
 		continue;
 
-	    if (track->lines[i].lifetime() < lines_life_clip)
+	    if (track->lifetime(i) < lines_life_clip)
 		continue;
 
 	    if (lines_query && !track->lines[i].mark)
@@ -459,17 +459,17 @@ void TrackDisplay::draw (int dem_idx)
 		TrackEntry pte = track->lines[i].entries[j-1];
 		TrackEntry te = track->lines[i].entries[j];
 		double color[3];
-		time2color (pte.t, 0.0, Track::time_of_life, color);
+		time2color (pte.t, 0.0, track->time_of_life, color);
 		glColor3dv (color);
 		glVertex2d (pte.c.x, pte.c.y);
-		time2color (te.t, 0.0, Track::time_of_life, color);
+		time2color (te.t, 0.0, track->time_of_life, color);
 		glColor3dv (color);
 		glVertex2d (te.c.x, te.c.y);
 		// draw last stretch to die point
 		if (j == track->lines[i].entries.size() - 1)
 		{
 		    glVertex2d (te.c.x, te.c.y);
-		    Point f = track->lines[i].final_point (track->lines);
+		    Point f = track->final_point (i);
 		    glVertex2d (f.x, f.y); 
 		}
 	    }
@@ -494,16 +494,16 @@ void TrackDisplay::draw_line_test (double d)
     // glBegin (GL_POINTS);
     for (int i = 0; i < 100; i++)
     {
-	double ti = Track::time_of_life/100.0 * ((double)i);
-	time2color (ti, 0.0, Track::time_of_life, color);
+	double ti = track->time_of_life/100.0 * ((double)i);
+	time2color (ti, 0.0, track->time_of_life, color);
 	glColor3dv (color);
 	glVertex2d (d/100.0 * ((double)i), d/100.0 * ((double)i));
 	
-	double tip1 = Track::time_of_life/100.0 * ((double)i+1.0);
-	time2color (tip1, 0.0, Track::time_of_life, color);
+	double tip1 = track->time_of_life/100.0 * ((double)i+1.0);
+	time2color (tip1, 0.0, track->time_of_life, color);
 	glColor3dv (color);
 	glVertex2d (d/100.0 * ((double)i+1.0), d/100.0 * ((double)i+1.0));
-	// printf ("$$$ %d: %lf %lf -- %lf\n", i, ti, tip1, Track::time_of_life);
+	// printf ("$$$ %d: %lf %lf -- %lf\n", i, ti, tip1, track->time_of_life);
     }
     glEnd();
     //   exit (0);

@@ -201,8 +201,10 @@ void __acc_stats (double curr, double *av, double *max, double *min)
 	*min = curr;
 }
 
-void print_stats (std::vector<TrackLine>& cps)
+void print_stats (Track* track)//std::vector<TrackLine>& cps)
 {
+    std::vector<TrackLine>& cps = track->lines;
+
     int total, original_num, born_num, dead_num, alive_num,
 	born_dead, born_alive, original_dead, original_alive;
 
@@ -242,7 +244,7 @@ void print_stats (std::vector<TrackLine>& cps)
 		     &max_travel, &min_travel);
 
 	if (cps[i].is_dead())
-	    __acc_stats (cps[i].lifetime(), &av_lifetime_dead,
+	    __acc_stats (track->lifetime(i), &av_lifetime_dead,
 			 &max_lifetime_dead, &min_lifetime_dead);
 
 	if (cps[i].is_alive())
@@ -250,17 +252,17 @@ void print_stats (std::vector<TrackLine>& cps)
 			 &max_travel_alive, &min_travel_alive);
 
 	if (cps[i].is_original() && cps[i].is_dead())
-	    __acc_stats (cps[i].lifetime(), &av_lifetime_original_dead, 0, 0);
+	    __acc_stats (track->lifetime(i), &av_lifetime_original_dead, 0, 0);
 
 	if (cps[i].is_original() && cps[i].is_alive())
 	    __acc_stats (cps[i].travel(), &av_travel_original_alive,
 			 &max_travel_original_alive, &min_travel_original_alive);
 
 	if (cps[i].is_born() && cps[i].is_dead())
-	    __acc_stats (cps[i].lifetime(), &av_lifetime_born_dead, 0, 0);
+	    __acc_stats (track->lifetime(i), &av_lifetime_born_dead, 0, 0);
 
 	if (cps[i].is_born() && cps[i].is_alive())
-	    __acc_stats (cps[i].lifetime(), &av_lifetime_born_alive,
+	    __acc_stats (track->lifetime(i), &av_lifetime_born_alive,
 			 &max_lifetime_born_alive, &min_lifetime_born_alive);
     }
 

@@ -72,11 +72,11 @@ public:
     bool is_born ();
     bool is_getting_born (unsigned j);
     double travel ();
-    double lifetime ();
 
     // GG should be implemented in track
-    Point final_point (std::vector<TrackLine>& lines);
-    Point start_point (std::vector<TrackLine>& lines);
+    // Point final_point (std::vector<TrackLine>& lines);
+    // Point start_point (std::vector<TrackLine>& lines);
+    // double lifetime ();
 };
 
 
@@ -85,7 +85,7 @@ class Track
 
 public:
 
-    static double time_of_life;
+    double time_of_life;
     // int critical_original_num;
     // int critical_born_num;
     // used in check critical lines, which should be member function really
@@ -113,8 +113,26 @@ public:
     // posso farmi tornare una copia della struttura a un certo tempo.
     // un elenco dei critici vivi a un certo tempo con posizioni
     // originali e attuali.
-};
 
+    // helper accessors
+    int get_entry (int i, double t);
+    CriticalType get_type (int i);
+    CriticalType get_type (int i, unsigned j);
+    bool is_dead (int i);
+    bool is_dead (int i, unsigned j);
+    bool is_alive (int i);
+    bool is_alive (int i, unsigned j);
+    // bool is_active (int i);
+    // bool is_active (int i, unsigned j);
+    bool is_original (int i);
+    bool is_born (int i);
+    bool is_getting_born (int i, unsigned j);
+    double travel (int i);
+
+    Point final_point (int i);
+    Point start_point (int i);
+    double lifetime (int i);
+};
 
 class TrackEntryPointer
 {
@@ -140,7 +158,7 @@ class FlippingEvent
     std::vector<TrackEntryPointer> track_ptrs;
 };
 
-// strange things:
+// GG WARN FIX strange things:
 
 // births that seems deaths (points disappear after birth) and maybe versavice
 // last surviving points
