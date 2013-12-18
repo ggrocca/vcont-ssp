@@ -47,6 +47,12 @@ TrackDisplay::TrackDisplay()
     lines_size_clip = 0;
     lines_life_clip = 0.0;
     lines_query = false;
+
+    draw_elixir = false;
+    elixir_mult = 1.0;
+    elixir_scale = 0.5;
+    elixir_cut = 0.0;
+    normal_lives = false;
 };
 
 
@@ -370,6 +376,24 @@ void __draw_critical_query (TrackRenderingEntry r,  double scale, double tol_mul
     }
 }
 
+void __draw_critical_elixir (Coord c, CriticalType type, double elixir,  double scale, double tol_mult)
+{
+    double x = c.x;
+    double y = c.y;
+
+    double scale_tol = tol_mult * (1.0 + elixir);
+
+    glPushMatrix ();
+    glTranslated ((double) x, (double) y, 0.0);
+    glScaled (scale, scale, 1.0);
+    if (scale_tol != 0.0)
+	glScaled (scale_tol, scale_tol, 1.0);
+    __draw_critical_color (type);
+    glPopMatrix();
+}
+
+
+
 
 void TrackDisplay::draw (int dem_idx)
 {
@@ -436,6 +460,21 @@ void TrackDisplay::draw (int dem_idx)
 	    __draw_critical_query (vquery[i], query_scale, query_mult,
 				   query_cur_pos, query_death);
     }
+
+
+    if (draw_elixir)
+    {
+	for (unsigned i = 0; i < track->lines.size(); i++)
+	{
+	    double life_multiplier = normal_lives? track->lifetime (i) : track->lifetime_elixir (i);
+	    if (track->is_original (i) && life_multiplier > elixir_cut)
+		__draw_critical_elixir (track->lines[i].entries[0].c,
+					track->original_type (i),
+					life_multiplier,
+					elixir_scale, elixir_mult);
+	}
+    }
+
 
     if (draw_lines)
     {

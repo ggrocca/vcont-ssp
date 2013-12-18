@@ -55,6 +55,7 @@ public:
 
     bool mark;
     CriticalType type;
+    double elixir;
     std::vector<TrackEntry> entries;
 
     // returns index to first alive entry occurring before t.
@@ -85,6 +86,7 @@ class Track
 
 public:
 
+    int intoxicated;
     double time_of_life;
     // int critical_original_num;
     // int critical_born_num;
@@ -106,7 +108,8 @@ public:
     
     void query (double t, std::vector<TrackRenderingEntry>& v, bool verbose = true);
 
-    Track* afterlife ();
+    void drink_elixir ();
+    // Track* afterlife ();
 
     // void print_stats ();
 
@@ -132,6 +135,17 @@ public:
     Point final_point (int i);
     Point start_point (int i);
     double lifetime (int i);
+
+
+    // additional helpers
+    int get_other_death (int i);
+    int get_other_birth (int i);
+    double death_time (int i);
+    double birth_time (int i);
+
+    CriticalType original_type (int i);
+    
+    double lifetime_elixir (int i);
 };
 
 class TrackEntryPointer

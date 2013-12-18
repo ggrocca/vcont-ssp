@@ -58,6 +58,13 @@ public:
 // #define VF_DRAW_MODE_NUM 3
 //     typedef enum {FLAT, POINTS, WIRE} draw_mode_t;
 
+    bool draw_elixir;
+    bool normal_lives;
+    double elixir_mult;
+    double elixir_scale;
+    double elixir_cut;
+
+
     std::vector<DEMReader*> dems;
     Track* track;
     std::vector<TrackRenderingEntry> vquery;

@@ -171,12 +171,17 @@ void TW_CALL getTimeValue (void *value, void *)
     *(double *) value = time_value;
 }
 
-void TW_CALL do_query(void *)
+void TW_CALL do_query (void *)
 { 
     td.query (time_value);
 }
 
-void TW_CALL call_quit(void *clientData)
+void TW_CALL do_elixir (void *)
+{ 
+    td.track->drink_elixir ();
+}
+
+void TW_CALL call_quit (void *clientData)
 { 
     (void) clientData;
 
@@ -311,6 +316,23 @@ int main (int argc, char *argv[])
 	       "min=0.0 max=100.00 step=0.05");
     TwAddVarRW(cBar, "draw current pos", TW_TYPE_BOOLCPP, &(td.query_cur_pos), "");
     TwAddVarRW(cBar, "draw death point", TW_TYPE_BOOLCPP, &(td.query_death), "");
+
+    TwAddSeparator (cBar, 0, 0);
+
+    TwAddVarRW(cBar, "show elixir", TW_TYPE_BOOLCPP, &(td.draw_elixir), "");
+    TwAddVarRW(cBar, "draw normal life", TW_TYPE_BOOLCPP, &(td.normal_lives), "");
+    TwAddButton(cBar, "DO ELIXIR", do_elixir, NULL, "");
+    TwAddVarRO(cBar, "intoxicated", TW_TYPE_INT32, &(td.track->intoxicated), "");
+    TwAddVarRW(cBar, "elixir scale", TW_TYPE_DOUBLE,
+	       &(td.elixir_scale), "min=0.001 max=100.00 step=0.001");
+    TwAddVarRW(cBar, "elixir life mult", TW_TYPE_DOUBLE, &(td.elixir_mult),
+	       "min=0.0 max=100.00 step=0.05");
+    TwAddVarRW(cBar, "elixir cut strong", TW_TYPE_DOUBLE, &(td.elixir_cut),
+	       "min=0.0 max=100.00 step=0.1");
+    TwAddVarRW(cBar, "elixir cut fine", TW_TYPE_DOUBLE, &(td.elixir_cut),
+	       "min=0.0 max=100.00 step=0.01");
+    TwAddVarRW(cBar, "elixir cut micro", TW_TYPE_DOUBLE, &(td.elixir_cut),
+	       "min=0.0 max=100.00 step=0.001");
 
     TwAddSeparator (cBar, 0, 0);
 

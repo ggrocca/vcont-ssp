@@ -2,6 +2,55 @@
 
 #include <math.h>
 
+int Track::get_other_death (int i)
+{
+    if (!is_dead (i))
+	eprintx (42, "Critical %d not dead.\n", i);
+
+    return lines[i].entries.back ().life;
+}
+
+
+int Track::get_other_birth (int i)
+{
+    if (!is_born (i))
+	eprintx (42, "Critical %d not born.\n", i);
+
+    return lines[i].entries[0].life;
+}
+
+
+double Track::death_time (int i)
+{
+    if (!is_dead (i))
+	eprintx (42, "Critical %d not dead.\n", i);
+
+    return lines[i].entries.back ().t;
+}
+
+
+double Track::birth_time (int i)
+{
+    if (!is_born (i))
+	eprintx (42, "Critical %d not born.\n", i);
+
+    return lines[i].entries[0].t;
+}
+
+
+
+CriticalType Track::original_type (int i)
+{
+    return lines[i].type;
+}
+
+
+double Track::lifetime_elixir (int i)
+{
+    return lines[i].elixir;
+}
+
+
 // returns index to first alive entry occurring before t.
 // -1 if not found
 int TrackLine::get_entry (double t)
@@ -381,11 +430,138 @@ Track::Track (FILE *f)
 }
 
 
-Track* Track::afterlife ()
+void Track::drink_elixir ()
 {
-    // Track* af = new Track();
-    return NULL;
+    intoxicated = 0;
+
+    for (unsigned i = 0; i < lines.size(); i++)
+    {
+	if (is_born (i))
+	{
+	    lines[i].elixir = 0.0;
+	    continue;
+	}
+
+	if (is_alive (i))
+	{
+	    lines[i].elixir = time_of_life;
+	    continue;
+	}
+
+	int cur = i;
+	CriticalType start_type = original_type (i);
+	double longest = 0.0;
+
+	while (true)
+	{
+	    if (longest < death_time (cur))
+		longest = death_time (cur);
+
+	    int od = get_other_death (cur); // od is companion type
+
+	    if (is_original (od))
+		break;
+
+	    int ob = get_other_birth (od); // ob should be same type
+
+	    // different type
+	    if ((original_type (ob) == MAX || original_type (ob) == MIN) && start_type != original_type (ob))
+	    {
+		// eprint ("Elixir for %d, found different type\n", i);
+		intoxicated++;
+		break;
+	    }
+		
+	    if (is_alive (ob))
+	    {
+		longest = time_of_life;
+		break;
+	    }
+	    
+	    cur = ob;
+	}
+	
+	lines[i].elixir = longest;
+    }    
 }
+
+// Track* Track::afterlife ()
+// {
+//     int originals_num = 0;
+//     Track* af = new Track();
+    
+//     // init afterlife
+//     /////////////////////
+//     af->time_of_life = time_of_life;
+
+//     for (int i = 0; i < lines.size(); i++)
+//     {
+// 	TrackLine tl;
+// 	tl.type = lines[i].type;
+
+// 	if (is_original (i))
+// 	{
+// 	    originals_num++;
+// 	    for (int j = 0; j < lines[i].entries.size(); j++)
+// 	    {
+// 		TrackEntry te;
+// 		te.c = lines[i].entries[j].c;
+// 		te.t = lines[i].entries[j].t;
+// 		te.mate = lines[i].entries[j].mate;
+// 		te.life = lines[i].entries[j].life;
+// 		tl.entries.push_back (te);
+// 	    }
+// 	}
+
+// 	if (is_born (i))
+// 	{
+// 	    // put placeholder to store afterlife travel information
+// 	    TrackEntry te ();
+// 	    tl.entries.push_back (te);
+// 	}
+
+// 	af->entries.push_back (tl);
+//     }
+
+
+//     // let's transmigrate
+//     /////////////////////
+    
+//     for (int i = 0; i < originals_num; i++)
+//     {
+// 	if (is_alive (i))
+// 	    continue;
+
+// 	// find farthest point in afterlife
+// 	double far_death_time = death_time (i);
+// 	int far_point = i;
+// 	int current_point = i;
+
+// 	while (true)
+// 	{
+	    
+// 	    ////////////// hic sunt leones
+
+
+// 	    int next_death = get_other_death (current_point);
+// 	    int next_death_time = death_time (current_point);
+
+// 	    if (next_death_time > current_death_time)
+// 	    {
+// 		next_death_time = current_death_time;
+// 	    }
+	    
+// 	    if (is_original (next_death))
+		
+// 		///////// leones
+
+// 	}
+
+// 	//// dracos
+	
+//     }
+    
+// }
 
 void Track::write (FILE *f)
 {
