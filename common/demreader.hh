@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "utils.hh"
+#define cimg_display 0
 #include "CImg.h"
 #include "debug.h"
 

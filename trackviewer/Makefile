@@ -13,8 +13,8 @@
 ### General Makefile behaviour.
 
 ## set to true to make the project recompile if the makefile is changed
-# MAKEFILE_FORCEBUILD = true
-MAKEFILE_FORCEBUILD = true
+# MAKEFILE_FORCEBUILD := true
+MAKEFILE_FORCEBUILD := true
 
 ## if the target you issue changes from one time to the next (e.g. you
 ## pass from debug to release or the other way round) force rebuild of
@@ -84,18 +84,21 @@ CUSTOM_HEADERS = custom_debug.h
 # override DEBUG_FLAGS +=
 # override TRACE_FLAGS +=
 # override RELEASE_FLAGS +=
-# override INCLUDES +=/
+# override STATIC_FLAGS +=
+# override INCLUDES +=
 # override DEFINES +=
 # override LDFLAGS +=
+# override STATIC_LDFLAGS +=
 # override FRAMEWORKS +=
-FLAGS = 
-DEBUG_FLAGS = -Wall -W -g
-TRACE_FLAGS += -DDEBUGTRACE
-RELEASE_FLAGS = -O2 -DNDEBUG
-INCLUDES = -I../common/ -I${BASELIBS_DIR}/AntTweakBar/include/
-DEFINES = 
-LDFLAGS = -lpng -lz -lm -L${BASELIBS_DIR}/AntTweakBar/lib -lAntTweakBar
-FRAMEWORKS = 
+override FLAGS = 
+override DEBUG_FLAGS = -Wall -W -g
+override TRACE_FLAGS += -DDEBUGTRACE
+override RELEASE_FLAGS = -O2 -DNDEBUG
+override INCLUDES = -I../common/ -I${BASELIBS_DIR}/AntTweakBar/include/
+override DEFINES = 
+override LDFLAGS =
+override STATIC_LDFLAGS +=
+override FRAMEWORKS = 
 
 
 ####################################
@@ -145,10 +148,15 @@ GENERIC = true
 ifeq ($(UNAME),Darwin)
 override FRAMEWORKS += 
 override INCLUDES += -I/opt/local/include
-override LDFLAGS += -L/opt/local/lib
 override FRAMEWORKS += -framework GLUT -framework OpenGL
 override INCLUDES += -I/System/Library/Frameworks/GLUT.framework/Headers/
+override LDFLAGS += -L/opt/local/lib
 override LDFLAGS += -lm -lpthread -L/usr/X11R6/lib -lm -lpthread -lX11
+override LDFLAGS += -Dcimg_use_png -lpng -lz -ltiff -lm -L${BASELIBS_DIR}/AntTweakBar/lib -lAntTweakBar
+override STATIC_LDFLAGS += -L/opt/local/lib
+#override STATIC_LDFLAGS += -lm -lpthread -L/usr/X11R6/lib -lm -lpthread -lX11
+override STATIC_LDFLAGS += -Dcimg_use_png /opt/local/lib/libpng.a /opt/local/lib/libz.a /opt/local/lib/libtiff.a /opt/local/lib/libjpeg.a /opt/local/lib/liblzma.a -lm
+override STATIC_LDFLAGS += -lm ${BASELIBS_DIR}/AntTweakBar/lib/libAntTweakBar.a -framework AppKit
 GENERIC = false
 endif
 
@@ -160,7 +168,11 @@ endif
 # override VAR += whatever
 # endif
 ifeq ($(GENERIC),true)
+override LDFLAGS += -lpng -lz -lm -L${BASELIBS_DIR}/AntTweakBar/lib -lAntTweakBar
 override LDFLAGS += -lglut -lGLU -lX11 -lGL
+override STATIC_LDFLAGS += -static -static-libgcc -static-libstdc++
+override STATIC_LDFLAGS += -lpng -lz -lm -L${BASELIBS_DIR}/AntTweakBar/lib -lAntTweakBar
+override STATIC_LDFLAGS += -lglut -lGLU -lX11 -lGL
 override INCLUDES += 
 endif
 
@@ -223,7 +235,7 @@ endif
 
 
 # non-file targets
-.PHONY : all clean debug trace debugtrace
+.PHONY : all clean debug trace debugtrace static staticdebugtrace
 
 
 # use release flags for `make', debug flags for `make debug' and
@@ -232,6 +244,16 @@ all: override FLAGS += $(RELEASE_FLAGS)
 debug: override FLAGS += $(DEBUG_FLAGS)
 trace: override FLAGS += $(TRACE_FLAGS)
 debugtrace: override FLAGS += $(DEBUG_FLAGS) $(TRACE_FLAGS)
+#static: override FLAGS += $(RELEASE_FLAGS) $(STATIC_FLAGS)
+#staticdebugtrace: override FLAGS+= $(DEBUG_FLAGS) $(TRACE_FLAGS) $(STATIC_FLAGS)
+
+FINAL_LDFLAGS =
+all: override FINAL_LDFLAGS += $(LDFLAGS)
+debug: override FINAL_LDFLAGS += $(LDFLAGS)
+trace: override FINAL_LDFLAGS += $(LDFLAGS)
+debugtrace: override FINAL_LDFLAGS += $(LDFLAGS)
+static: override FINAL_LDFLAGS += $(STATIC_LDFLAGS)
+staticdebugtrace: override FINAL_LDFLAGS += $(STATIC_LDFLAGS)
 
 
 # add custom headers defines, if any
@@ -289,7 +311,8 @@ all : $(TARGET)
 debug : $(TARGET)
 trace : $(TARGET)
 debugtrace : $(TARGET)
-
+static: $(TARGET)
+staticdebugtrace: $(TARGET)
 
 # clean project; warning, the clean commands are repeated in
 # new_target_forcerebuild section.
@@ -315,7 +338,7 @@ endif
 
 # program linking
 $(TARGET) : $(BUILD_OBJECTS)
-	$(LD) $^ $(FRAMEWORKS) -o $@ $(LDFLAGS)
+	$(LD) $^ $(FRAMEWORKS) -o $@ $(FINAL_LDFLAGS)
 
 # implicit rules for objects and dependencies, C
 $(BUILD_DIR_SLASH)%.o: %.c
