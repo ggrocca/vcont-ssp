@@ -13,7 +13,7 @@
 ### General Makefile behaviour.
 
 ## set to true to make the project recompile if the makefile is changed
-# MAKEFILE_FORCEBUILD = true
+# MAKEFILE_FORCEBUILD := true
 MAKEFILE_FORCEBUILD := true
 
 ## if the target you issue changes from one time to the next (e.g. you
@@ -38,7 +38,7 @@ TARGET = scaletracker
 # BUILD_DIR = build-dir
 BUILD_DIR = build
 
-## Additional directories for source files 
+## Additional directories for source files
 # VPATH = add/dir1 ../add/dir2 ../../etc/
 VPATH = ../common
 
@@ -82,21 +82,24 @@ CUSTOM_HEADERS = custom_debug.h
 ## generic compilation configuration, to be used for both C++ and C
 ## on every OS. FLAGS are always used, while DEBUG_FLAGS are used
 ## instead of RELEASE flags when "make debug" is used.
-# override FLAGS += 
+# override FLAGS +=
 # override DEBUG_FLAGS +=
 # override TRACE_FLAGS +=
 # override RELEASE_FLAGS +=
-# override INCLUDES +=/
-# override DEFINES += 
-# override LDFLAGS += 
-# override FRAMEWORKS += 
+# override STATIC_FLAGS +=
+# override INCLUDES +=
+# override DEFINES +=
+# override LDFLAGS +=
+# override STATIC_LDFLAGS +=
+# override FRAMEWORKS +=
 override FLAGS += 
 override DEBUG_FLAGS += -Wall -W -g
 override TRACE_FLAGS += -DDEBUGTRACE
 override RELEASE_FLAGS += -O2 -DNDEBUG
 override INCLUDES += -I../common/
 override DEFINES += 
-override LDFLAGS += -Dcimg_use_png -lpng -lz -ltiff -lm
+override LDFLAGS +=
+override STATIC_LDFLAGS +=
 override FRAMEWORKS += 
 
 
@@ -109,16 +112,16 @@ override FRAMEWORKS +=
 
 # C specific conf
 # override CFLAGS +=
-# override CINCLUDES += 
-# override CDEFINES += 
+# override CINCLUDES +=
+# override CDEFINES +=
 override CFLAGS += -std=gnu99
 override CINCLUDES += 
 override CDEFINES += 
 
 # C++ specific conf
 # override CXXFLAGS +=
-# override CXXINCLUDES += 
-# override CXXDEFINES += 
+# override CXXINCLUDES +=
+# override CXXDEFINES +=
 override CXXFLAGS += -pipe  -D_THREAD_SAFE -pthread -Wno-write-strings
 override CXXINCLUDES += 
 override CXXDEFINES += 
@@ -159,12 +162,21 @@ ifeq ($(UNAME),Darwin) # MACOSX
 override FRAMEWORKS += 
 override INCLUDES += -I/opt/local/include
 override LDFLAGS += -L/opt/local/lib
+override LDFLAGS += -Dcimg_use_png -lpng -lz -ltiff -lm
 override LDFLAGS += -lm -lpthread -L/usr/X11R6/lib -lm -lpthread -lX11
+override STATIC_LDFLAGS += -L/opt/local/lib
+override STATIC_LDFLAGS += -Dcimg_use_png /opt/local/lib/libpng.a /opt/local/lib/libz.a /opt/local/lib/libtiff.a /opt/local/lib/libjpeg.a /opt/local/lib/liblzma.a -lm
+#override STATIC_LDFLAGS += -lm -lpthread -L/usr/X11R6/lib -lm -lpthread -lX11
+
 GENERIC = false
 endif
 
 ifeq ($(GENERIC),true) # UNIX/LINUX
+override LDFLAGS += -Dcimg_use_png -lpng -lz -ltiff -lm
 override LDFLAGS +=  -lX11 -lpthread
+override STATIC_LDFLAGS += -static -static-libgcc -static-libstdc++
+override STATIC_LDFLAGS += -Dcimg_use_png -lpng -lz -ltiff -lm
+override STATIC_LDFLAGS +=  -lX11 -lpthread
 override INCLUDES += 
 endif
 
@@ -223,7 +235,7 @@ endif
 
 
 # non-file targets
-.PHONY : all clean debug trace debugtrace
+.PHONY : all clean debug trace debugtrace static staticdebugtrace
 
 
 # use release flags for `make', debug flags for `make debug' and
@@ -232,6 +244,16 @@ all: override FLAGS += $(RELEASE_FLAGS)
 debug: override FLAGS += $(DEBUG_FLAGS)
 trace: override FLAGS += $(TRACE_FLAGS)
 debugtrace: override FLAGS += $(DEBUG_FLAGS) $(TRACE_FLAGS)
+#static: override FLAGS += $(RELEASE_FLAGS) $(STATIC_FLAGS)
+#staticdebugtrace: override FLAGS+= $(DEBUG_FLAGS) $(TRACE_FLAGS) $(STATIC_FLAGS)
+
+FINAL_LDFLAGS =
+all: override FINAL_LDFLAGS += $(LDFLAGS)
+debug: override FINAL_LDFLAGS += $(LDFLAGS)
+trace: override FINAL_LDFLAGS += $(LDFLAGS)
+debugtrace: override FINAL_LDFLAGS += $(LDFLAGS)
+static: override FINAL_LDFLAGS += $(STATIC_LDFLAGS)
+staticdebugtrace: override FINAL_LDFLAGS += $(STATIC_LDFLAGS)
 
 
 # add custom headers defines, if any
@@ -289,7 +311,8 @@ all : $(TARGET)
 debug : $(TARGET)
 trace : $(TARGET)
 debugtrace : $(TARGET)
-
+static: $(TARGET)
+staticdebugtrace: $(TARGET)
 
 # clean project; warning, the clean commands are repeated in
 # new_target_forcerebuild section.
@@ -315,7 +338,7 @@ endif
 
 # program linking
 $(TARGET) : $(BUILD_OBJECTS)
-	$(LD) $^ $(FRAMEWORKS) -o $@ $(LDFLAGS)
+	$(LD) $^ $(FRAMEWORKS) -o $@ $(FINAL_LDFLAGS)
 
 # implicit rules for objects and dependencies, C
 $(BUILD_DIR_SLASH)%.o: %.c
