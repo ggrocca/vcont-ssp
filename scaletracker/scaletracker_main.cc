@@ -216,7 +216,7 @@ void app_init(int argc, char *argv[])
         }
     }
 
-    if (imagefile == NULL && scalespace_read_name == NULL && demfile)
+    if (imagefile == NULL && scalespace_read_name == NULL && demfile == NULL)
     {
 	fprintf (stderr, "No image, dem or scalespace input given.\n");
 	goto die;
