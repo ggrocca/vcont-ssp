@@ -49,6 +49,7 @@ public:
     double query_scale;
     bool query_cur_pos;
     bool query_death;
+    bool color_newborns;
 
     bool draw_lines;
     double lines_width;

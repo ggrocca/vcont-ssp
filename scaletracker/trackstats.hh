@@ -40,7 +40,14 @@ public:
     
     elem& operator=(const elem& rhs);
     elem& operator++();
-    bool operator<(const elem& rhs);
+    //bool operator<(const elem& rhs);
+    //bool operator<(const elem& lhs, const elem& rhs);
+    friend bool operator<(const elem& lhs, const elem& rhs)
+    {
+	//return strcmp (this->move, rhs.move) > 0;
+	return strcmp (lhs.move, rhs.move) > 0;
+    }
+
     bool operator==(const elem& rhs);
     void values (int* before, int* after);
 };

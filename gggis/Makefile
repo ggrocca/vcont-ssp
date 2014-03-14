@@ -161,7 +161,8 @@ UNAME := $(shell uname -s)
 GENERIC = true
 
 ifeq ($(UNAME),Darwin) # MACOSX
-override FRAMEWORKS += 
+override FRAMEWORKS +=
+override CXXC = g++ -mmacosx-version-min=10.4
 override INCLUDES += -I/opt/local/include
 override LDFLAGS += -L/opt/local/lib
 override FRAMEWORKS += -framework GLUT -framework OpenGL

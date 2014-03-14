@@ -32,10 +32,12 @@ elem& elem::operator++()
     return *this;
 }
 
-bool elem::operator<(const elem& rhs)
-{
-    return strcmp (this->move, rhs.move) > 0;
-}
+//bool elem::operator<(const elem& rhs)
+// bool elem::operator<(const elem& lhs, const elem& rhs)
+// {
+//     //return strcmp (this->move, rhs.move) > 0;
+//     return strcmp (lhs.move, rhs.move) > 0;
+// }
 
 bool elem::operator==(const elem& rhs)
 {

@@ -79,7 +79,7 @@ DataSet::DataSet (string dir, DataOrganization org) : dir (dir), name (get_base 
     else // we open a dir
     {
 	list_dir (dir.c_str(), &es);
-	if (have_georef_in_list_dir = ends_with (es[0], DM_GEOREF_FILE))
+	if ((have_georef_in_list_dir = ends_with (es[0], DM_GEOREF_FILE)))
 	    georef_file = es[0];
     }    
 

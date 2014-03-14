@@ -192,6 +192,7 @@ DisplayTrack::DisplayTrack (Plane* p, GeoMapping* m, int sidx, int pidx) : Displ
     lines_query = false;
     scale_value = 0.0;
     time_value = 0.0;
+    color_newborns = false;
 
     // track_order = new TrackOrdering ();
     draw_order = false;
@@ -203,6 +204,7 @@ DisplayTrack::DisplayTrack (Plane* p, GeoMapping* m, int sidx, int pidx) : Displ
 	       &(track_scale), "min=0.001 max=100.00 step=0.001");
     TwAddVarRW (bar, "track life mult", TW_TYPE_DOUBLE, &(track_mult),
 	       "min=0.0 max=100.00 step=0.05");
+    TwAddVarRW (bar, "color newborns", TW_TYPE_BOOLCPP, &(color_newborns), "");
 
     TwAddSeparator (bar, 0, 0);
 
@@ -233,7 +235,6 @@ DisplayTrack::DisplayTrack (Plane* p, GeoMapping* m, int sidx, int pidx) : Displ
     TwAddVarRW (bar, "lines query", TW_TYPE_BOOLCPP, &(lines_query), "");
 
     TwAddSeparator (bar, 0, 0);
-
 
     // TwAddButton (bar, "DO ORDER", tw_do_order, this, "");
     TwAddVarRW (bar, "show order", TW_TYPE_BOOLCPP, &(draw_order), "");
@@ -330,6 +331,51 @@ void __draw_critical_color (CriticalType t)
     glVertex2f ( qh, -qh);
     glEnd ();
  }
+
+void __draw_critical_newborn (bool is_new)
+{
+    double qs = 10.0;
+    double qh = (qs / 2.0);
+    double st = 1.0;
+
+    if (is_new)
+	glColor3dv (yellow);
+    else
+	glColor3dv (cyan);
+
+    glBegin (GL_QUADS);
+    glVertex2f (-qh, -qh);
+    glVertex2f (-qh,  qh);
+    glVertex2f ( qh,  qh);
+    glVertex2f ( qh, -qh);
+    glEnd ();
+
+    glColor3f (0.0, 0.0, 0.0);
+
+    glBegin (GL_QUADS);
+    // 1 left
+    glVertex2f (-qh     , -qh);
+    glVertex2f (-qh     ,  qh);
+    glVertex2f (-qh + st,  qh);
+    glVertex2f (-qh + st, -qh);
+    // 2 top
+    glVertex2f (-qh,  qh - st);
+    glVertex2f (-qh,  qh     );
+    glVertex2f ( qh,  qh     );
+    glVertex2f ( qh,  qh - st);
+    // 3 right
+    glVertex2f ( qh - st, -qh);
+    glVertex2f ( qh - st,  qh);
+    glVertex2f ( qh     ,  qh);
+    glVertex2f ( qh     , -qh);
+    // 4 bottom
+    glVertex2f (-qh, -qh);
+    glVertex2f (-qh, -qh + st);
+    glVertex2f ( qh, -qh + st);
+    glVertex2f ( qh, -qh);
+    glEnd ();
+ }
+
 
 void __draw_critical_sym (CriticalType t)
 {
@@ -486,7 +532,7 @@ void __draw_critical_simple (Coord c, CriticalType t, bool dead, double scale)
 
 void __draw_critical_track (Coord c, CriticalType t,
 			    bool start, bool special, double tol,
-			    double scale, double tol_mult)
+			    double scale, double tol_mult, bool color_newborns)
 {
     double scale_tol = tol_mult * (1.0 + tol);
 
@@ -511,7 +557,10 @@ void __draw_critical_track (Coord c, CriticalType t,
     if (scale_tol != 0.0)
 	glScaled (scale_tol, scale_tol, 1.0);
 
-    __draw_critical_sym (t);
+    if (color_newborns)
+	__draw_critical_newborn (special);
+    else
+	__draw_critical_sym (t);
 
     glPopMatrix();
 }
@@ -600,11 +649,12 @@ void DisplayTrack::display ()
 	    __draw_critical_track (track->lines[i].entries[0].c, t, true,
 				   track->lines[i].is_born(),
 				   track->lifetime(i),
-				   track_scale, track_mult);
-	    __draw_critical_track (track->lines[i].entries.back().c, t, false,
-				   track->lines[i].is_dead(),
-				   track->lifetime(i),
-				   track_scale, track_mult);
+				   track_scale, track_mult, color_newborns);
+	    if (!color_newborns)
+		__draw_critical_track (track->lines[i].entries.back().c, t, false,
+				       track->lines[i].is_dead(),
+				       track->lifetime(i),
+				       track_scale, track_mult, color_newborns);
 	}
     }
 
