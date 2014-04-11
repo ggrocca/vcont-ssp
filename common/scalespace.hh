@@ -85,8 +85,8 @@ public:
 
     // helper functions for levels, time and scale
 
-    // L: 0 1 2   3 4  5  6  7   8   9   10   11
-    // S: 1 2 4   8 16 32 64 128 256 512 1024 2048
+    // L: 0 1 2  3  4  5  6  7   8   9   10   11
+    // S: 1 2 4  8  16 32 64 128 256 512 1024 2048
     // W: 9 9 13 17 25 33 49 67  97  135 193  271
     // S = pow (2, L)
     // W = odd (floor (sqrt (S) * 6))
@@ -94,6 +94,14 @@ public:
     {
 	int w = floor (6.0 * sqrt (pow (2.0, (double)level)));
 	return w % 2 == 0? w + 1 : w;
+    }
+
+    static inline double window2scale (int window)
+    {
+	if (window < 7)
+	    return 1.0;
+
+	return pow (((double) window) / 6.0, 2.0);
     }
 
     // T = log2 (S)

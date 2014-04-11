@@ -56,6 +56,8 @@ public:
     bool mark;
     CriticalType type;
     double elixir;
+    // double strength;
+    // double scale;
     std::vector<TrackEntry> entries;
 
     // returns index to first alive entry occurring before t.
@@ -109,6 +111,7 @@ public:
     void query (double t, std::vector<TrackRenderingEntry>& v, bool verbose = true);
 
     void drink_elixir ();
+    void strength ();
     // Track* afterlife ();
 
     // void print_stats ();

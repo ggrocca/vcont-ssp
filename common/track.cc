@@ -430,6 +430,20 @@ Track::Track (FILE *f)
 }
 
 
+// void Track::strength ()
+// {
+//     for (unsigned i = 0; i < lines.size(); i++)
+//     {
+// 	for (j = 0; j < lines[i].entries[j].size())
+// 	{
+// 	    double strength;
+// 	    double scale = ScaleSpace::time2scale (lines[i].entries[j].t);
+
+	    
+// 	}
+//     }
+// }
+
 void Track::drink_elixir ()
 {
     intoxicated = 0;
