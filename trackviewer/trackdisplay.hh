@@ -11,7 +11,24 @@
 #include "demreader.hh"
 #include "grid.hh"
 
+#include <vector>
+#include <algorithm>
+
 using namespace std;
+
+class CritElix {
+public:
+    int crit;
+    double elix;
+
+    CritElix (int i, double d) : crit (i), elix (d) {}
+    
+    bool operator <(const CritElix& rhs) const
+    {
+         return this->elix < rhs.elix;
+    }
+};
+
 
 class TrackDisplay
 {
@@ -64,11 +81,20 @@ public:
     double elixir_scale;
     double elixir_cut;
 
+    bool draw_spots;
+    void init_spots ();
+    int spots_maxima_cut;
+    int spots_minima_cut;
+    int spots_sellae_cut;
+    std::vector<CritElix> spots_maxima;
+    std::vector<CritElix> spots_minima;
+    std::vector<CritElix> spots_sellae;
 
     std::vector<DEMReader*> dems;
     Track* track;
     std::vector<TrackRenderingEntry> vquery;
     TrackOrdering *track_order;
 };
+
 
 #endif

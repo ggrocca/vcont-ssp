@@ -5,13 +5,13 @@
 
 void DEMReader::set_maxmin ()
 {
-    max = INT_MIN;
-    min = INT_MAX;
+    max = -DBL_MAX;
+    min = DBL_MAX;
 
     for (unsigned i = 0; i < width; i++)
 	for (unsigned j = 0; j < height; j++)
 	{
-	    int v = get_pixel (i, j);
+	    double v = get_pixel (i, j);
 	    if (v < min)
 		min = v;
 	    if (v > max)
@@ -20,7 +20,7 @@ void DEMReader::set_maxmin ()
 }
 
 
-const char* DEMSelector::fmts[] = {"png", "bmp", "tif", "hgt", "\0"};
+const char* DEMSelector::fmts[] = {"png", "bmp", "tif", "hgt", "asc", "\0"};
 
 PNGReader::PNGReader(const char *filename)
 {
@@ -36,7 +36,7 @@ PNGReader::~PNGReader()
 
 }
 
-int PNGReader::get_pixel (unsigned int x, unsigned int y)
+double PNGReader::get_pixel (unsigned int x, unsigned int y)
 {
     y = height - y - 1;
     return img(x,y);
@@ -53,7 +53,7 @@ void PNGReader::print_info (char *filename)
     char* s = filename? succ : empty;
     char* f = filename? filename : empty;
 	
-    fprintf (OTHER_STREAM, "%s%s%s""width %d, height %d, max %d, min %d.\n",
+    fprintf (OTHER_STREAM, "%s%s%s""width %d, height %d, max %lf, min %lf.\n",
 	    p, f, s, width, height, max, min);
     return;
 }
@@ -72,7 +72,7 @@ BMPReader::~BMPReader ()
 
 }
 
-int BMPReader::get_pixel (unsigned int x, unsigned int y)
+double BMPReader::get_pixel (unsigned int x, unsigned int y)
 {
     y = height - y - 1;
     return img(x,y);
@@ -89,7 +89,7 @@ void BMPReader::print_info (char *filename = 0)
     char* s = filename? succ : empty;
     char* f = filename? filename : empty;
 	
-    fprintf (OTHER_STREAM, "%s%s%s""width %d, height %d, max %d, min %d.\n",
+    fprintf (OTHER_STREAM, "%s%s%s""width %d, height %d, max %lf, min %lf.\n",
 	    p, f, s, width, height, max, min);
     return;
 }
@@ -108,7 +108,7 @@ TIFReader::~TIFReader ()
 
 }
 
-int TIFReader::get_pixel (unsigned int x, unsigned int y)
+double TIFReader::get_pixel (unsigned int x, unsigned int y)
 {
     y = height - y - 1;
     return img(x,y);
@@ -126,7 +126,7 @@ void TIFReader::print_info (char *filename = 0)
     char* s = filename? succ : empty;
     char* f = filename? filename : empty;
 	
-    fprintf (OTHER_STREAM, "%s%s%s""width %d, height %d, max %d, min %d.\n",
+    fprintf (OTHER_STREAM, "%s%s%s""width %d, height %d, max %lf, min %lf.\n",
 	    p, f, s, width, height, max, min);
     return;
 }
@@ -168,7 +168,7 @@ HGTReader::HGTReader(const char* filename)
     // print_info (filename);
 }
 
-int HGTReader::get_pixel(unsigned int x, unsigned int y)
+double HGTReader::get_pixel(unsigned int x, unsigned int y)
 {
     y = height - 1 - y;
     // short pixel = data[(x * height) + y];
@@ -177,7 +177,7 @@ int HGTReader::get_pixel(unsigned int x, unsigned int y)
     if (pixel == SHRT_MIN)
     {
 	eprint ("Found HGT hole: %d,%d\n", x, y);
-	return INT_MIN;
+	return -DBL_MAX;
     }
     return pixel;
 }
@@ -194,9 +194,77 @@ void HGTReader::print_info (char *filename = 0)
     char* f = filename? filename : empty;
 	
     fprintf (OTHER_STREAM, "HGTReader: %s%s%s length %d, byte_length %d, "
-	    "width %d, height %d, max %d, min %d.\n",
+	    "width %d, height %d, max %lf, min %lf.\n",
 	    p, f, s,
 	    length, byte_length, width, height,
 	    max, min);
+    return;
+}
+
+
+ASCReader::~ASCReader ()
+{
+    free (data);
+}
+
+ASCReader::ASCReader(const char* filename)
+{
+    FILE* fp;
+    fp = fopen (filename, "r");
+
+    fscanf (fp, "ncols %d\n", &width);
+    fscanf (fp, "nrows %d\n", &height);
+    fscanf (fp, "xllcorner %lf\n", &xllcorner);
+    fscanf (fp, "yllcorner %lf\n", &yllcorner);
+    fscanf (fp, "cellsize %lf\n", &cellsize);
+    fscanf (fp, "NODATA_value %lf\n", &nodata_value);
+
+    data = (double*) malloc (width * height * sizeof (double));
+
+    int len = 0;
+    for (int w = 0; w < width; w++)
+	for (int h = 0; h < height; h++)
+	{
+	    double value;
+	    fscanf (fp, h == height - 1? "%lf\n" : "%lf ", &value);
+	    data[len++] = value;
+	}
+
+    set_maxmin();
+    // print_info (filename);
+}
+
+double ASCReader::get_pixel(unsigned int x, unsigned int y)
+{
+    y = height - 1 - y;
+    // short pixel = data[(x * height) + y];
+    short pixel = data[(y * width) + x];
+    
+    if (pixel == nodata_value)
+    {
+	eprint ("Found ASC hole: %d,%d\n", x, y);
+	return -DBL_MAX;
+    }
+    return pixel;
+}
+
+
+void ASCReader::print_info (char *filename = 0)
+{
+    // print file only if not null
+    char* empty = "";
+    char* prev = "file ";
+    char* succ = ". ";
+    char* p = filename? prev : empty;
+    char* s = filename? succ : empty;
+    char* f = filename? filename : empty;
+	
+    fprintf (OTHER_STREAM, "ASCReader: %s%s%s "
+	     "xllcorner: %lf, yllcorner: %lf, cellsize: %lf, nodata_value: %lf. "
+	     "width %d, height %d, max %lf, min %lf.\n",
+	     p, f, s,
+	     xllcorner, yllcorner, cellsize, nodata_value,
+	     width, height,
+	     max, min);
     return;
 }

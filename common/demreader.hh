@@ -21,12 +21,12 @@
 class DEMReader {
 public:
     unsigned width, height;
-    int max, min;
+    double max, min;
 
     DEMReader () {}
     virtual ~DEMReader () {}
-    // get_pixel returns INT_MIN in case of error or missing data
-    virtual int get_pixel (unsigned int x, unsigned int y) = 0; 
+    // get_pixel returns -DBL_MAX in case of error or missing data
+    virtual double get_pixel (unsigned int x, unsigned int y) = 0; 
     virtual void print_info (char* filename = 0) = 0;
     void set_maxmin ();
 };
@@ -39,17 +39,31 @@ public:
 
     HGTReader (const char *filename);
     virtual ~HGTReader ();
-    int get_pixel (unsigned int x, unsigned int y);
+    double get_pixel (unsigned int x, unsigned int y);
     void print_info (char* filename);
     // multiplier was: 13;
 };
+
+class ASCReader : public DEMReader {
+public:
+    double xllcorner, yllcorner;
+    double cellsize;
+    double nodata_value;
+    double* data;
+    
+    ASCReader (const char *filename);
+    virtual ~ASCReader ();
+    double get_pixel (unsigned int x, unsigned int y);
+    void print_info (char* filename);
+};
+
 
 class PNGReader : public DEMReader {
     cimg_library::CImg<unsigned short> img;
 public:
     PNGReader (const char *filename);
     virtual ~PNGReader ();
-    int get_pixel (unsigned int x, unsigned int y);
+    double get_pixel (unsigned int x, unsigned int y);
     void print_info (char* filename);
     // multiplier was: 1;
 };
@@ -59,7 +73,7 @@ class BMPReader : public DEMReader {
 public:
     BMPReader (const char *filename);
     virtual ~BMPReader ();
-    int get_pixel (unsigned int x, unsigned int y);
+    double get_pixel (unsigned int x, unsigned int y);
     void print_info (char* filename);
     // multiplier was: 1;
 };
@@ -69,7 +83,7 @@ class TIFReader : public DEMReader {
 public:
     TIFReader (const char *filename);
     virtual ~TIFReader ();
-    int get_pixel (unsigned int x, unsigned int y);
+    double get_pixel (unsigned int x, unsigned int y);
     void print_info (char* filename);
     // multiplier was: 1;
 };
@@ -77,7 +91,7 @@ public:
 
 class DEMSelector {
 public:
-    typedef enum {PNG=0, BMP, TIF, HGT} Format;
+    typedef enum {PNG=0, BMP, TIF, HGT, ASC} Format;
     static const char* fmts[];
 
     static DEMReader* get (const char* filename)
@@ -103,6 +117,8 @@ public:
 	    return new TIFReader (filename);
 	case HGT:
 	    return new HGTReader (filename);
+	case ASC:
+	    return new ASCReader (filename);
 	default:
 	    eprint ("%s","Wrong format code\n");
 	    return 0;

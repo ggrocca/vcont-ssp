@@ -23,8 +23,9 @@ Dem::Dem (DEMReader* dr) : Grid<double> (dr->width, dr->height),
     for (unsigned i = 0; i < dr->width; i++)
 	for (unsigned j = 0; j < dr->height; j++)
 	{
-	    int v = dr->get_pixel (i, j);
-	    (*this)(i, j, BOUND) =  (v == INT_MIN)? -DBL_MAX : (double) v;
+	    // int v = dr->get_pixel (i, j);
+	    // (*this)(i, j, BOUND) = (v == INT_MIN)? -DBL_MAX : (double) v;
+	    (*this)(i, j, BOUND) = dr->get_pixel (i, j);
 	}
 }
 

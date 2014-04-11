@@ -392,8 +392,32 @@ void __draw_critical_elixir (Coord c, CriticalType type, double elixir,  double 
     glPopMatrix();
 }
 
+// std::vector<int> spots_maxima;
+// std::vector<int> spots_minima;
+// std::vector<int> spots_sellae;
 
+void TrackDisplay::init_spots ()
+{
+    track->drink_elixir ();
 
+    for (unsigned i = 0; i < track->lines.size(); i++)
+    {
+	if (track->is_original (i))
+	{
+	    if (track->original_type (i) == MAX)
+		spots_maxima.push_back (CritElix (i, track->lifetime_elixir (i)));
+	    if (track->original_type (i) == MIN)
+		spots_minima.push_back (CritElix (i, track->lifetime_elixir (i)));
+	    if (track->original_type (i) == SA2 ||
+		track->original_type (i) == SA3)
+		spots_sellae.push_back (CritElix (i, track->lifetime_elixir (i)));
+	}
+    }
+
+    std::sort (spots_maxima.begin(), spots_maxima.end());
+    std::sort (spots_minima.begin(), spots_minima.end());
+    std::sort (spots_sellae.begin(), spots_sellae.end());
+}
 
 void TrackDisplay::draw (int dem_idx)
 {
@@ -475,7 +499,28 @@ void TrackDisplay::draw (int dem_idx)
 	}
     }
 
+    if (draw_spots)
+    {
+	vector<int> spots_current;
+	
+	for (unsigned i = spots_maxima_cut; i < spots_maxima.size(); i++)
+	    spots_current.push_back (spots_maxima[i].crit);
+	for (unsigned i = spots_minima_cut; i < spots_minima.size(); i++)
+	    spots_current.push_back (spots_minima[i].crit);
+	for (unsigned i = spots_sellae_cut; i < spots_sellae.size(); i++)
+	    spots_current.push_back (spots_sellae[i].crit);
 
+	for (unsigned i = 0; i < spots_current.size(); i++)
+	{
+	    int idx = spots_current[i];
+	    __draw_critical_elixir (track->lines[idx].entries[0].c,
+				    track->original_type (idx),
+				    track->lifetime_elixir (idx),
+				    elixir_scale, elixir_mult);
+	}   
+
+    }
+    
     if (draw_lines)
     {
 	glEnable(GL_LINE_SMOOTH);

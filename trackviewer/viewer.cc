@@ -181,6 +181,11 @@ void TW_CALL do_elixir (void *)
     td.track->drink_elixir ();
 }
 
+void TW_CALL do_init_spots (void *)
+{ 
+    td.init_spots ();
+}
+
 void TW_CALL call_quit (void *clientData)
 { 
     (void) clientData;
@@ -334,6 +339,22 @@ int main (int argc, char *argv[])
     TwAddVarRW(cBar, "elixir cut micro", TW_TYPE_DOUBLE, &(td.elixir_cut),
 	       "min=0.0 max=100.00 step=0.001");
 
+    TwAddSeparator (cBar, 0, 0);
+
+    TwAddVarRW(cBar, "show spots", TW_TYPE_BOOLCPP, &(td.draw_spots), "");
+    TwAddButton(cBar, "DO INIT_SPOTS", do_init_spots, NULL, "");
+    TwAddVarRW(cBar, "elixir scale", TW_TYPE_DOUBLE,
+	       &(td.elixir_scale), "min=0.001 max=100.00 step=0.001");
+    TwAddVarRW(cBar, "elixir life mult", TW_TYPE_DOUBLE, &(td.elixir_mult),
+	       "min=0.0 max=100.00 step=0.05");
+    TwAddVarRW(cBar, "maxima cut", TW_TYPE_INT32, &(td.spots_maxima_cut),
+	       "min=0 step=1");
+    TwAddVarRW(cBar, "minima cut", TW_TYPE_INT32, &(td.spots_minima_cut),
+	       "min=0 step=1");
+    TwAddVarRW(cBar, "sellae cut", TW_TYPE_INT32, &(td.spots_sellae_cut),
+	       "min=0 step=1");
+    
+    
     TwAddSeparator (cBar, 0, 0);
 
     TwAddVarRW(cBar, "show lines", TW_TYPE_BOOLCPP, &(td.draw_lines), "");
