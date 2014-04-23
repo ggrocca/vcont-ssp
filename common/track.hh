@@ -6,7 +6,9 @@
 #include "debug.h"
 #include "grid.hh"
 #include "scaletypes.hh"
+#include "scalespace.hh"
 #include "geomapping.hh"
+#include "dem.hh"
 
 class TrackEntry 
 {
@@ -56,8 +58,8 @@ public:
     bool mark;
     CriticalType type;
     double elixir;
-    // double strength;
-    // double scale;
+    double strength;
+    double scale;
     std::vector<TrackEntry> entries;
 
     // returns index to first alive entry occurring before t.
@@ -111,7 +113,7 @@ public:
     void query (double t, std::vector<TrackRenderingEntry>& v, bool verbose = true);
 
     void drink_elixir ();
-    void strength ();
+    void get_strength (Dem* d);
     // Track* afterlife ();
 
     // void print_stats ();

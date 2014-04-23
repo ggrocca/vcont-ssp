@@ -221,7 +221,7 @@ ScaleSpace::ScaleSpace (Dem& idem, int levels, ScaleSpaceOpts opts)
 	// dem[i] = new Dem (base_width, base_height);
 
 	int window;
-	window = level2window (i-1);
+	window = time2window (i-1);
 
 	if (window <= 0)
 	    eprint ("Wrong window %d, level %d\n", window, i);

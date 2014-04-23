@@ -398,3 +398,92 @@ void Dem::point_print (int scope, Coord c, CriticalType type)
     oprints (scope, "--POINT %d %d - %s -----\n", x,y, critical2string (type));
     point_print (scope, c);
 }
+
+Averhood Dem::averhood (CriticalPoint cp, int kernel, Averhood prev)
+{
+    Averhood next;
+    next = Averhood ();
+    next = kernel == 1? Averhood (cp.t, (*this)(cp.c)) : Averhood (prev);
+
+    printf ("K|%d|\n", kernel);
+    for (int i = cp.c.x - kernel; i <= cp.c.x + kernel; i++)
+    { // go on (i, cp.c.y - kernel) and (i, cp.c.y + kernel)
+	Coord cn;
+	cn = Coord (i, cp.c.y - kernel);
+	printf ("|XY-| (%d,%d) -- (%d,%d) -- (%d,%d)\n",
+		cn.x-cp.c.x,cn.y-cp.c.y,cn.x,cn.y,cp.c.x,cp.c.y);
+	next.add (cn, (*this)(cn), width, height);
+	cn = Coord (i, cp.c.y + kernel);
+	printf ("|XY+| (%d,%d) -- (%d,%d) -- (%d,%d)\n",
+		cn.x-cp.c.x,cn.y-cp.c.y,cn.x,cn.y,cp.c.x,cp.c.y);
+	next.add (cn, (*this)(cn), width, height);
+    }
+    for (int j = cp.c.y - kernel + 1; j <= cp.c.y + kernel - 1; j++)
+    { // go on (cp.c.x - kernel, j) and (cp.c.x + kernel, j)
+	Coord cn;
+	cn = Coord (cp.c.x - kernel, j);
+	printf ("|YX-| (%d,%d) -- (%d,%d) -- (%d,%d)\n",
+		cn.x-cp.c.x,cn.y-cp.c.y,cn.x,cn.y,cp.c.x,cp.c.y);
+	next.add (cn, (*this)(cn), width, height);
+	cn = Coord (cp.c.x + kernel, j);
+	printf ("|YX+| (%d,%d) -- (%d,%d) -- (%d,%d)\n",
+		cn.x-cp.c.x,cn.y-cp.c.y,cn.x,cn.y,cp.c.x,cp.c.y);
+	next.add (cn, (*this)(cn), width, height);
+    }
+
+    return next;
+}
+
+void Dem::averhood_max (CriticalPoint cp, int kernel, double* strength, int* kernel_max)
+{
+    int k = (kernel - 1) / 2;
+    Averhood prev, next, max;
+
+    prev = max = averhood (cp, 1, next);
+    *kernel_max = 1;
+
+    if (std::isnan (max.get()))
+    {
+	printf ("IN. cp (%d, %d) . ct:%c cv:%lf as:%lf bs:%lf an:%d bn:%d\n",
+		cp.c.x, cp.c.y, critical2char (max.ct), max.cv, max.above_sum,
+		max.below_sum, max.above_n, max.below_n);
+	int x = cp.c.x;
+	int y = cp.c.y;
+	printf ("  % 6.8lf % 6.8lf % 6.8lf\n"
+	     "  % 6.8lf % 6.8lf % 6.8lf\n"
+	     "  % 6.8lf % 6.8lf % 6.8lf\n",
+	     _pdm((*this)(x-1, y+1)), _pdm((*this)(x  , y+1)), _pdm((*this)(x+1, y+1)),
+	     _pdm((*this)(x-1, y  )), _pdm((*this)(x  , y  )), _pdm((*this)(x+1, y  )),
+	     _pdm((*this)(x-1, y-1)), _pdm((*this)(x  , y-1)), _pdm((*this)(x+1, y-1))
+	     );
+
+    }
+    for (int i = 2; i <= k; i++)
+    {
+	next = averhood (cp, i, prev);
+	if (std::isnan (next.get()))
+	    printf ("NEXT %d. cp (%d, %d) . ct:%c cv:%lf as:%lf bs:%lf an:%d bn:%d\n",
+		    i, cp.c.x, cp.c.y, critical2char (max.ct), max.cv, max.above_sum,
+		    max.below_sum, max.above_n, max.below_n);
+
+	if (max < next)
+	{
+	    max = next;
+	    *kernel_max = i;
+	}
+
+	prev = next;
+    }
+
+    *kernel_max = (*kernel_max * 2) + 1;
+    *strength = max.get ();
+
+    if (std::isnan (*strength))
+	printf ("OUT. cp (%d, %d) . ct:%c cv:%lf as:%lf bs:%lf an:%d bn:%d\n\n",
+		cp.c.x, cp.c.y, critical2char (max.ct), max.cv, max.above_sum,
+		max.below_sum, max.above_n, max.below_n);
+
+
+    // if (kernel > 80)
+    // 	printf ("kernel: %d, kmax: %d\n", kernel, *kernel_max);
+}

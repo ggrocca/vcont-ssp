@@ -407,11 +407,20 @@ Track::Track (FILE *f)
     {
 	char ctype;
 	int lines_num = 0;
-	fscanf (f, "type: %c\n#entries: %d\n\n", &ctype, &lines_num);
+	double eli, str, sca;
+	fscanf (f, "type: %c\n"
+		"eli: %lf\nstr: %lf\nsca: %lf\n"
+		"#entries: %d\n\n",
+		&ctype,
+		&eli, &str, &sca,
+		&lines_num);
 		// critical2char (critical_points[i].type), 
 		// critical_points[i].line.size());
 	TrackLine newline;
 	newline.type = char2critical (ctype);
+	newline.elixir = eli;
+	newline.strength = str;
+	newline.scale = sca;
 	lines.push_back (newline);
 
 	for (int j = 0; j < lines_num; j++)
@@ -430,19 +439,26 @@ Track::Track (FILE *f)
 }
 
 
-// void Track::strength ()
-// {
-//     for (unsigned i = 0; i < lines.size(); i++)
-//     {
-// 	for (j = 0; j < lines[i].entries[j].size())
-// 	{
-// 	    double strength;
-// 	    double scale = ScaleSpace::time2scale (lines[i].entries[j].t);
+void Track::get_strength (Dem *d)
+{
+    for (unsigned i = 0; i < lines.size(); i++)
+    {
+	if (lines[i].is_original ())
+	{
+	    double strength;
+	    int kernel_max;
+	    // double scale = ScaleSpace::time2scale (lines[i].entries[j].t);
 
-	    
-// 	}
-//     }
-// }
+	    CriticalPoint cp = CriticalPoint (lines[i].entries[0].c, lines[i].type);
+	    int kernel = ScaleSpace::time2window (lines[i].elixir);
+
+	    d->averhood_max (cp, kernel, &strength, &kernel_max);
+
+	    lines[i].strength = strength;
+	    lines[i].scale = ScaleSpace::window2scale (kernel_max);
+	}
+    }
+}
 
 void Track::drink_elixir ()
 {
@@ -584,8 +600,11 @@ void Track::write (FILE *f)
 
     for (unsigned i = 0; i < lines.size(); i++)
     {
-	fprintf(f, "type: %c\n#entries: %zu\n\n",
-		critical2char (lines[i].type), 
+	fprintf(f, "type: %c\n"
+		"eli: %.80lf\nstr: %.80lf\nsca: %.80lf\n"
+		"#entries: %zu\n\n",
+		critical2char (lines[i].type),
+		lines[i].elixir, lines[i].strength, lines[i].scale,
 		lines[i].entries.size());
 
 	for (unsigned j = 0; j < lines[i].entries.size(); j++)

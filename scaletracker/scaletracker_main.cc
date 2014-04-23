@@ -404,7 +404,9 @@ int main (int argc, char *argv[])
     flipper->track (*ssp, track, order);
     
     delete flipper;
-	
+
+    track->drink_elixir ();
+    track->get_strength (ssp->dem[0]);
     //track->write (tracking_name, order);
     track_writer (tracking_name, track, order);
 

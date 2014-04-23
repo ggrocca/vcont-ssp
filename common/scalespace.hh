@@ -90,9 +90,9 @@ public:
     // W: 9 9 13 17 25 33 49 67  97  135 193  271
     // S = pow (2, L)
     // W = odd (floor (sqrt (S) * 6))
-    static inline int level2window (int level)
+    static inline int time2window (int time)
     {
-	int w = floor (6.0 * sqrt (pow (2.0, (double)level)));
+	int w = floor (6.0 * sqrt (pow (2.0, time)));
 	return w % 2 == 0? w + 1 : w;
     }
 
@@ -100,7 +100,7 @@ public:
     {
 	if (window < 7)
 	    return 1.0;
-
+    
 	return pow (((double) window) / 6.0, 2.0);
     }
 
@@ -114,7 +114,7 @@ public:
     static inline double time2scale (double time)
     {
 	return pow (2.0, time);
-    }
+}
 };
 
 
