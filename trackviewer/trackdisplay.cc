@@ -52,7 +52,13 @@ TrackDisplay::TrackDisplay()
     elixir_mult = 1.0;
     elixir_scale = 0.5;
     elixir_cut = 0.0;
+    importance_mult = 0.05;
+    importance_scale = 0.3;
+    importance_cut = 0.0;
     normal_lives = false;
+
+    density_maxima_num = 0;
+    density_maxima_val = 50.0;
 };
 
 
@@ -398,7 +404,7 @@ void __draw_critical_elixir (Coord c, CriticalType type, double elixir,  double 
 
 void TrackDisplay::init_spots ()
 {
-    track->drink_elixir ();
+    // track->drink_elixir ();
 
     for (unsigned i = 0; i < track->lines.size(); i++)
     {
@@ -417,6 +423,23 @@ void TrackDisplay::init_spots ()
     std::sort (spots_maxima.begin(), spots_maxima.end());
     std::sort (spots_minima.begin(), spots_minima.end());
     std::sort (spots_sellae.begin(), spots_sellae.end());
+}
+
+double density_distance (Point a, Point b)
+{
+    return sqrt ((a.x - b.x) * (a.x - b.x)) + ((a.y - b.y) * (a.y - b.y));
+}
+
+bool TrackDisplay::is_density (double val, int idx, vector<int>& spots_current)
+{
+    Point pa = track->start_point (idx);
+    for (unsigned i = 0; i < spots_current.size (); i++)
+    {
+    	Point pb = track->start_point (spots_current[i]);
+    	if (density_distance (pa, pb) < val)
+    	    return false;
+    }
+    return true;
 }
 
 void TrackDisplay::draw (int dem_idx)
@@ -499,6 +522,19 @@ void TrackDisplay::draw (int dem_idx)
 	}
     }
 
+    if (draw_importance)
+    {
+	for (unsigned i = 0; i < track->lines.size(); i++)
+	{
+	    if (track->is_original (i) && track->lines[i].strength > importance_cut)
+		__draw_critical_elixir (track->lines[i].entries[0].c,
+					track->original_type (i),
+					track->lines[i].strength,
+					importance_scale, importance_mult);
+	}
+    }
+
+    
     if (draw_spots)
     {
 	vector<int> spots_current;
@@ -510,6 +546,16 @@ void TrackDisplay::draw (int dem_idx)
 	for (unsigned i = spots_sellae_cut; i < spots_sellae.size(); i++)
 	    spots_current.push_back (spots_sellae[i].crit);
 
+	int found_maxima = 0;
+	for (int i = spots_maxima_cut-1;
+	     i >= 0 && found_maxima < density_maxima_num;
+	     i--)
+	    if (is_density (density_maxima_val, spots_maxima[i].crit, spots_current))
+	    {
+		found_maxima++;
+		spots_current.push_back (spots_maxima[i].crit);
+	    }
+	
 	for (unsigned i = 0; i < spots_current.size(); i++)
 	{
 	    int idx = spots_current[i];
@@ -517,7 +563,7 @@ void TrackDisplay::draw (int dem_idx)
 				    track->original_type (idx),
 				    track->lifetime_elixir (idx),
 				    elixir_scale, elixir_mult);
-	}   
+	}
 
     }
     

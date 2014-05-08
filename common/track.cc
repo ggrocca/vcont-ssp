@@ -50,7 +50,6 @@ double Track::lifetime_elixir (int i)
     return lines[i].elixir;
 }
 
-
 // returns index to first alive entry occurring before t.
 // -1 if not found
 int TrackLine::get_entry (double t)

@@ -295,34 +295,34 @@ int main (int argc, char *argv[])
 
     TwAddSeparator (cBar, 0, 0);
 
-    TwAddVarRW(cBar, "show tracking", TW_TYPE_BOOLCPP, &(td.draw_track), "");
-    // TwAddVarRW(cBar, "scale criticals coarse", TW_TYPE_DOUBLE,
-    // 	       &(td.scale_criticals), "min=0.1 max=100.00 step=0.1");
-    TwAddVarRW(cBar, "track scale", TW_TYPE_DOUBLE,
-	       &(td.track_scale), "min=0.001 max=100.00 step=0.001");
-    TwAddVarRW(cBar, "track life mult", TW_TYPE_DOUBLE, &(td.track_mult),
-	       "min=0.0 max=100.00 step=0.05");
+    // TwAddVarRW(cBar, "show tracking", TW_TYPE_BOOLCPP, &(td.draw_track), "");
+    // // TwAddVarRW(cBar, "scale criticals coarse", TW_TYPE_DOUBLE,
+    // // 	       &(td.scale_criticals), "min=0.1 max=100.00 step=0.1");
+    // TwAddVarRW(cBar, "track scale", TW_TYPE_DOUBLE,
+    // 	       &(td.track_scale), "min=0.001 max=100.00 step=0.001");
+    // TwAddVarRW(cBar, "track life mult", TW_TYPE_DOUBLE, &(td.track_mult),
+    // 	       "min=0.0 max=100.00 step=0.05");
 
-    TwAddSeparator (cBar, 0, 0);
+    // TwAddSeparator (cBar, 0, 0);
 
-    TwAddVarRW(cBar, "show query", TW_TYPE_BOOLCPP, &(td.draw_query), "");
-    TwAddVarCB(cBar, "query scale value", TW_TYPE_DOUBLE,
-    	       setScaleValue, getScaleValue,
-    	       NULL, "min=1.0000 max=4096.0000 step=1.0000");
-    TwAddVarCB(cBar, "query time value", TW_TYPE_DOUBLE,
-    	       setTimeValue, getTimeValue,
-    	       NULL, "min=0.0000 max=64.0000 step=0.25");
-    // TwAddVarRW(cBar, "query_value", TW_TYPE_DOUBLE, &(query_value),
-    // 	       "min=0.0000 max=20.0000 step=0.2500");
-    TwAddButton(cBar, "DO QUERY", do_query, NULL, "");
-    TwAddVarRW(cBar, "query scale", TW_TYPE_DOUBLE,
-	       &(td.query_scale), "min=0.001 max=100.00 step=0.001");
-    TwAddVarRW(cBar, "query life mult", TW_TYPE_DOUBLE, &(td.query_mult),
-	       "min=0.0 max=100.00 step=0.05");
-    TwAddVarRW(cBar, "draw current pos", TW_TYPE_BOOLCPP, &(td.query_cur_pos), "");
-    TwAddVarRW(cBar, "draw death point", TW_TYPE_BOOLCPP, &(td.query_death), "");
+    // TwAddVarRW(cBar, "show query", TW_TYPE_BOOLCPP, &(td.draw_query), "");
+    // TwAddVarCB(cBar, "query scale value", TW_TYPE_DOUBLE,
+    // 	       setScaleValue, getScaleValue,
+    // 	       NULL, "min=1.0000 max=4096.0000 step=1.0000");
+    // TwAddVarCB(cBar, "query time value", TW_TYPE_DOUBLE,
+    // 	       setTimeValue, getTimeValue,
+    // 	       NULL, "min=0.0000 max=64.0000 step=0.25");
+    // // TwAddVarRW(cBar, "query_value", TW_TYPE_DOUBLE, &(query_value),
+    // // 	       "min=0.0000 max=20.0000 step=0.2500");
+    // TwAddButton(cBar, "DO QUERY", do_query, NULL, "");
+    // TwAddVarRW(cBar, "query scale", TW_TYPE_DOUBLE,
+    // 	       &(td.query_scale), "min=0.001 max=100.00 step=0.001");
+    // TwAddVarRW(cBar, "query life mult", TW_TYPE_DOUBLE, &(td.query_mult),
+    // 	       "min=0.0 max=100.00 step=0.05");
+    // TwAddVarRW(cBar, "draw current pos", TW_TYPE_BOOLCPP, &(td.query_cur_pos), "");
+    // TwAddVarRW(cBar, "draw death point", TW_TYPE_BOOLCPP, &(td.query_death), "");
 
-    TwAddSeparator (cBar, 0, 0);
+    // TwAddSeparator (cBar, 0, 0);
 
     TwAddVarRW(cBar, "show elixir", TW_TYPE_BOOLCPP, &(td.draw_elixir), "");
     TwAddVarRW(cBar, "draw normal life", TW_TYPE_BOOLCPP, &(td.normal_lives), "");
@@ -341,11 +341,25 @@ int main (int argc, char *argv[])
 
     TwAddSeparator (cBar, 0, 0);
 
+    TwAddVarRW(cBar, "show importance", TW_TYPE_BOOLCPP, &(td.draw_importance), "");
+    TwAddVarRW(cBar, "importance scale", TW_TYPE_DOUBLE,
+	       &(td.importance_scale), "min=0.001 max=100.00 step=0.001");
+    TwAddVarRW(cBar, "importance mult", TW_TYPE_DOUBLE, &(td.importance_mult),
+	       "min=0.0 max=100.00 step=0.005");
+    TwAddVarRW(cBar, "importance cut strong", TW_TYPE_DOUBLE, &(td.importance_cut),
+	       "min=0.0 step=0.1");
+    TwAddVarRW(cBar, "importance cut fine", TW_TYPE_DOUBLE, &(td.importance_cut),
+	       "min=0.0 step=0.01");
+    TwAddVarRW(cBar, "importance cut micro", TW_TYPE_DOUBLE, &(td.importance_cut),
+	       "min=0.0 step=0.001");
+
+    TwAddSeparator (cBar, 0, 0);
+
     TwAddVarRW(cBar, "show spots", TW_TYPE_BOOLCPP, &(td.draw_spots), "");
     TwAddButton(cBar, "DO INIT_SPOTS", do_init_spots, NULL, "");
-    TwAddVarRW(cBar, "elixir scale", TW_TYPE_DOUBLE,
+    TwAddVarRW(cBar, "spot elixir scale", TW_TYPE_DOUBLE,
 	       &(td.elixir_scale), "min=0.001 max=100.00 step=0.001");
-    TwAddVarRW(cBar, "elixir life mult", TW_TYPE_DOUBLE, &(td.elixir_mult),
+    TwAddVarRW(cBar, "spot elixir life mult", TW_TYPE_DOUBLE, &(td.elixir_mult),
 	       "min=0.0 max=100.00 step=0.05");
     TwAddVarRW(cBar, "maxima cut", TW_TYPE_INT32, &(td.spots_maxima_cut),
 	       "min=0 step=1");
@@ -354,20 +368,25 @@ int main (int argc, char *argv[])
     TwAddVarRW(cBar, "sellae cut", TW_TYPE_INT32, &(td.spots_sellae_cut),
 	       "min=0 step=1");
     
-    
-    TwAddSeparator (cBar, 0, 0);
+    TwAddVarRW(cBar, "density num", TW_TYPE_INT32, &(td.density_maxima_num),
+	       "min=0 max=200 step=1");
+    TwAddVarRW(cBar, "density val", TW_TYPE_DOUBLE, &(td.density_maxima_val),
+	       "min=0.5 max=1000.0 step=0.5");
 
-    TwAddVarRW(cBar, "show lines", TW_TYPE_BOOLCPP, &(td.draw_lines), "");
-    TwAddVarRW(cBar, "lines width", TW_TYPE_DOUBLE, &(td.lines_width),
-	       "min=0.1 max=100.00 step=0.1");
-    TwAddVarRW(cBar, "lines size clip", TW_TYPE_UINT32, &(td.lines_size_clip),
-	       "min=0 max=1000 step=1");
-    TwAddVarRW(cBar, "lines life clip", TW_TYPE_DOUBLE, &(td.lines_life_clip),
-	       "min=0.0 max=100.00 step=0.1");
-    TwAddVarRW(cBar, "lines query", TW_TYPE_BOOLCPP, &(td.lines_query), "");
-    // // focus distance
-    // TwAddVarCB(cBar, "camera focus", TW_TYPE_DOUBLE, setFocalLength, getFocalLength,
-    // 	       NULL, "min=0.00 max=100.00 step=0.1");
+    
+    // TwAddSeparator (cBar, 0, 0);
+
+    // TwAddVarRW(cBar, "show lines", TW_TYPE_BOOLCPP, &(td.draw_lines), "");
+    // TwAddVarRW(cBar, "lines width", TW_TYPE_DOUBLE, &(td.lines_width),
+    // 	       "min=0.1 max=100.00 step=0.1");
+    // TwAddVarRW(cBar, "lines size clip", TW_TYPE_UINT32, &(td.lines_size_clip),
+    // 	       "min=0 max=1000 step=1");
+    // TwAddVarRW(cBar, "lines life clip", TW_TYPE_DOUBLE, &(td.lines_life_clip),
+    // 	       "min=0.0 max=100.00 step=0.1");
+    // TwAddVarRW(cBar, "lines query", TW_TYPE_BOOLCPP, &(td.lines_query), "");
+    // // // focus distance
+    // // TwAddVarCB(cBar, "camera focus", TW_TYPE_DOUBLE, setFocalLength, getFocalLength,
+    // // 	       NULL, "min=0.00 max=100.00 step=0.1");
 
     glutMainLoop();
     exit (-1);

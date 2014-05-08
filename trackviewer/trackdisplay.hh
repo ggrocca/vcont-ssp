@@ -81,6 +81,11 @@ public:
     double elixir_scale;
     double elixir_cut;
 
+    bool draw_importance;
+    double importance_mult;
+    double importance_scale;
+    double importance_cut;
+
     bool draw_spots;
     void init_spots ();
     int spots_maxima_cut;
@@ -89,6 +94,9 @@ public:
     std::vector<CritElix> spots_maxima;
     std::vector<CritElix> spots_minima;
     std::vector<CritElix> spots_sellae;
+    int density_maxima_num;
+    double density_maxima_val;
+    bool is_density (double val, int idx, vector<int>& spots_current);
 
     std::vector<DEMReader*> dems;
     Track* track;
