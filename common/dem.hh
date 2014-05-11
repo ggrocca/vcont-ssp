@@ -50,6 +50,10 @@ public:
     double below_diff () { return cv - below_av(); }
     double max_diff () { return cv - both_av(); }
     double min_diff () { return both_av() - cv; }
+    double aggregate_diff() {
+	return ((above_diff () * above_n) + (below_diff () * below_n)) /
+	    (double) (below_n + above_n);
+    }
     
     double get ()
     {
@@ -60,8 +64,10 @@ public:
 	if (ct == SA2 || ct == SA3)
 	{
 	    // return above_diff() < below_diff()? above_diff() : below_diff();
-	    double ret = above_diff() < below_diff()? above_diff() : below_diff();
-
+	    //double ret = above_diff() < below_diff()? above_diff() : below_diff();
+	    //double ret = above_diff() < below_diff()? below_diff() : above_diff();
+	    double ret = aggregate_diff ();
+	    
 	    return ret;
 	}
 	return -DBL_MAX;

@@ -369,7 +369,7 @@ int main (int argc, char *argv[])
 	       "min=0 step=1");
     
     TwAddVarRW(cBar, "density num", TW_TYPE_INT32, &(td.density_maxima_num),
-	       "min=0 max=200 step=1");
+	       "min=0 step=1");
     TwAddVarRW(cBar, "density val", TW_TYPE_DOUBLE, &(td.density_maxima_val),
 	       "min=0.5 max=1000.0 step=0.5");
 
