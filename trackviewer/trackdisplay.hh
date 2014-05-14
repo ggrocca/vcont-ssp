@@ -87,14 +87,25 @@ public:
     double importance_cut;
 
     bool draw_spots;
+    bool draw_final;
+    bool draw_always_selected;
+    bool draw_density_selected;
+    bool draw_density_pool;
+    double spot_scale;
     void init_spots ();
-    int spots_maxima_cut;
-    int spots_minima_cut;
-    int spots_sellae_cut;
+    int spots_maxima_life_cut;
+    int spots_minima_life_cut;
+    int spots_sellae_life_cut;
+    double spots_maxima_imp_cut;
+    double spots_minima_imp_cut;
+    double spots_sellae_imp_cut;
+    int spots_maxima_life_add;
+    int spots_minima_life_add;
+    int spots_sellae_life_add;
     std::vector<CritElix> spots_maxima;
     std::vector<CritElix> spots_minima;
     std::vector<CritElix> spots_sellae;
-    int density_maxima_num;
+    // int density_maxima_num;
     double density_maxima_val;
     bool is_density (double val, int idx, vector<int>& spots_current);
 

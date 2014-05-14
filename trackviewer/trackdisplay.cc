@@ -57,8 +57,26 @@ TrackDisplay::TrackDisplay()
     importance_cut = 0.0;
     normal_lives = false;
 
-    density_maxima_num = 0;
-    density_maxima_val = 50.0;
+    //density_maxima_num = 0;
+    draw_spots = false;
+    draw_final = false;
+    draw_always_selected = false;
+    draw_density_selected = false;
+    draw_density_pool = false;
+    
+    spot_scale = 0.0;
+    density_maxima_val = 3000.0;
+    spots_maxima_life_cut = 0;
+    spots_minima_life_cut = 0;
+    spots_sellae_life_cut = 0;
+    spots_maxima_imp_cut = 0.0;
+    spots_minima_imp_cut = 0.0;
+    spots_sellae_imp_cut = 0.0;
+    spots_maxima_life_add = 0;
+    spots_minima_life_add = 0;
+    spots_sellae_life_add = 0;
+
+    
 };
 
 
@@ -537,33 +555,108 @@ void TrackDisplay::draw (int dem_idx)
     
     if (draw_spots)
     {
+	vector<CritElix> spots_cut;
+	vector<int> spots_add;
 	vector<int> spots_current;
-	
-	for (unsigned i = spots_maxima_cut; i < spots_maxima.size(); i++)
-	    spots_current.push_back (spots_maxima[i].crit);
-	for (unsigned i = spots_minima_cut; i < spots_minima.size(); i++)
-	    spots_current.push_back (spots_minima[i].crit);
-	for (unsigned i = spots_sellae_cut; i < spots_sellae.size(); i++)
-	    spots_current.push_back (spots_sellae[i].crit);
 
-	int found_maxima = 0;
-	for (int i = spots_maxima_cut-1;
-	     i >= 0 && found_maxima < density_maxima_num;
-	     i--)
-	    if (is_density (density_maxima_val, spots_maxima[i].crit, spots_current))
-	    {
-		found_maxima++;
-		spots_current.push_back (spots_maxima[i].crit);
-	    }
+	// spots_maxima_life_add = (spots_maxima_life_add < spots_maxima_life_cut)?
+	//     spots_maxima_life_cut : spots_maxima_life_add;
 	
-	for (unsigned i = 0; i < spots_current.size(); i++)
-	{
-	    int idx = spots_current[i];
-	    __draw_critical_elixir (track->lines[idx].entries[0].c,
-				    track->original_type (idx),
-				    track->lifetime_elixir (idx),
-				    elixir_scale, elixir_mult);
-	}
+	// spots_minima_life_add = (spots_minima_life_add < spots_minima_life_cut)?
+	//     spots_minima_life_cut : spots_minima_life_add;
+	
+	// spots_sellae_life_add = (spots_sellae_life_add < spots_sellae_life_cut)?
+	//     spots_sellae_life_cut : spots_sellae_life_add;
+	
+	spots_maxima_life_cut = (spots_maxima_life_cut > spots_maxima_life_add)?
+	    spots_maxima_life_add : spots_maxima_life_cut;
+	
+	spots_minima_life_cut = (spots_minima_life_cut > spots_minima_life_add)?
+	    spots_minima_life_add : spots_minima_life_cut;
+	
+	spots_sellae_life_cut = (spots_sellae_life_cut > spots_sellae_life_add)?
+	    spots_sellae_life_add : spots_sellae_life_cut;
+
+	for (unsigned i = spots_maxima_life_cut; i < spots_maxima.size(); i++)
+	    if (i >= spots_maxima_life_add)
+		spots_add.push_back (spots_maxima[i].crit);
+ 	    else if(track->lines[spots_maxima[i].crit].strength > spots_maxima_imp_cut)
+		spots_cut.push_back (spots_maxima[i]);
+
+	for (unsigned i = spots_minima_life_cut; i < spots_minima.size(); i++)
+	    if (i >= spots_minima_life_add)
+		spots_add.push_back (spots_minima[i].crit);
+ 	    else if(track->lines[spots_minima[i].crit].strength > spots_minima_imp_cut)
+		spots_cut.push_back (spots_minima[i]);
+	    
+	for (unsigned i = spots_sellae_life_cut; i < spots_sellae.size(); i++)
+	    if (i >= spots_sellae_life_add)
+		spots_add.push_back (spots_sellae[i].crit);
+	    else if(track->lines[spots_sellae[i].crit].strength > spots_sellae_imp_cut)
+		spots_cut.push_back (spots_sellae[i]);
+	
+	// sort spots_cut
+	std::sort (spots_cut.begin(), spots_cut.end());
+	
+	// add from spots_add to spots_current
+	for (unsigned i = 0; i < spots_add.size(); i++)
+	    spots_current.push_back (spots_add[i]);
+	
+	// add from spots_cut to spots_current density-based
+	for (unsigned i = 0; i < spots_cut.size(); i++)
+	    if (is_density (density_maxima_val, spots_cut[i].crit, spots_current))
+		spots_current.push_back (spots_cut[i].crit);
+	
+	
+	// int found_maxima = 0;
+	// for (int i = spots_maxima_cut-1;
+	//      i >= 0 && found_maxima < density_maxima_num;
+	//      i--)
+	//     if (is_density (density_maxima_val, spots_maxima[i].crit, spots_current))
+	//     {
+	// 	found_maxima++;
+	// 	spots_current.push_back (spots_maxima[i].crit);
+	//     }
+
+	if (draw_final)
+	    for (unsigned i = 0; i < spots_current.size(); i++)
+	    {
+		int idx = spots_current[i];
+		__draw_critical_elixir (track->lines[idx].entries[0].c,
+					track->original_type (idx),
+					track->lifetime_elixir (idx),
+					spot_scale, 0.0); // elixir_mult);
+	    }
+
+	if (draw_always_selected)
+	    for (unsigned i = 0; i < spots_add.size(); i++)
+	    {
+		int idx = spots_add[i];
+		__draw_critical_elixir (track->lines[idx].entries[0].c,
+					track->original_type (idx),
+					track->lifetime_elixir (idx),
+					spot_scale, 0.0); // elixir_mult);
+	    }	
+
+	if (draw_density_selected)
+	    for (unsigned i = spots_add.size(); i < spots_current.size(); i++)
+	    {
+	    	int idx = spots_current[i];
+	    	__draw_critical_elixir (track->lines[idx].entries[0].c,
+	    				track->original_type (idx),
+	    				track->lifetime_elixir (idx),
+	    				spot_scale, 0.0); // elixir_mult);
+	    }
+
+	if (draw_density_pool)
+	    for (unsigned i = 0; i < spots_cut.size(); i++)
+	    {
+	    	int idx = spots_cut[i].crit;
+	    	__draw_critical_elixir (track->lines[idx].entries[0].c,
+	    				track->original_type (idx),
+	    				track->lifetime_elixir (idx),
+	    				spot_scale, 0.0); // elixir_mult);
+	    }	
 
     }
     

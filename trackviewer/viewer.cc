@@ -294,6 +294,7 @@ int main (int argc, char *argv[])
 	       "min=0.0 max=65536.0 step=10.0");
 
     TwAddSeparator (cBar, 0, 0);
+    TwAddSeparator (cBar, 0, 0);
 
     // TwAddVarRW(cBar, "show tracking", TW_TYPE_BOOLCPP, &(td.draw_track), "");
     // // TwAddVarRW(cBar, "scale criticals coarse", TW_TYPE_DOUBLE,
@@ -324,19 +325,66 @@ int main (int argc, char *argv[])
 
     // TwAddSeparator (cBar, 0, 0);
 
-    TwAddVarRW(cBar, "show elixir", TW_TYPE_BOOLCPP, &(td.draw_elixir), "");
+
+    TwAddVarRW(cBar, "show spots", TW_TYPE_BOOLCPP, &(td.draw_spots), "");
+    TwAddButton(cBar, "DO INIT_SPOTS", do_init_spots, NULL, "");
+    TwAddVarRW(cBar, "spot scale", TW_TYPE_DOUBLE,
+	       &(td.spot_scale), "min=0.001 max=100.00 step=0.001");
+    // TwAddVarRW(cBar, "spot elixir life mult", TW_TYPE_DOUBLE, &(td.elixir_mult),
+    // 	       "min=0.0 max=100.00 step=0.05");
+
+    TwAddVarRW(cBar, "show final selection", TW_TYPE_BOOLCPP, &(td.draw_final), "");
+    TwAddVarRW(cBar, "show always selection", TW_TYPE_BOOLCPP, &(td.draw_always_selected), "");
+    TwAddVarRW(cBar, "show density selection", TW_TYPE_BOOLCPP, &(td.draw_density_selected), "");
+    TwAddVarRW(cBar, "show density pool", TW_TYPE_BOOLCPP, &(td.draw_density_pool), "");
+    
+    
+    TwAddVarRW(cBar, "maxima life_cut", TW_TYPE_INT32, &(td.spots_maxima_life_cut),
+	       "min=0 step=1");
+    TwAddVarRW(cBar, "minima life_cut", TW_TYPE_INT32, &(td.spots_minima_life_cut),
+	       "min=0 step=1");
+    TwAddVarRW(cBar, "sellae life_cut", TW_TYPE_INT32, &(td.spots_sellae_life_cut),
+	       "min=0 step=1");
+    TwAddVarRW(cBar, "maxima imp_cut", TW_TYPE_DOUBLE, &(td.spots_maxima_imp_cut),
+	       "min=0.0 step=0.01");
+    TwAddVarRW(cBar, "minima imp_cut", TW_TYPE_DOUBLE, &(td.spots_minima_imp_cut),
+	       "min=0.0 step=0.01");
+    TwAddVarRW(cBar, "sellae imp_cut", TW_TYPE_DOUBLE, &(td.spots_sellae_imp_cut),
+	       "min=0.0 step=0.01");
+
+    TwAddVarRW(cBar, "maxima life_add", TW_TYPE_INT32, &(td.spots_maxima_life_add),
+	       "min=0 step=1");
+    TwAddVarRW(cBar, "minima life_add", TW_TYPE_INT32, &(td.spots_minima_life_add),
+	       "min=0 step=1");
+    TwAddVarRW(cBar, "sellae life_add", TW_TYPE_INT32, &(td.spots_sellae_life_add),
+	       "min=0 step=1");
+    
+    // TwAddVarRW(cBar, "density num", TW_TYPE_INT32, &(td.density_maxima_num),
+    // 	       "min=0 step=1");
+    TwAddVarRW(cBar, "density val", TW_TYPE_DOUBLE, &(td.density_maxima_val),
+	       "min=0.5 max=3000.0 step=0.5");
+
+
+
+    TwAddSeparator (cBar, 0, 0);
+    TwAddSeparator (cBar, 0, 0);
+    TwAddSeparator (cBar, 0, 0);
+
+
+
+    TwAddVarRW(cBar, "show life", TW_TYPE_BOOLCPP, &(td.draw_elixir), "");
     TwAddVarRW(cBar, "draw normal life", TW_TYPE_BOOLCPP, &(td.normal_lives), "");
-    TwAddButton(cBar, "DO ELIXIR", do_elixir, NULL, "");
+    TwAddButton(cBar, "DO LIFE", do_elixir, NULL, "");
     TwAddVarRO(cBar, "intoxicated", TW_TYPE_INT32, &(td.track->intoxicated), "");
-    TwAddVarRW(cBar, "elixir scale", TW_TYPE_DOUBLE,
+    TwAddVarRW(cBar, "life scale", TW_TYPE_DOUBLE,
 	       &(td.elixir_scale), "min=0.001 max=100.00 step=0.001");
-    TwAddVarRW(cBar, "elixir life mult", TW_TYPE_DOUBLE, &(td.elixir_mult),
+    TwAddVarRW(cBar, "life life mult", TW_TYPE_DOUBLE, &(td.elixir_mult),
 	       "min=0.0 max=100.00 step=0.05");
-    TwAddVarRW(cBar, "elixir cut strong", TW_TYPE_DOUBLE, &(td.elixir_cut),
+    TwAddVarRW(cBar, "life cut strong", TW_TYPE_DOUBLE, &(td.elixir_cut),
 	       "min=0.0 max=100.00 step=0.1");
-    TwAddVarRW(cBar, "elixir cut fine", TW_TYPE_DOUBLE, &(td.elixir_cut),
+    TwAddVarRW(cBar, "life cut fine", TW_TYPE_DOUBLE, &(td.elixir_cut),
 	       "min=0.0 max=100.00 step=0.01");
-    TwAddVarRW(cBar, "elixir cut micro", TW_TYPE_DOUBLE, &(td.elixir_cut),
+    TwAddVarRW(cBar, "life cut micro", TW_TYPE_DOUBLE, &(td.elixir_cut),
 	       "min=0.0 max=100.00 step=0.001");
 
     TwAddSeparator (cBar, 0, 0);
@@ -355,23 +403,6 @@ int main (int argc, char *argv[])
 
     TwAddSeparator (cBar, 0, 0);
 
-    TwAddVarRW(cBar, "show spots", TW_TYPE_BOOLCPP, &(td.draw_spots), "");
-    TwAddButton(cBar, "DO INIT_SPOTS", do_init_spots, NULL, "");
-    TwAddVarRW(cBar, "spot elixir scale", TW_TYPE_DOUBLE,
-	       &(td.elixir_scale), "min=0.001 max=100.00 step=0.001");
-    TwAddVarRW(cBar, "spot elixir life mult", TW_TYPE_DOUBLE, &(td.elixir_mult),
-	       "min=0.0 max=100.00 step=0.05");
-    TwAddVarRW(cBar, "maxima cut", TW_TYPE_INT32, &(td.spots_maxima_cut),
-	       "min=0 step=1");
-    TwAddVarRW(cBar, "minima cut", TW_TYPE_INT32, &(td.spots_minima_cut),
-	       "min=0 step=1");
-    TwAddVarRW(cBar, "sellae cut", TW_TYPE_INT32, &(td.spots_sellae_cut),
-	       "min=0 step=1");
-    
-    TwAddVarRW(cBar, "density num", TW_TYPE_INT32, &(td.density_maxima_num),
-	       "min=0 step=1");
-    TwAddVarRW(cBar, "density val", TW_TYPE_DOUBLE, &(td.density_maxima_val),
-	       "min=0.5 max=1000.0 step=0.5");
 
     
     // TwAddSeparator (cBar, 0, 0);
