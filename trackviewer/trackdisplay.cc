@@ -603,7 +603,8 @@ void TrackDisplay::draw (int dem_idx)
 	    spots_current.push_back (spots_add[i]);
 	
 	// add from spots_cut to spots_current density-based
-	for (unsigned i = 0; i < spots_cut.size(); i++)
+	//for (unsigned i = 0; i < spots_cut.size(); i++)
+	for (int i = (int)spots_cut.size()-1; i >= 0 ; i--)
 	    if (is_density (density_maxima_val, spots_cut[i].crit, spots_current))
 		spots_current.push_back (spots_cut[i].crit);
 	
