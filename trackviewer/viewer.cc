@@ -326,6 +326,8 @@ int main (int argc, char *argv[])
     // TwAddSeparator (cBar, 0, 0);
 
 
+    // GG use statistics
+    
     TwAddVarRW(cBar, "show spots", TW_TYPE_BOOLCPP, &(td.draw_spots), "");
     TwAddButton(cBar, "DO INIT_SPOTS", do_init_spots, NULL, "");
     TwAddVarRW(cBar, "spot scale", TW_TYPE_DOUBLE,
@@ -337,27 +339,39 @@ int main (int argc, char *argv[])
     TwAddVarRW(cBar, "show always selection", TW_TYPE_BOOLCPP, &(td.draw_always_selected), "");
     TwAddVarRW(cBar, "show density selection", TW_TYPE_BOOLCPP, &(td.draw_density_selected), "");
     TwAddVarRW(cBar, "show density pool", TW_TYPE_BOOLCPP, &(td.draw_density_pool), "");
-    
-    
-    TwAddVarRW(cBar, "maxima life_cut", TW_TYPE_INT32, &(td.spots_maxima_life_cut),
+
+    TwAddButton(cBar, "maxima", NULL, NULL, "");
+    TwAddVarRO(cBar, "^ total", TW_TYPE_INT32, &(td.maxima_total_num), "");
+    TwAddVarRW(cBar, "^ always add", TW_TYPE_INT32, &(td.maxima_always_selected_num),
 	       "min=0 step=1");
-    TwAddVarRW(cBar, "minima life_cut", TW_TYPE_INT32, &(td.spots_minima_life_cut),
+    TwAddVarRO(cBar, "^ always life", TW_TYPE_DOUBLE, &(td.maxima_always_life), "");
+    TwAddVarRW(cBar, "^ pool add", TW_TYPE_INT32, &(td.maxima_density_pool_num),
 	       "min=0 step=1");
-    TwAddVarRW(cBar, "sellae life_cut", TW_TYPE_INT32, &(td.spots_sellae_life_cut),
-	       "min=0 step=1");
-    TwAddVarRW(cBar, "maxima imp_cut", TW_TYPE_DOUBLE, &(td.spots_maxima_imp_cut),
-	       "min=0.0 step=0.01");
-    TwAddVarRW(cBar, "minima imp_cut", TW_TYPE_DOUBLE, &(td.spots_minima_imp_cut),
-	       "min=0.0 step=0.01");
-    TwAddVarRW(cBar, "sellae imp_cut", TW_TYPE_DOUBLE, &(td.spots_sellae_imp_cut),
+    TwAddVarRO(cBar, "^ pool life", TW_TYPE_DOUBLE, &(td.maxima_excluded_life), "");
+    TwAddVarRW(cBar, "^ importance cut", TW_TYPE_DOUBLE, &(td.spots_maxima_imp_cut),
 	       "min=0.0 step=0.01");
 
-    TwAddVarRW(cBar, "maxima life_add", TW_TYPE_INT32, &(td.spots_maxima_life_add),
+    TwAddButton(cBar, "minima", NULL, NULL, "");
+    TwAddVarRO(cBar, ". total", TW_TYPE_INT32, &(td.minima_total_num), "");
+    TwAddVarRW(cBar, ". always add", TW_TYPE_INT32, &(td.minima_always_selected_num),
 	       "min=0 step=1");
-    TwAddVarRW(cBar, "minima life_add", TW_TYPE_INT32, &(td.spots_minima_life_add),
+    TwAddVarRO(cBar, ". always life", TW_TYPE_DOUBLE, &(td.minima_always_life), "");
+    TwAddVarRW(cBar, ". pool add", TW_TYPE_INT32, &(td.minima_density_pool_num),
 	       "min=0 step=1");
-    TwAddVarRW(cBar, "sellae life_add", TW_TYPE_INT32, &(td.spots_sellae_life_add),
+    TwAddVarRO(cBar, ". pool life", TW_TYPE_DOUBLE, &(td.minima_excluded_life), "");
+    TwAddVarRW(cBar, ". importance cut", TW_TYPE_DOUBLE, &(td.spots_minima_imp_cut),
+	       "min=0.0 step=0.01");
+    
+    TwAddButton(cBar, "sellae", NULL, NULL, "");
+    TwAddVarRO(cBar, "+ total", TW_TYPE_INT32, &(td.sellae_total_num), "");
+    TwAddVarRW(cBar, "+ always add", TW_TYPE_INT32, &(td.sellae_always_selected_num),
 	       "min=0 step=1");
+    TwAddVarRO(cBar, "+ always life", TW_TYPE_DOUBLE, &(td.sellae_always_life), "");
+    TwAddVarRW(cBar, "+ pool add", TW_TYPE_INT32, &(td.sellae_density_pool_num),
+	       "min=0 step=1");
+    TwAddVarRO(cBar, "+ pool life", TW_TYPE_DOUBLE, &(td.sellae_excluded_life), "");
+    TwAddVarRW(cBar, "+ importance cut", TW_TYPE_DOUBLE, &(td.spots_sellae_imp_cut),
+	       "min=0.0 step=0.01");
     
     // TwAddVarRW(cBar, "density num", TW_TYPE_INT32, &(td.density_maxima_num),
     // 	       "min=0 step=1");

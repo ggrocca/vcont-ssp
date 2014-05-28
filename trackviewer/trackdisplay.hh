@@ -25,7 +25,10 @@ public:
     
     bool operator <(const CritElix& rhs) const
     {
-         return this->elix < rhs.elix;
+	if (this->elix == rhs.elix)
+	    return this->crit < rhs.crit;
+	else
+	    return this->elix < rhs.elix;
     }
 };
 
@@ -93,26 +96,59 @@ public:
     bool draw_density_pool;
     double spot_scale;
     void init_spots ();
-    int spots_maxima_life_cut;
-    int spots_minima_life_cut;
-    int spots_sellae_life_cut;
     double spots_maxima_imp_cut;
     double spots_minima_imp_cut;
     double spots_sellae_imp_cut;
-    int spots_maxima_life_add;
-    int spots_minima_life_add;
-    int spots_sellae_life_add;
+    int maxima_always_selected_num;
+    int maxima_density_pool_num;
+    int minima_always_selected_num;
+    int minima_density_pool_num;
+    int sellae_always_selected_num;
+    int sellae_density_pool_num;
+
     std::vector<CritElix> spots_maxima;
     std::vector<CritElix> spots_minima;
     std::vector<CritElix> spots_sellae;
-    // int density_maxima_num;
     double density_maxima_val;
     bool is_density (double val, int idx, vector<int>& spots_current);
+
+    //statistics
+    int total_num;
+    int always_selected_num;
+    int density_pool_num;
+    int density_selected_num;
+
+    int maxima_total_num;
+    int maxima_density_selected_num;
+    double maxima_always_life;
+    double maxima_excluded_life;
+    int minima_total_num;
+    int minima_density_selected_num;
+    double minima_always_life;
+    double minima_excluded_life;
+    int sellae_total_num;
+    int sellae_density_selected_num;
+    double sellae_always_life;
+    double sellae_excluded_life;
+
 
     std::vector<DEMReader*> dems;
     Track* track;
     std::vector<TrackRenderingEntry> vquery;
     TrackOrdering *track_order;
+
+private:
+    // GG elimina questi e sostituiscili con i _num
+    // density_pool deve contare quelli effettivamente aggiunti
+    // bisogna contare quelli scartati da importance
+    // magari anche quelli discarded a priori?
+    
+    int spots_maxima_life_cut;
+    int spots_minima_life_cut;
+    int spots_sellae_life_cut;
+    int spots_maxima_life_add;
+    int spots_minima_life_add;
+    int spots_sellae_life_add;    
 };
 
 
