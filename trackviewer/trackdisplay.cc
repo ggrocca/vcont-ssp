@@ -569,30 +569,8 @@ void TrackDisplay::draw (int dem_idx)
 	minima_total_num = spots_minima.size();
 	sellae_total_num = spots_sellae.size();
 	
-	
-	// if (maxima_always_selected_num > spots_maxima.size())
-	//     maxima_always_selected_num = spots_maxima.size();
-	// if (maxima_density_pool_num + maxima_always_selected_num > spots_maxima.size())
-	//     maxima_density_pool_num = spots_maxima.size() - maxima_always_selected_num;
-
-	// if (minima_always_selected_num > spots_minima.size())
-	//     minima_always_selected_num = spots_minima.size();
-	// if (minima_density_pool_num + minima_always_selected_num > spots_minima.size())
-	//     minima_density_pool_num = spots_minima.size() - minima_always_selected_num;
-
-	// if (sellae_always_selected_num > spots_sellae.size())
-	//     sellae_always_selected_num = spots_sellae.size();
-	// if (sellae_density_pool_num + sellae_always_selected_num > spots_sellae.size())
-	//     sellae_density_pool_num = spots_sellae.size() - sellae_always_selected_num;
-	
-	// spots_maxima_life_add = spots_maxima.size() - maxima_always_selected_num;
-	// spots_maxima_life_cut = spots_maxima_life_add - maxima_density_pool_num;
-
-	// spots_minima_life_add = spots_minima.size() - minima_always_selected_num;
-	// spots_minima_life_cut = spots_minima_life_add - minima_density_pool_num;
-
-	// spots_sellae_life_add = spots_sellae.size() - sellae_always_selected_num;
-	// spots_sellae_life_cut = spots_sellae_life_add - sellae_density_pool_num;
+	// GG
+	// add discarded always and discarded by importance to interface
 
 	// maxima
 	for (int i = 0; i < maxima_always_selected_num; i++)
@@ -621,7 +599,7 @@ void TrackDisplay::draw (int dem_idx)
 
 	    if (k < 0)
 	    {
-		maxima_density_pool_num = offset;// - (ii - i);
+		maxima_density_pool_num = offset - (i - ii-1);
 		break;
 	    }
 
@@ -656,7 +634,7 @@ void TrackDisplay::draw (int dem_idx)
 
 	    if (k < 0)
 	    {
-		minima_density_pool_num = offset;// - (ii - i);
+		minima_density_pool_num = offset - (i - ii-1);
 		break;
 	    }
 
@@ -691,7 +669,7 @@ void TrackDisplay::draw (int dem_idx)
 
 	    if (k < 0)
 	    {
-		sellae_density_pool_num = offset;// - (ii - i);
+		sellae_density_pool_num = offset - (i - ii-1);
 		break;
 	    }
 
@@ -699,64 +677,11 @@ void TrackDisplay::draw (int dem_idx)
 	    sellae_excluded_life = spots_sellae[k].elix;
 	}
 	
-
-	
-
-	// maxima_always_life = maxima_excluded_life = -1.0;
-	// maxima_density_selected_num = 0;
-	// for (unsigned i = spots_maxima_life_cut; i < spots_maxima.size(); i++)
-	//     if (i >= spots_maxima_life_add)
-	//     {
-	// 	spots_add.push_back (spots_maxima[i].crit);
-
-	// 	if (maxima_always_life == -1.0)
-	// 	    maxima_always_life = spots_maxima[i].elix;
-	//     }
- 	//     else if(track->lines[spots_maxima[i].crit].strength > spots_maxima_imp_cut)
-	//     {
-	// 	spots_cut.push_back (spots_maxima[i]);
-
-	// 	if (maxima_excluded_life == -1.0)
-	// 	    maxima_excluded_life = spots_maxima[i].elix;
-	//     }
-
-	// minima_always_life = minima_excluded_life = -1.0;
-	// minima_density_selected_num = 0;
-	// for (unsigned i = spots_minima_life_cut; i < spots_minima.size(); i++)
-	//     if (i >= spots_minima_life_add)
-	//     {
-	// 	spots_add.push_back (spots_minima[i].crit);
-
-	// 	if (minima_always_life == -1.0)
-	// 	    minima_always_life = spots_minima[i].elix;
-	//     }
- 	//     else if(track->lines[spots_minima[i].crit].strength > spots_minima_imp_cut)
-	//     {
-	// 	spots_cut.push_back (spots_minima[i]);
-
-	// 	if (minima_excluded_life == -1.0)
-	// 	    minima_excluded_life = spots_minima[i].elix;
-	//     }
-
-	
-	// sellae_always_life = sellae_excluded_life = -1.0;
-	// sellae_density_selected_num = 0;
-	// for (unsigned i = spots_sellae_life_cut; i < spots_sellae.size(); i++)
-	//     if (i >= spots_sellae_life_add)
-	//     {
-	// 	spots_add.push_back (spots_sellae[i].crit);
-
-	// 	if (sellae_always_life == -1.0)
-	// 	    sellae_always_life = spots_sellae[i].elix;
-	//     }
- 	//     else if(track->lines[spots_sellae[i].crit].strength > spots_sellae_imp_cut)
-	//     {
-	// 	spots_cut.push_back (spots_sellae[i]);
-
-	// 	if (sellae_excluded_life == -1.0)
-	// 	    sellae_excluded_life = spots_sellae[i].elix;
-	//     }
-
+	if (spots_cut.size() != sellae_density_pool_num +
+	    maxima_density_pool_num + minima_density_pool_num)
+	    fprintf (stderr, "Warning: spots_cut.size()=%d, sum mx/mn/sd=%d\n",
+		     spots_cut.size(), sellae_density_pool_num +
+		     maxima_density_pool_num + minima_density_pool_num);
 	
 	// sort spots_cut
 	std::sort (spots_cut.begin(), spots_cut.end());

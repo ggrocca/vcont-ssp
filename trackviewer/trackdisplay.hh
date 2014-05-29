@@ -136,19 +136,6 @@ public:
     Track* track;
     std::vector<TrackRenderingEntry> vquery;
     TrackOrdering *track_order;
-
-private:
-    // GG elimina questi e sostituiscili con i _num
-    // density_pool deve contare quelli effettivamente aggiunti
-    // bisogna contare quelli scartati da importance
-    // magari anche quelli discarded a priori?
-    
-    // int spots_maxima_life_cut;
-    // int spots_minima_life_cut;
-    // int spots_sellae_life_cut;
-    // int spots_maxima_life_add;
-    // int spots_minima_life_add;
-    // int spots_sellae_life_add;    
 };
 
 
