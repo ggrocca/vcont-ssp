@@ -143,12 +143,12 @@ private:
     // bisogna contare quelli scartati da importance
     // magari anche quelli discarded a priori?
     
-    int spots_maxima_life_cut;
-    int spots_minima_life_cut;
-    int spots_sellae_life_cut;
-    int spots_maxima_life_add;
-    int spots_minima_life_add;
-    int spots_sellae_life_add;    
+    // int spots_maxima_life_cut;
+    // int spots_minima_life_cut;
+    // int spots_sellae_life_cut;
+    // int spots_maxima_life_add;
+    // int spots_minima_life_add;
+    // int spots_sellae_life_add;    
 };
 
 
