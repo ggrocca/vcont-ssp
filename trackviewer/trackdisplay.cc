@@ -592,6 +592,7 @@ void TrackDisplay::draw (int dem_idx)
 	    do
 	    {
 		k = offset - (++i);
+		maxima_always_discarded_num = k >= 0? k : 0;
 		if (k < 0)
 		    break;
 	    }
@@ -627,6 +628,7 @@ void TrackDisplay::draw (int dem_idx)
 	    do
 	    {
 		k = offset - (++i);
+		minima_always_discarded_num = k >= 0? k : 0;
 		if (k < 0)
 		    break;
 	    }
@@ -662,6 +664,7 @@ void TrackDisplay::draw (int dem_idx)
 	    do
 	    {
 		k = offset - (++i);
+		sellae_always_discarded_num = k >= 0? k : 0;
 		if (k < 0)
 		    break;
 	    }
@@ -676,10 +679,20 @@ void TrackDisplay::draw (int dem_idx)
 	    spots_cut.push_back (spots_sellae[k]);
 	    sellae_excluded_life = spots_sellae[k].elix;
 	}
+
+	maxima_importance_discarded_num =
+	    maxima_total_num - maxima_always_discarded_num -
+	    maxima_always_selected_num - maxima_density_pool_num;
+	minima_importance_discarded_num =
+	    minima_total_num - minima_always_discarded_num -
+	    minima_always_selected_num - minima_density_pool_num;
+	sellae_importance_discarded_num =
+	    sellae_total_num - sellae_always_discarded_num -
+	    sellae_always_selected_num - sellae_density_pool_num;
 	
-	if (spots_cut.size() != sellae_density_pool_num +
+	if ((int) spots_cut.size() != sellae_density_pool_num +
 	    maxima_density_pool_num + minima_density_pool_num)
-	    fprintf (stderr, "Warning: spots_cut.size()=%d, sum mx/mn/sd=%d\n",
+	    fprintf (stderr, "Warning: spots_cut.size()=%zu, sum mx/mn/sd=%d\n",
 		     spots_cut.size(), sellae_density_pool_num +
 		     maxima_density_pool_num + minima_density_pool_num);
 	

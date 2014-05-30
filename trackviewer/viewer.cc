@@ -351,6 +351,9 @@ int main (int argc, char *argv[])
     TwAddVarRO(cBar, "^ pool survived", TW_TYPE_INT32, &(td.maxima_density_selected_num), "");
     TwAddVarRW(cBar, "^ importance cut", TW_TYPE_DOUBLE, &(td.spots_maxima_imp_cut),
 	       "min=0.0 step=0.01");
+    TwAddVarRO(cBar, "^ always discarded", TW_TYPE_INT32, &(td.maxima_always_discarded_num), "");
+    TwAddVarRO(cBar, "^ importance discarded", TW_TYPE_INT32, &(td.maxima_importance_discarded_num), "");
+
 
     TwAddButton(cBar, "minima", NULL, NULL, "");
     TwAddVarRO(cBar, ". total", TW_TYPE_INT32, &(td.minima_total_num), "");
@@ -363,6 +366,8 @@ int main (int argc, char *argv[])
     TwAddVarRO(cBar, ". pool survived", TW_TYPE_INT32, &(td.minima_density_selected_num), "");
     TwAddVarRW(cBar, ". importance cut", TW_TYPE_DOUBLE, &(td.spots_minima_imp_cut),
 	       "min=0.0 step=0.01");
+    TwAddVarRO(cBar, ". always discarded", TW_TYPE_INT32, &(td.minima_always_discarded_num), "");
+    TwAddVarRO(cBar, ". importance discarded", TW_TYPE_INT32, &(td.minima_importance_discarded_num), "");
     
     TwAddButton(cBar, "sellae", NULL, NULL, "");
     TwAddVarRO(cBar, "+ total", TW_TYPE_INT32, &(td.sellae_total_num), "");
@@ -375,6 +380,8 @@ int main (int argc, char *argv[])
     TwAddVarRO(cBar, "+ pool survived", TW_TYPE_INT32, &(td.sellae_density_selected_num), "");    
     TwAddVarRW(cBar, "+ importance cut", TW_TYPE_DOUBLE, &(td.spots_sellae_imp_cut),
 	       "min=0.0 step=0.01");
+    TwAddVarRO(cBar, "+ always discarded", TW_TYPE_INT32, &(td.sellae_always_discarded_num), "");
+    TwAddVarRO(cBar, "+ importance discarded", TW_TYPE_INT32, &(td.sellae_importance_discarded_num), "");
     
     // TwAddVarRW(cBar, "density num", TW_TYPE_INT32, &(td.density_maxima_num),
     // 	       "min=0 step=1");

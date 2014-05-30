@@ -361,8 +361,10 @@ public:
 
     static inline T __data (std::vector<T> data, Coord c, int width, int height)
     {
-	    return data[(c.y * width) + c.x];
-	    // return data[(c.x * height) + c.y];
+	(void)height;
+	
+	return data[(c.y * width) + c.x];
+	// return data[(c.x * height) + c.y];
 
     }
 

@@ -120,14 +120,22 @@ public:
 
     int maxima_total_num;
     int maxima_density_selected_num;
+    int maxima_always_discarded_num;
+    int maxima_importance_discarded_num;
     double maxima_always_life;
     double maxima_excluded_life;
+
     int minima_total_num;
     int minima_density_selected_num;
+    int minima_always_discarded_num;
+    int minima_importance_discarded_num;
     double minima_always_life;
     double minima_excluded_life;
+    
     int sellae_total_num;
     int sellae_density_selected_num;
+    int sellae_always_discarded_num;
+    int sellae_importance_discarded_num;
     double sellae_always_life;
     double sellae_excluded_life;
 
