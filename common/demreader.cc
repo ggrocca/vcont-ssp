@@ -222,8 +222,8 @@ ASCReader::ASCReader(const char* filename)
     data = (double*) malloc (width * height * sizeof (double));
 
     int len = 0;
-    for (int w = 0; w < width; w++)
-	for (int h = 0; h < height; h++)
+    for (unsigned w = 0; w < width; w++)
+	for (unsigned h = 0; h < height; h++)
 	{
 	    double value;
 	    fscanf (fp, h == height - 1? "%lf\n" : "%lf ", &value);

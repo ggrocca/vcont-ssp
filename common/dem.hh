@@ -86,7 +86,7 @@ public:
 	    {
 		below_sum += v;
 		below_n++;
-		printf ("GNE c(%d,%d) v: %lf cv:%lf\n", c.x, c.y, v, cv);
+		// printf ("GNE c(%d,%d) v: %lf cv:%lf\n", c.x, c.y, v, cv);
 	    }
 	    // else
 	    // 	printf ("MECO c(%d,%d) v: %lf cv:%lf\n", c.x, c.y, v, cv);
