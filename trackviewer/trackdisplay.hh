@@ -41,7 +41,8 @@ public:
 
     ~TrackDisplay(){};
     
-    void read_dem (char *file);
+    // void read_dem (char *file);
+    void read_ssp (char *file);
     void read_track (char *file);
     void query (double t);
     void getbb (double* cx, double* cy, double* diam);
@@ -53,6 +54,7 @@ public:
     bool draw_terrain;
     double clip_black;
     double clip_white;
+    double multiply;
 
     bool draw_track;
     double track_mult;
@@ -140,7 +142,8 @@ public:
     double sellae_excluded_life;
 
 
-    std::vector<DEMReader*> dems;
+    // std::vector<DEMReader*> dems;
+    ScaleSpace* ssp;
     Track* track;
     std::vector<TrackRenderingEntry> vquery;
     TrackOrdering *track_order;

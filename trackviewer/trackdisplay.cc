@@ -85,9 +85,14 @@ TrackDisplay::TrackDisplay()
 };
 
 
-void TrackDisplay::read_dem (char *file)
+// void TrackDisplay::read_dem (char *file)
+// {
+//     dems.push_back(DEMSelector::get (file));
+// }
+
+void TrackDisplay::read_ssp (char *file)
 {
-    dems.push_back(DEMSelector::get (file));
+    ssp = new ScaleSpace (file, ScaleSpaceOpts());
 }
 
 void TrackDisplay::read_track (char *file)
@@ -104,26 +109,25 @@ void TrackDisplay::query (double t)
 
 void TrackDisplay::getbb (double* cx, double* cy, double* diam)
 {
-    *cx = dems[0]->width / 2.0;
-    *cy = dems[0]->height / 2.0;
-    *diam = dems[0]->width * 1.2;
+    // *cx = dems[0]->width / 2.0;
+    // *cy = dems[0]->height / 2.0;
+    // *diam = dems[0]->width * 1.2;
+    *cx = ssp->dem[0]->width / 2.0;
+    *cy = ssp->dem[0]->height / 2.0;
+    *diam = ssp->dem[0]->width * 1.2;    
 }
 
 void TrackDisplay::getbb (Point* a, Point* b)
 {
+    // *a = Point (0.0, 0.0);
+    // b->x = (double) dems[0]->width;
+    // b->y = (double) dems[0]->height;
     *a = Point (0.0, 0.0);
-    b->x = (double) dems[0]->width;
-    b->y = (double) dems[0]->height;
+    b->x = (double) ssp->dem[0]->width;
+    b->y = (double) ssp->dem[0]->height;
 }
 
 
-double __map (double v, double min, double max)
-{
-    v = v < min? min : v;
-    v = v > max? max : v;
-
-    return (v - min) / (max - min);
-}
 
 void __draw_critical_color (CriticalType t)
 {
@@ -465,6 +469,25 @@ bool TrackDisplay::is_density (double val, int idx, vector<int>& spots_current)
     return true;
 }
 
+// double __map (double v, double min, double max)
+// {
+//     v = v < min? min : v;
+//     v = v > max? max : v;
+
+//     return (v - min) / (max - min);
+// }
+
+static double __clip (double v, double min, double max, double mul)
+{
+    v *= mul;
+
+    v = v < min? min : v;
+    v = v > max? max : v;
+
+    return (v - min) / (max - min);
+}
+
+
 void TrackDisplay::draw (int dem_idx)
 {
     glMatrixMode (GL_PROJECTION);
@@ -474,22 +497,58 @@ void TrackDisplay::draw (int dem_idx)
 
     if (draw_terrain)
     {
-	DEMReader* dem = dems[dem_idx];
-	double min = clip_black;
-	double max = clip_white;
+	// DEMReader* dem = dems[dem_idx];
+	// double min = clip_black;
+	// double max = clip_white;
+
+	// glBegin (GL_TRIANGLES);
+	// for (unsigned int i = 0; i < dem->width - 1; i++)
+	//     for (unsigned int j = 0; j < dem->height - 1; j++)
+	//     {
+	// 	double vij = dem->get_pixel (i, j);
+	// 	double vipj = dem->get_pixel (i+1, j);
+	// 	double vijp = dem->get_pixel (i, j+1);
+	// 	double vipjp = dem->get_pixel (i+1, j+1);
+	// 	vij = __map (vij, min, max);
+	// 	vipj = __map (vipj, min, max);
+	// 	vijp = __map (vijp, min, max);
+	// 	vipjp = __map (vipjp, min, max);
+
+	// 	glColor3f (vij, vij, vij);
+	// 	glVertex2f (i, j);
+	// 	glColor3f (vipj, vipj, vipj);
+	// 	glVertex2f (i+1, j);
+	// 	glColor3f (vipjp, vipjp, vipjp);
+	// 	glVertex2f (i+1, j+1);
+
+	// 	glColor3f (vij, vij, vij);
+	// 	glVertex2f (i, j);
+	// 	glColor3f (vijp, vijp, vijp);
+	// 	glVertex2f (i, j+1);
+	// 	glColor3f (vipjp, vipjp, vipjp);
+	// 	glVertex2f (i+1, j+1);
+	//     }
+	// glEnd();
+
 
 	glBegin (GL_TRIANGLES);
-	for (unsigned int i = 0; i < dem->width - 1; i++)
-	    for (unsigned int j = 0; j < dem->height - 1; j++)
+	int level = dem_idx;
+
+	for (int i = 0; i < ssp->dem[level]->width - 1; i++)
+	    for (int j = 0; j < ssp->dem[level]->height - 1; j++)
 	    {
-		double vij = dem->get_pixel (i, j);
-		double vipj = dem->get_pixel (i+1, j);
-		double vijp = dem->get_pixel (i, j+1);
-		double vipjp = dem->get_pixel (i+1, j+1);
-		vij = __map (vij, min, max);
-		vipj = __map (vipj, min, max);
-		vijp = __map (vijp, min, max);
-		vipjp = __map (vipjp, min, max);
+		double min = clip_black;
+		double max = clip_white;
+		double mul = multiply;
+
+		double vij = (*ssp->dem[level]) (i, j);
+		double vipj = (*ssp->dem[level]) (i+1, j);
+		double vijp = (*ssp->dem[level]) (i, j+1);
+		double vipjp = (*ssp->dem[level]) (i+1, j+1);
+		vij = __clip (vij, min, max, mul);
+		vipj = __clip (vipj, min, max, mul);
+		vijp = __clip (vijp, min, max, mul);
+		vipjp = __clip (vipjp, min, max, mul);
 
 		glColor3f (vij, vij, vij);
 		glVertex2f (i, j);
@@ -506,6 +565,7 @@ void TrackDisplay::draw (int dem_idx)
 		glVertex2f (i+1, j+1);
 	    }
 	glEnd();
+
     }
 
     if (draw_track)

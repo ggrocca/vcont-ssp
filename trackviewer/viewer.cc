@@ -197,34 +197,37 @@ void TW_CALL call_quit (void *clientData)
 // MAIN //
 //////////
 
-void read_dems (char* name, int num)
-{
-#define __FNLEN 512
-    char dem_in[__FNLEN] = {'\0'};
-    snprintf (dem_in, __FNLEN, "%s-base.%s" , name, "tif");
-    td.read_dem (dem_in);
+// void read_dems (char* name, int num)
+// {
+// #define __FNLEN 512
+//     char dem_in[__FNLEN] = {'\0'};
+//     snprintf (dem_in, __FNLEN, "%s-base.%s" , name, "tif");
+//     td.read_dem (dem_in);
     
-    for (int i = 0; i < num; i++)
-    {
-	snprintf (dem_in, __FNLEN, "%s-%d.%s" , name, i, "tif");
-	td.read_dem (dem_in);
-    }
-#undef __FNLEN
-}
+//     for (int i = 0; i < num; i++)
+//     {
+// 	snprintf (dem_in, __FNLEN, "%s-%d.%s" , name, i, "tif");
+// 	td.read_dem (dem_in);
+//     }
+// #undef __FNLEN
+// }
 
 int main (int argc, char *argv[])
 {
-    if (argc != 4)
+    if (argc != 3)
     {
-	fprintf (stderr, "Usage: ./viewer trackfile demnames N\n");
-	fprintf (stderr, "  brutal hack: demname-base.tif must exist. "
-		 "then load demname-0.tif ... demname-N.tif\n");
+	fprintf (stderr, "Usage: ./viewer file.track file.ssp\n");
+	// fprintf (stderr, "  brutal hack: demname-base.tif must exist. "
+	// 	 "then load demname-0.tif ... demname-N.tif\n");
 	exit (-1);
     }
 
     td.read_track (argv[1]);
-    int dem_num;
-    read_dems (argv[2], dem_num = atoi (argv[3]));
+    // int dem_num;
+    // read_dems (argv[2], dem_num = atoi (argv[3]));
+    td.read_ssp (argv[2]);
+    int dem_num = td.ssp->levels;
+
     // m.bb();
     // m.initL();
 
@@ -292,6 +295,9 @@ int main (int argc, char *argv[])
 	       "min=0.0 max=65536.0 step=10.0");
     TwAddVarRW(cBar, "clip_white", TW_TYPE_DOUBLE, &(td.clip_white),
 	       "min=0.0 max=65536.0 step=10.0");
+    td.multiply = 1.0;
+    TwAddVarRW(cBar, "mult factor", TW_TYPE_DOUBLE, &td.multiply,
+	       "min=1.0 max=256.0 step=1.0");
 
     TwAddSeparator (cBar, 0, 0);
     TwAddSeparator (cBar, 0, 0);
