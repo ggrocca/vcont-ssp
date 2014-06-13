@@ -7,8 +7,6 @@
 ### _MM44FFCC00_ # do not touch, magic number
 
 
-
-
 ##################################
 ### General Makefile behaviour.
 
@@ -77,7 +75,7 @@ CSOURCES = rastertiff.c
 ## add directives -D__FILENAME_EXISTS for every file "filename.h" added here.
 ## purpose: untracked files with custom build configurations.
 # CUSTOM_HEADERS = custom_header.h
-CUSTOM_HEADERS = custom_debug.h
+# CUSTOM_HEADERS = custom_debug.h
 
 ## generic compilation configuration, to be used for both C++ and C
 ## on every OS. FLAGS are always used, while DEBUG_FLAGS are used
