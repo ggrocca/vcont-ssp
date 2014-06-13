@@ -27,6 +27,8 @@ NEW_TARGET_FOCERBUILD_FILE := .file_old_goal
 ##################################
 ### Project configuration section.
 
+USERNAME := $(shell whoami)
+
 ## executable name
 # TARGET = exe
 TARGET = trackviewer
@@ -46,6 +48,9 @@ VPATH = ../common ../scaletracker
 ## such variables as you need.
 # BASELIBS_DIR = ../../external/libs/dir
 BASELIBS_DIR = ../..
+ifeq ($(USERNAME),deggio)
+	BASELIBS_DIR = ../../Libraries
+endif
 
 ## C, CXX compiler
 # CXXC = g++
@@ -75,7 +80,7 @@ CSOURCES =
 ## add directives -D__FILENAME_EXISTS for every file "filename.h" added here.
 ## purpose: untracked files with custom build configurations.
 # CUSTOM_HEADERS = custom_header.h
-CUSTOM_HEADERS = custom_debug.h
+# CUSTOM_HEADERS = custom_debug.h
 
 ## generic compilation configuration, to be used for both C++ and C
 ## on every OS. FLAGS are always used, while DEBUG_FLAGS are used
@@ -95,7 +100,9 @@ override DEBUG_FLAGS = -Wall -W -g
 override TRACE_FLAGS += -DDEBUGTRACE
 override RELEASE_FLAGS = -O2 -DNDEBUG
 override INCLUDES = -I../common/
-#override INCLUDES = -I${BASELIBS_DIR}/AntTweakBar/include/
+ifeq ($(USERNAME),deggio)
+	override INCLUDES += -I${BASELIBS_DIR}/AntTweakBar/include/
+endif
 override DEFINES = 
 override LDFLAGS =
 override STATIC_LDFLAGS +=
