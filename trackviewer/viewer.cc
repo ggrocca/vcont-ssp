@@ -292,12 +292,12 @@ int main (int argc, char *argv[])
     TwAddVarRW(cBar, "dem index", TW_TYPE_INT32, &draw_dem_idx, dem_num_bounds);
 #undef __FNLEN
     TwAddVarRW(cBar, "clip_black", TW_TYPE_DOUBLE, &(td.clip_black),
-	       "min=0.0 max=65536.0 step=10.0");
+	       /*"min=0.0 max=65536.0 step=10.0"*/"step=1.0");
     TwAddVarRW(cBar, "clip_white", TW_TYPE_DOUBLE, &(td.clip_white),
-	       "min=0.0 max=65536.0 step=10.0");
+	       /*"min=0.0 max=65536.0 step=10.0"*/"step=1.0");
     td.multiply = 1.0;
     TwAddVarRW(cBar, "mult factor", TW_TYPE_DOUBLE, &td.multiply,
-	       "min=1.0 max=256.0 step=1.0");
+	       "min=1.0 "/*max=256.0*/" step=1.0");
 
     TwAddSeparator (cBar, 0, 0);
     TwAddSeparator (cBar, 0, 0);
