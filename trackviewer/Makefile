@@ -27,6 +27,9 @@ NEW_TARGET_FOCERBUILD_FILE := .file_old_goal
 ##################################
 ### Project configuration section.
 
+## Use ifeq ($(USERNAME),yourname) to add user-specific configurations
+## in multideveloper settings
+# USERNAME := $(shell whoami)
 USERNAME := $(shell whoami)
 
 ## executable name
@@ -49,7 +52,7 @@ VPATH = ../common ../scaletracker
 # BASELIBS_DIR = ../../external/libs/dir
 BASELIBS_DIR = ../..
 ifeq ($(USERNAME),deggio)
-	BASELIBS_DIR = ../../Libraries
+BASELIBS_DIR = ../../Libraries
 endif
 
 ## C, CXX compiler
@@ -80,11 +83,14 @@ CSOURCES =
 ## add directives -D__FILENAME_EXISTS for every file "filename.h" added here.
 ## purpose: untracked files with custom build configurations.
 # CUSTOM_HEADERS = custom_header.h
-# CUSTOM_HEADERS = custom_debug.h
+ifeq ($(USERNAME),gg)
+CUSTOM_HEADERS = custom_debug.h
+endif
 
-## generic compilation configuration, to be used for both C++ and C
-## on every OS. FLAGS are always used, while DEBUG_FLAGS are used
-## instead of RELEASE flags when "make debug" is used.
+## generic compilation configuration, to be used for both C++ and C on
+## every OS. FLAGS are always used, while DEBUG_FLAGS are used instead
+## of RELEASE flags when "make debug" is used. STATIC_LDFLAGS are used
+## instead of LDFLAGS if "make static" is used.
 # override FLAGS +=
 # override DEBUG_FLAGS +=
 # override TRACE_FLAGS +=
@@ -100,9 +106,6 @@ override DEBUG_FLAGS = -Wall -W -g
 override TRACE_FLAGS += -DDEBUGTRACE
 override RELEASE_FLAGS = -O2 -DNDEBUG
 override INCLUDES = -I../common/
-ifeq ($(USERNAME),deggio)
-	override INCLUDES += -I${BASELIBS_DIR}/AntTweakBar/include/
-endif
 override DEFINES = 
 override LDFLAGS =
 override STATIC_LDFLAGS +=
@@ -162,9 +165,7 @@ override INCLUDES += -I/System/Library/Frameworks/GLUT.framework/Headers/
 override LDFLAGS += -L/opt/local/lib
 override LDFLAGS += -lm -lpthread -L/usr/X11R6/lib -lm -lpthread -lX11
 override LDFLAGS += -Dcimg_use_png -lpng -lz -ltiff -lm -lAntTweakBar
-#override LDFLAGS += -L${BASELIBS_DIR}/AntTweakBar/lib
 override STATIC_LDFLAGS += -L/opt/local/lib
-#override STATIC_LDFLAGS += -lm -lpthread -L/usr/X11R6/lib -lm -lpthread -lX11
 override STATIC_LDFLAGS += -Dcimg_use_png /opt/local/lib/libpng.a /opt/local/lib/libz.a /opt/local/lib/libtiff.a /opt/local/lib/libjpeg.a /opt/local/lib/liblzma.a -lm
 override STATIC_LDFLAGS += -lm ${BASELIBS_DIR}/AntTweakBar/lib/libAntTweakBar.a -framework AppKit
 GENERIC = false
@@ -178,6 +179,7 @@ endif
 # override VAR += whatever
 # endif
 ifeq ($(GENERIC),true)
+override INCLUDES += -I${BASELIBS_DIR}/AntTweakBar/include/
 override LDFLAGS += -lpng -lz -lm -L${BASELIBS_DIR}/AntTweakBar/lib -lAntTweakBar
 override LDFLAGS += -lglut -lGLU -lX11 -lGL
 override STATIC_LDFLAGS += -static -static-libgcc -static-libstdc++
