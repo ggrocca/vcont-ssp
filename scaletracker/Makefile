@@ -7,6 +7,8 @@
 ### _MM44FFCC00_ # do not touch, magic number
 
 
+
+
 ##################################
 ### General Makefile behaviour.
 
@@ -22,10 +24,13 @@ MAKEFILE_FORCEBUILD := true
 NEW_TARGET_FORCEBUILD := true
 NEW_TARGET_FOCERBUILD_FILE := .file_old_goal
 
-
-
 ##################################
 ### Project configuration section.
+
+## Use ifeq ($(USERNAME),yourname) to add user-specific configurations
+## in multideveloper settings
+# USERNAME := $(shell whoami)
+USERNAME := $(shell whoami)
 
 ## executable name
 # TARGET = exe
@@ -75,11 +80,14 @@ CSOURCES = rastertiff.c
 ## add directives -D__FILENAME_EXISTS for every file "filename.h" added here.
 ## purpose: untracked files with custom build configurations.
 # CUSTOM_HEADERS = custom_header.h
-# CUSTOM_HEADERS = custom_debug.h
+ifeq ($(USERNAME),gg)
+CUSTOM_HEADERS = custom_debug.h
+endif
 
-## generic compilation configuration, to be used for both C++ and C
-## on every OS. FLAGS are always used, while DEBUG_FLAGS are used
-## instead of RELEASE flags when "make debug" is used.
+## generic compilation configuration, to be used for both C++ and C on
+## every OS. FLAGS are always used, while DEBUG_FLAGS are used instead
+## of RELEASE flags when "make debug" is used. STATIC_LDFLAGS are used
+## instead of LDFLAGS if "make static" is used.
 # override FLAGS +=
 # override DEBUG_FLAGS +=
 # override TRACE_FLAGS +=
@@ -165,7 +173,6 @@ override LDFLAGS += -Dcimg_use_png -lpng -lz -ltiff -lm
 override LDFLAGS += -lm -lpthread -L/usr/X11R6/lib -lm -lpthread -lX11
 override STATIC_LDFLAGS += -L/opt/local/lib
 override STATIC_LDFLAGS += -Dcimg_use_png /opt/local/lib/libpng.a /opt/local/lib/libz.a /opt/local/lib/libtiff.a /opt/local/lib/libjpeg.a /opt/local/lib/liblzma.a -lm
-#override STATIC_LDFLAGS += -lm -lpthread -L/usr/X11R6/lib -lm -lpthread -lX11
 
 GENERIC = false
 endif
@@ -178,7 +185,6 @@ override STATIC_LDFLAGS += -Dcimg_use_png -lpng -lz -ltiff -lm
 override STATIC_LDFLAGS +=  -lX11 -lpthread
 override INCLUDES += 
 endif
-
 
 
 
