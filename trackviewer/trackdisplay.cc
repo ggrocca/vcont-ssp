@@ -644,13 +644,12 @@ void TrackDisplay::draw (int dem_idx)
 	int i = 0;
 	for (int ii = 0; ii < maxima_density_pool_num; ii++)
 	{
-	    int offset = spots_maxima.size() - maxima_always_selected_num + 1;
+	    int offset = spots_maxima.size() - maxima_always_selected_num;
 	    int k;
 	    do
 	    {
 		k = offset - (++i);
-		//maxima_always_discarded_num = k >= 0? k : spots_maxima.size();
-		maxima_always_discarded_num = k;
+		maxima_always_discarded_num = k >= 0? k : spots_maxima.size();
 		if (k < 0)
 		    break;
 	    }
