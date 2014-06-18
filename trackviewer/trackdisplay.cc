@@ -629,9 +629,6 @@ void TrackDisplay::draw (int dem_idx)
 	minima_total_num = spots_minima.size();
 	sellae_total_num = spots_sellae.size();
 	
-	// GG
-	// add discarded always and discarded by importance to interface
-
 	// maxima
 	for (int i = 0; i < maxima_always_selected_num; i++)
 	{
@@ -647,12 +644,13 @@ void TrackDisplay::draw (int dem_idx)
 	int i = 0;
 	for (int ii = 0; ii < maxima_density_pool_num; ii++)
 	{
-	    int offset = spots_maxima.size() - maxima_always_selected_num;
+	    int offset = spots_maxima.size() - maxima_always_selected_num + 1;
 	    int k;
 	    do
 	    {
 		k = offset - (++i);
-		maxima_always_discarded_num = k >= 0? k : 0;
+		//maxima_always_discarded_num = k >= 0? k : spots_maxima.size();
+		maxima_always_discarded_num = k;
 		if (k < 0)
 		    break;
 	    }
