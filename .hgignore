@@ -17,3 +17,9 @@ curvStacker/curvStacker
 common/custom_debug.h
 
 */.file_old_goal
+
+spotfilter/spotfilter.app/*
+spotfilter/trackviewer
+spotfilter/dylibbundler
+spotfilter/macicon.icns
+

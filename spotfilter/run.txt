@@ -1,0 +1,4 @@
+gg@angband:~/Desktop/Repositories/scalespace/scalespace/trackviewer$ ./trackviewer ../../scratch/wabern.trk ../../scratch/wabern 8
+virtual dim 200.000000, vcent(60.317460, 100.000000), aspect 1.657895
+GLORTHO: -65.789474, 265.789474, 0.000000, 200.000000
+gg@angband:~/Desktop/Repositories/scalespace/scalespace/trackviewer$ ./trackviewer ../../scratch/monterosa.trk ../../scratch/monterosa 14

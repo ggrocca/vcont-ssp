@@ -1,0 +1,3 @@
+./scaletracker -n 14 -i ../../datasets/N45E007.hgt -o ../../scratch/monterosa -t ../../scratch/monterosa -p 0.01 0 -c 2700 3000 3300 3600 -m 14 > ../../scratch/monterosa.out.txt 2> ../../scratch/monterosa.err.txt
+./scaletracker -i ../../datasets/wabern.asc -n 10 -m 50 -o ../../scratch/wabern -t ../../scratch/wabern -p 0.01 0 -a > ../../scratch/wabern.out.txt 2> ../../scratch/wabern.err.txt
+./scaletracker -n 20 -i ../../datasets/N45E007.hgt -o ../../scratch/valdaosta -t ../../scratch/valdaosta -p 0.01 0 -m 14 > ../../scratch/valdaosta.out.txt 2> ../../scratch/valdaosta.err.txt
