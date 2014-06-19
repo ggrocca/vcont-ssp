@@ -296,8 +296,7 @@ int main (int argc, char *argv[])
     TwAddVarRW(cBar, "clip_white", TW_TYPE_DOUBLE, &(td.clip_white),
 	       /*"min=0.0 max=65536.0 step=10.0"*/"step=1.0");
     td.multiply = 1.0;
-    TwAddVarRW(cBar, "mult factor", TW_TYPE_DOUBLE, &td.multiply,
-	       "min=1.0 "/*max=256.0*/" step=1.0");
+    TwAddVarRW(cBar, "mult factor", TW_TYPE_DOUBLE, &td.multiply, "min=1.0 "/*max=256.0*/" step=1.0");
 
     TwAddSeparator (cBar, 0, 0);
     TwAddSeparator (cBar, 0, 0);
@@ -429,7 +428,7 @@ int main (int argc, char *argv[])
     TwAddVarRW(cBar, "importance cut fine", TW_TYPE_DOUBLE, &(td.importance_cut),
 	       "min=0.0 step=0.01");
     TwAddVarRW(cBar, "importance cut micro", TW_TYPE_DOUBLE, &(td.importance_cut),
-	       "min=0.0 step=0.001");
+	       "min=0.0 step=0.000001");
 
     TwAddSeparator (cBar, 0, 0);
 

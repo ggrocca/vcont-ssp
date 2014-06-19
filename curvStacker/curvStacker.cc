@@ -86,23 +86,11 @@ void curvStacker::initializeScaleSpace(Eigen::MatrixXd V)
  
 }
 
-// void curvStacker::minmaxCurvatures(double& min, double& max, vector<vector<double> > curv)
-// {
-//   min=max=curv[0][0]*curv[0][1];
-//   for (int i=1; i<curv.size(); i++)
-//     {
-//       double t=curv[i][0]*curv[i][1];
-//       if (t<min)
-// 	min=t;
-//       if (t>max)
-// 	max=t;
-//     }
-// }
 
 void curvStacker::printLevel(Eigen::MatrixXd V, vector<vector<double> > curv)
 {
   double min, max;
-  minmaxCurvatures(min,max,curv);
+  //  minmaxCurvatures(min,max,curv);
   double * data = (double*)malloc(sizeof(double)*width*height);
   for (int i=0; i<width*height; i++)
     data[i]=-DBL_MAX;

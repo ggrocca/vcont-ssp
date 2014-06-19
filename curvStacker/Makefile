@@ -40,7 +40,7 @@ BUILD_DIR = build
 
 ## Additional directories for source files
 # VPATH = add/dir1 ../add/dir2 ../../etc/
-#VPATH =
+VPATH = ../../clusterizer
 
 ## Directory for external libraries
 ## not used outside the configuration section and provided for your
@@ -70,7 +70,7 @@ OBJ_EXT = oo
 ## conflict.
 # CPPSOURCES = file1.cc file2.cc
 # CSOURCES = file1.c file2.c
-CPPSOURCES = main.cc pngtomesh.cc curvStacker.cc vertex.cc face.cc
+CPPSOURCES = mainStack.cc pngtomesh.cc curvStacker.cc vertex.cc face.cc cluster.cc topologyIndex.cc miniBall.cc mtxlib.cc
 #CSOURCES = rastertiff.c
 
 ## add directives -D__FILENAME_EXISTS for every file "filename.h" added here.
@@ -95,7 +95,7 @@ override FLAGS +=
 override DEBUG_FLAGS += -Wall -W -g
 override TRACE_FLAGS += -DDEBUGTRACE
 override RELEASE_FLAGS += -O3 -DNDEBUG
-override INCLUDES +=  -I${BASELIBS_DIR}/libigl/libigl/include -I${BASELIBS_DIR}/Eigen -I../common/
+override INCLUDES +=  -I${BASELIBS_DIR}/igl_LOCAL/libigl/include -I${BASELIBS_DIR}/Eigen -I../common/ -I${BASELIBS_DIR}/../clusterizer
 override DEFINES += 
 override LDFLAGS += -lpthread
 override STATIC_LDFLAGS +=
