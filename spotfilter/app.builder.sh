@@ -39,10 +39,11 @@ appname=spotfilter
 appfolder=$appname.app
 macosfolder=$appfolder/Contents/MacOS
 plistfile=$appfolder/Contents/Info.plist
-appfile=trackviewer
+appfile=spotfilter
 icon=macicon.icns
 
 otherexe=scaletracker
+otherexename=scaletracker
 otherdir=../scaletracker/
 
 # PkgInfoContents="APPLMAG#"
@@ -116,5 +117,5 @@ echo '</plist>' >>$plistfile
 
 ./dylibbundler -od -b -x ./$appname.app/Contents/MacOS/$appname -d ./$appname.app/Contents/libs/
 
-cp $otherdir/$otherexe ./$appname.app/Contents/MacOS/$otherexe
+cp $otherdir/$otherexe ./$appname.app/Contents/MacOS/$otherexename
 

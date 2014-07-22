@@ -44,6 +44,7 @@ bool do_control = false;
 int filter_algo = 0;
 bool check_plateaus = false;
 bool do_final_query = false;
+// bool do_border_normalization = false;
 
 void print_help (FILE* f)
 {
@@ -64,6 +65,7 @@ void print_help (FILE* f)
 	     "[-f N] : controlled filtering. 0: slow. 1: normal. 2: fast.\n"
 	     "[-m mult] : multiply tiff output values by mult. Default auto mode\n"
 	     "[-a] : check for flat areas\n"
+	     // "[-e] : border points normalization\n"
 	     "[-q] : do final tracking query.\n"
 	     "\n"
 	     );
@@ -126,6 +128,10 @@ void app_init(int argc, char *argv[])
 	    case 'a':
 		check_plateaus = true;
 		break;
+
+	    // case 'e':
+	    // 	do_border_normalization = true;
+	    // 	break;
 
             case 'n':
                 numlevel = atoi (*++argv);
@@ -406,7 +412,12 @@ int main (int argc, char *argv[])
     delete flipper;
 
     track->drink_elixir ();
+
+    // if (do_border_normalization)
+    // 	track->normalize_border_points ();
+    
     track->get_strength (ssp->dem[0]);
+    
     //track->write (tracking_name, order);
     track_writer (tracking_name, track, order);
 

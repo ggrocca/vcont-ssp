@@ -34,7 +34,7 @@ USERNAME := $(shell whoami)
 
 ## executable name
 # TARGET = exe
-TARGET = trackviewer
+TARGET = spotfilter
 
 ## Directory where build junk goes. Comment this line out or leave
 ## empty if you want to build in the working directory.

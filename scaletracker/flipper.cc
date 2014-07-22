@@ -433,6 +433,8 @@ void Flipper::track (ScaleSpace& ss, Track* track, TrackOrdering* order)
     // 	fs[i].clear();
 
     order->init (track);
+    track->width = ss.dem[0]->width;
+    track->height = ss.dem[0]->height;
     // return track;
 }
 

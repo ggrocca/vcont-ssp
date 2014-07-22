@@ -23,3 +23,5 @@ spotfilter/trackviewer
 spotfilter/dylibbundler
 spotfilter/macicon.icns
 
+spotfilter/spotfilter
+spotfilter/spotfilter_saved_points.csv

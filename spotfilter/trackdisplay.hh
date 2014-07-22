@@ -50,6 +50,9 @@ public:
     void draw (int dem_idx);
     void draw_line_test (double d);
 
+    // additional csv points
+
+    
     // bool draw_time_labels;
     bool draw_terrain;
     double clip_black;
@@ -92,6 +95,7 @@ public:
     double importance_cut;
 
     bool draw_spots;
+    bool multiply_elix_spots;
     bool draw_final;
     bool draw_always_selected;
     bool draw_density_selected;
@@ -147,6 +151,25 @@ public:
     Track* track;
     std::vector<TrackRenderingEntry> vquery;
     TrackOrdering *track_order;
+    vector<int> spots_current;
+
+
+    // swisstopo additional points load/save/show
+    bool swpts_active;
+    bool swpts_display;
+    double swpts_xllcorner, swpts_yllcorner;
+    double swpts_cellsize;
+    std::vector<Point> swpts_ground_truth;
+    
+    void swpts_load_asc (char* filename);
+    void swpts_draw ();
+    void swpts_load_csv (char* filename);
+    void swpts_save_csv (char* filename);
+
+private:
+    void swpts_asc2img (Point a, Point* i);
+    void swpts_img2asc (Point i, Point* a);
+
 };
 
 

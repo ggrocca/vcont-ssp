@@ -26,7 +26,7 @@ TrackDisplay td;
 int width = W;
 int height = H;
 
-int draw_dem_idx = -1;
+int draw_dem_idx = 0;
 // VF::draw_mode_t mesh_draw_mode = VF::FLAT;
 
 
@@ -55,7 +55,7 @@ void display()
     camera.display_begin();
 
     // td.draw(mesh_draw_mode);
-    td.draw (draw_dem_idx+1);
+    td.draw (draw_dem_idx);
 
     // if (test)
     // 	td.draw_line_test (camera.diameter);
@@ -83,6 +83,8 @@ void reshape(int w, int h)
 
 void mouse_click(int button, int state, int x, int y)
 {
+    // printf ("CLICK %d %d %d %d\n", button, state, x, y);
+    
     if (TwEventMouseButtonGLUT(button, state, x, y))
     {
         glutPostRedisplay();
@@ -96,6 +98,8 @@ void mouse_click(int button, int state, int x, int y)
 
 void mouse_move(int x, int y)
 {
+    // printf ("MOVE %d %d\n", x, y);
+
     if (TwEventMouseMotionGLUT(x, y))
     {
         glutPostRedisplay();
@@ -144,6 +148,15 @@ void special(int k, int x, int y)
 // ANTTWEAKBAR CALLBACKS //
 ///////////////////////////
 
+char *ssp_file = 0;
+char *trk_file = 0;
+char *csv_in_file = 0;
+char *csv_out_file = 0;
+char *csv_out_file_default = "spotfilter_saved_points.csv";
+char *asc_file = 0;
+
+
+
 double scale_value = 0.0;
 double time_value = 0.0;
 
@@ -181,10 +194,10 @@ void TW_CALL do_elixir (void *)
     td.track->drink_elixir ();
 }
 
-void TW_CALL do_init_spots (void *)
-{ 
-    td.init_spots ();
-}
+// void TW_CALL do_init_spots (void *)
+// { 
+//     td.init_spots ();
+// }
 
 void TW_CALL call_quit (void *clientData)
 { 
@@ -192,6 +205,16 @@ void TW_CALL call_quit (void *clientData)
 
     quit();
 }
+
+
+void TW_CALL save_points (void *clientData)
+{ 
+    (void) clientData;
+
+    td.swpts_save_csv (csv_out_file);
+}
+
+
 
 //////////
 // MAIN //
@@ -212,22 +235,118 @@ void TW_CALL call_quit (void *clientData)
 // #undef __FNLEN
 // }
 
-int main (int argc, char *argv[])
+
+bool do_normalize_border_points = true;
+
+void print_help (FILE* f)
 {
-    if (argc != 3)
+    fprintf (f, "Usage: spotfilter\n"
+	     "[-s scalespacefile.ssp]\n"
+	     "[-t trackfile.trk]\n"
+	     "[-i inputpoints.csv]\n"
+	     "[-o outputpoints.csv]\n"
+	     "[-a dem.asc]\n"
+	     "[-u] leave border points unnormalized\n"
+	     "\n"
+	     );
+}
+
+void app_init(int argc, char *argv[])
+{
+    for (argc--, argv++; argc--; argv++)
     {
-	fprintf (stderr, "Usage: ./viewer file.track file.ssp\n");
-	// fprintf (stderr, "  brutal hack: demname-base.tif must exist. "
-	// 	 "then load demname-0.tif ... demname-N.tif\n");
-	exit (-1);
+        if( (*argv)[0] == '-')
+        {
+            switch( (*argv)[1] )
+            {
+	    case 'u':
+		do_normalize_border_points = false;
+                break;
+
+
+            case 's':
+                ssp_file = (*++argv);
+                argc--;
+                break;
+
+            case 't':
+                trk_file = (*++argv);
+                argc--;
+                break;
+
+            case 'i':
+                csv_in_file = (*++argv);
+                argc--;
+                break;
+
+            case 'o':
+                csv_out_file = (*++argv);
+                argc--;
+                break;
+
+            case 'a':
+                asc_file = (*++argv);
+                argc--;
+                break;
+
+            default:
+                goto die;
+            }
+        }
     }
 
-    td.read_track (argv[1]);
+    if (ssp_file == NULL || trk_file == NULL)
+    {
+	fprintf (stderr, "Error: no scalespace or tracking input given.\n\n");
+	goto die;
+    }
+
+    if ((csv_out_file != NULL || csv_in_file != NULL) && asc_file == NULL)
+    {
+	fprintf (stderr, "Error: asc file needed for swisstopo"
+		 " points input/output.\n\n");
+	goto die;
+    }
+
+    if (asc_file != NULL && csv_out_file == NULL)
+	csv_out_file = csv_out_file_default;
+	
+    return;
+    
+ die:
+    print_help(stderr);
+    exit(1);
+}
+
+
+int main (int argc, char *argv[])
+{
+    // if (argc != 3)
+    // {
+    // 	fprintf (stderr, "Usage: ./spotfilter file.track file.ssp\n");
+    // 	// fprintf (stderr, "  brutal hack: demname-base.tif must exist. "
+    // 	// 	 "then load demname-0.tif ... demname-N.tif\n");
+    // 	exit (-1);
+    // }
+
+    app_init (argc, argv);
+    
+    td.read_track (trk_file);
+    if (do_normalize_border_points)
+	td.track->normalize_border_points ();
+
     // int dem_num;
     // read_dems (argv[2], dem_num = atoi (argv[3]));
-    td.read_ssp (argv[2]);
+    td.read_ssp (ssp_file);
     int dem_num = td.ssp->levels;
 
+    if (asc_file != NULL)
+    {
+	td.swpts_load_asc (asc_file);
+	if (csv_in_file != NULL)
+	    td.swpts_load_csv (csv_in_file);
+    }
+    
     // m.bb();
     // m.initL();
 
@@ -242,7 +361,7 @@ int main (int argc, char *argv[])
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
     glutInitWindowSize(W, H);
-    glutCreateWindow("viewer");
+    glutCreateWindow("spotfilter");
 
     TwInit(TW_OPENGL, NULL);
     TwWindowSize(W, H);
@@ -267,15 +386,20 @@ int main (int argc, char *argv[])
     glutIgnoreKeyRepeat(1);
     TwGLUTModifiersFunc(glutGetModifiers);
 
+    TwDeleteAllBars();
     TwBar *cBar;
-    cBar = TwNewBar("Camera_Rendering");
-    TwDefine("Camera_Rendering size='250 350'");
-    TwDefine("Camera_Rendering valueswidth=80");
-    TwDefine("Camera_Rendering color='192 255 192' text=dark ");
+    cBar = TwNewBar("SpotFilter");
+    TwDefine("SpotFilter size='268 730' position='10 6'");
+    // TwDefine("SpotFilter valueswidth=fit");
+    TwDefine("SpotFilter valueswidth=80");
+    TwDefine("SpotFilter color='120 220 150' alpha=190 text=dark");
 
     TwAddButton(cBar, "quit", call_quit, NULL, "");
 
-	camera.set (W, H, a, b);
+    camera.set (W, H, a, b);
+    camera.mouse (0, 0, 600, 200);
+    camera.mouse_move (725, 200);
+    camera.mouse (0, 1, 800, 200);
 
     // TwEnumVal draw_modeEV[VF_DRAW_MODE_NUM] = {
     //     { VF::FLAT, "Flat" }, { VF::POINTS, "Points" }, { VF::WIRE, "Wire" } }; 
@@ -284,22 +408,22 @@ int main (int argc, char *argv[])
     // TwAddVarRW(cBar, "DrawMode", draw_modeT, &mesh_draw_mode,
     // 	       " keyIncr='<' keyDecr='>'"); 
 
-    TwAddVarRW(cBar, "show terrain", TW_TYPE_BOOLCPP, &(td.draw_terrain), "");
-#define __FNLEN 512
-    char dem_num_bounds[__FNLEN] = {'\0'};
-    snprintf (dem_num_bounds, __FNLEN, "min=-1 max=%d step=1 "
-	      "keydecr='<' keyincr='>'", dem_num-1);
-    TwAddVarRW(cBar, "dem index", TW_TYPE_INT32, &draw_dem_idx, dem_num_bounds);
-#undef __FNLEN
+    TwAddVarRW(cBar, "render terrain", TW_TYPE_BOOLCPP, &(td.draw_terrain), "");
+// #define __FNLEN 512
+//     char dem_num_bounds[__FNLEN] = {'\0'};
+//     snprintf (dem_num_bounds, __FNLEN, "min=0 max=%d step=1 "
+// 	      "keydecr='<' keyincr='>'", dem_num-1);
+//     TwAddVarRW(cBar, "dem index", TW_TYPE_INT32, &draw_dem_idx, dem_num_bounds);
+// #undef __FNLEN
     TwAddVarRW(cBar, "clip_black", TW_TYPE_DOUBLE, &(td.clip_black),
 	       /*"min=0.0 max=65536.0 step=10.0"*/"step=1.0");
     TwAddVarRW(cBar, "clip_white", TW_TYPE_DOUBLE, &(td.clip_white),
 	       /*"min=0.0 max=65536.0 step=10.0"*/"step=1.0");
     td.multiply = 1.0;
-    TwAddVarRW(cBar, "mult factor", TW_TYPE_DOUBLE, &td.multiply, "min=1.0 "/*max=256.0*/" step=1.0");
+    // TwAddVarRW(cBar, "mult factor", TW_TYPE_DOUBLE, &td.multiply, "min=1.0 "max=256.0" step=1.0");
 
     TwAddSeparator (cBar, 0, 0);
-    TwAddSeparator (cBar, 0, 0);
+    // TwAddSeparator (cBar, 0, 0);
 
     // TwAddVarRW(cBar, "show tracking", TW_TYPE_BOOLCPP, &(td.draw_track), "");
     // // TwAddVarRW(cBar, "scale criticals coarse", TW_TYPE_DOUBLE,
@@ -331,11 +455,12 @@ int main (int argc, char *argv[])
     // TwAddSeparator (cBar, 0, 0);
 
 
-    // GG use statistics
-    
-    TwAddVarRW(cBar, "show spots", TW_TYPE_BOOLCPP, &(td.draw_spots), "");
-    TwAddButton(cBar, "DO INIT_SPOTS", do_init_spots, NULL, "");
-    TwAddVarRW(cBar, "spot scale", TW_TYPE_DOUBLE,
+    TwAddVarRW(cBar, "render spots", TW_TYPE_BOOLCPP, &(td.draw_spots), "");
+    TwAddVarRW(cBar, "scale by size", TW_TYPE_BOOLCPP, &(td.multiply_elix_spots), "");
+
+    //TwAddButton(cBar, "DO INIT_SPOTS", do_init_spots, NULL, "");
+    td.init_spots ();
+    TwAddVarRW(cBar, "spot size", TW_TYPE_DOUBLE,
 	       &(td.spot_scale), "min=0.001 max=100.00 step=0.001");
     // TwAddVarRW(cBar, "spot elixir life mult", TW_TYPE_DOUBLE, &(td.elixir_mult),
     // 	       "min=0.0 max=100.00 step=0.05");
@@ -345,6 +470,13 @@ int main (int argc, char *argv[])
     TwAddVarRW(cBar, "show density selection", TW_TYPE_BOOLCPP, &(td.draw_density_selected), "");
     TwAddVarRW(cBar, "show density pool", TW_TYPE_BOOLCPP, &(td.draw_density_pool), "");
 
+    TwAddVarRW(cBar, "density val", TW_TYPE_DOUBLE, &(td.density_maxima_val),
+	       "min=0.5 step=0.5"); //max=3000.0 
+
+
+    TwAddSeparator (cBar, 0, 0);
+
+    
     TwAddButton(cBar, "maxima", NULL, NULL, "");
     TwAddVarRO(cBar, "^ total", TW_TYPE_INT32, &(td.maxima_total_num), "");
     TwAddVarRW(cBar, "^ always add", TW_TYPE_INT32, &(td.maxima_always_selected_num),
@@ -354,11 +486,12 @@ int main (int argc, char *argv[])
 	       "min=0 step=1");
     TwAddVarRO(cBar, "^ pool life", TW_TYPE_DOUBLE, &(td.maxima_excluded_life), "");
     TwAddVarRO(cBar, "^ pool survived", TW_TYPE_INT32, &(td.maxima_density_selected_num), "");
-    TwAddVarRW(cBar, "^ importance cut", TW_TYPE_DOUBLE, &(td.spots_maxima_imp_cut),
+    TwAddVarRW(cBar, "^ differential cut", TW_TYPE_DOUBLE, &(td.spots_maxima_imp_cut),
 	       "min=0.0 step=0.01");
     TwAddVarRO(cBar, "^ always discarded", TW_TYPE_INT32, &(td.maxima_always_discarded_num), "");
-    TwAddVarRO(cBar, "^ importance discarded", TW_TYPE_INT32, &(td.maxima_importance_discarded_num), "");
+    TwAddVarRO(cBar, "^ differential discarded", TW_TYPE_INT32, &(td.maxima_importance_discarded_num), "");
 
+    // TwAddSeparator (cBar, 0, 0);
 
     TwAddButton(cBar, "minima", NULL, NULL, "");
     TwAddVarRO(cBar, ". total", TW_TYPE_INT32, &(td.minima_total_num), "");
@@ -369,11 +502,13 @@ int main (int argc, char *argv[])
 	       "min=0 step=1");
     TwAddVarRO(cBar, ". pool life", TW_TYPE_DOUBLE, &(td.minima_excluded_life), "");
     TwAddVarRO(cBar, ". pool survived", TW_TYPE_INT32, &(td.minima_density_selected_num), "");
-    TwAddVarRW(cBar, ". importance cut", TW_TYPE_DOUBLE, &(td.spots_minima_imp_cut),
+    TwAddVarRW(cBar, ". differential cut", TW_TYPE_DOUBLE, &(td.spots_minima_imp_cut),
 	       "min=0.0 step=0.01");
     TwAddVarRO(cBar, ". always discarded", TW_TYPE_INT32, &(td.minima_always_discarded_num), "");
-    TwAddVarRO(cBar, ". importance discarded", TW_TYPE_INT32, &(td.minima_importance_discarded_num), "");
+    TwAddVarRO(cBar, ". differential discarded", TW_TYPE_INT32, &(td.minima_importance_discarded_num), "");
     
+    // TwAddSeparator (cBar, 0, 0);
+
     TwAddButton(cBar, "sellae", NULL, NULL, "");
     TwAddVarRO(cBar, "+ total", TW_TYPE_INT32, &(td.sellae_total_num), "");
     TwAddVarRW(cBar, "+ always add", TW_TYPE_INT32, &(td.sellae_always_selected_num),
@@ -383,54 +518,56 @@ int main (int argc, char *argv[])
 	       "min=0 step=1");
     TwAddVarRO(cBar, "+ pool life", TW_TYPE_DOUBLE, &(td.sellae_excluded_life), "");
     TwAddVarRO(cBar, "+ pool survived", TW_TYPE_INT32, &(td.sellae_density_selected_num), "");    
-    TwAddVarRW(cBar, "+ importance cut", TW_TYPE_DOUBLE, &(td.spots_sellae_imp_cut),
+    TwAddVarRW(cBar, "+ differential cut", TW_TYPE_DOUBLE, &(td.spots_sellae_imp_cut),
 	       "min=0.0 step=0.01");
     TwAddVarRO(cBar, "+ always discarded", TW_TYPE_INT32, &(td.sellae_always_discarded_num), "");
-    TwAddVarRO(cBar, "+ importance discarded", TW_TYPE_INT32, &(td.sellae_importance_discarded_num), "");
+    TwAddVarRO(cBar, "+ differential discarded", TW_TYPE_INT32, &(td.sellae_importance_discarded_num), "");
     
     // TwAddVarRW(cBar, "density num", TW_TYPE_INT32, &(td.density_maxima_num),
     // 	       "min=0 step=1");
-    TwAddVarRW(cBar, "density val", TW_TYPE_DOUBLE, &(td.density_maxima_val),
-	       "min=0.5 max=3000.0 step=0.5");
-
 
 
     TwAddSeparator (cBar, 0, 0);
-    TwAddSeparator (cBar, 0, 0);
-    TwAddSeparator (cBar, 0, 0);
+
+    TwAddButton(cBar, "save points", save_points, NULL, "");
+
+
+    // TwAddSeparator (cBar, 0, 0);
+    // TwAddSeparator (cBar, 0, 0);
+    // TwAddSeparator (cBar, 0, 0);
 
 
 
-    TwAddVarRW(cBar, "show life", TW_TYPE_BOOLCPP, &(td.draw_elixir), "");
-    TwAddVarRW(cBar, "draw normal life", TW_TYPE_BOOLCPP, &(td.normal_lives), "");
-    TwAddButton(cBar, "DO LIFE", do_elixir, NULL, "");
-    TwAddVarRO(cBar, "intoxicated", TW_TYPE_INT32, &(td.track->intoxicated), "");
-    TwAddVarRW(cBar, "life scale", TW_TYPE_DOUBLE,
-	       &(td.elixir_scale), "min=0.001 max=100.00 step=0.001");
-    TwAddVarRW(cBar, "life life mult", TW_TYPE_DOUBLE, &(td.elixir_mult),
-	       "min=0.0 max=100.00 step=0.05");
-    TwAddVarRW(cBar, "life cut strong", TW_TYPE_DOUBLE, &(td.elixir_cut),
-	       "min=0.0 max=100.00 step=0.1");
-    TwAddVarRW(cBar, "life cut fine", TW_TYPE_DOUBLE, &(td.elixir_cut),
-	       "min=0.0 max=100.00 step=0.01");
-    TwAddVarRW(cBar, "life cut micro", TW_TYPE_DOUBLE, &(td.elixir_cut),
-	       "min=0.0 max=100.00 step=0.001");
+    // TwAddVarRW(cBar, "show life", TW_TYPE_BOOLCPP, &(td.draw_elixir), "");
+    // TwAddVarRW(cBar, "draw normal life", TW_TYPE_BOOLCPP, &(td.normal_lives), "");
+    // TwAddButton(cBar, "DO LIFE", do_elixir, NULL, "");
+    // TwAddVarRO(cBar, "intoxicated", TW_TYPE_INT32, &(td.track->intoxicated), "");
+    // TwAddVarRW(cBar, "life scale", TW_TYPE_DOUBLE,
+    // 	       &(td.elixir_scale), "min=0.001 max=100.00 step=0.001");
+    // TwAddVarRW(cBar, "life life mult", TW_TYPE_DOUBLE, &(td.elixir_mult),
+    // 	       "min=0.0 max=100.00 step=0.05");
+    // TwAddVarRW(cBar, "life cut strong", TW_TYPE_DOUBLE, &(td.elixir_cut),
+    // 	       "min=0.0 max=100.00 step=0.1");
+    // TwAddVarRW(cBar, "life cut fine", TW_TYPE_DOUBLE, &(td.elixir_cut),
+    // 	       "min=0.0 max=100.00 step=0.01");
+    // TwAddVarRW(cBar, "life cut micro", TW_TYPE_DOUBLE, &(td.elixir_cut),
+    // 	       "min=0.0 max=100.00 step=0.001");
 
-    TwAddSeparator (cBar, 0, 0);
+    // TwAddSeparator (cBar, 0, 0);
 
-    TwAddVarRW(cBar, "show importance", TW_TYPE_BOOLCPP, &(td.draw_importance), "");
-    TwAddVarRW(cBar, "importance scale", TW_TYPE_DOUBLE,
-	       &(td.importance_scale), "min=0.001 max=100.00 step=0.001");
-    TwAddVarRW(cBar, "importance mult", TW_TYPE_DOUBLE, &(td.importance_mult),
-	       "min=0.0 max=100.00 step=0.005");
-    TwAddVarRW(cBar, "importance cut strong", TW_TYPE_DOUBLE, &(td.importance_cut),
-	       "min=0.0 step=0.1");
-    TwAddVarRW(cBar, "importance cut fine", TW_TYPE_DOUBLE, &(td.importance_cut),
-	       "min=0.0 step=0.01");
-    TwAddVarRW(cBar, "importance cut micro", TW_TYPE_DOUBLE, &(td.importance_cut),
-	       "min=0.0 step=0.000001");
+    // TwAddVarRW(cBar, "show importance", TW_TYPE_BOOLCPP, &(td.draw_importance), "");
+    // TwAddVarRW(cBar, "importance scale", TW_TYPE_DOUBLE,
+    // 	       &(td.importance_scale), "min=0.001 max=100.00 step=0.001");
+    // TwAddVarRW(cBar, "importance mult", TW_TYPE_DOUBLE, &(td.importance_mult),
+    // 	       "min=0.0 max=100.00 step=0.005");
+    // TwAddVarRW(cBar, "importance cut strong", TW_TYPE_DOUBLE, &(td.importance_cut),
+    // 	       "min=0.0 step=0.1");
+    // TwAddVarRW(cBar, "importance cut fine", TW_TYPE_DOUBLE, &(td.importance_cut),
+    // 	       "min=0.0 step=0.01");
+    // TwAddVarRW(cBar, "importance cut micro", TW_TYPE_DOUBLE, &(td.importance_cut),
+    // 	       "min=0.0 step=0.000001");
 
-    TwAddSeparator (cBar, 0, 0);
+    // TwAddSeparator (cBar, 0, 0);
 
 
     

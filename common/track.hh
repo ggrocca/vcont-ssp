@@ -92,6 +92,7 @@ public:
 
     int intoxicated;
     double time_of_life;
+    int width, height;
     // int critical_original_num;
     // int critical_born_num;
     // used in check critical lines, which should be member function really
@@ -113,6 +114,7 @@ public:
     void query (double t, std::vector<TrackRenderingEntry>& v, bool verbose = true);
 
     void drink_elixir ();
+    void normalize_border_points ();
     void get_strength (Dem* d);
     // Track* afterlife ();
 
@@ -151,6 +153,9 @@ public:
     CriticalType original_type (int i);
     
     double lifetime_elixir (int i);
+
+private:
+    int __get_min_border_distance (int i);
 };
 
 class TrackEntryPointer

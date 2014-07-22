@@ -58,14 +58,15 @@ TrackDisplay::TrackDisplay()
     normal_lives = false;
 
     //density_maxima_num = 0;
-    draw_spots = false;
-    draw_final = false;
+    draw_spots = true;
+    multiply_elix_spots = false;
+    draw_final = true;
     draw_always_selected = false;
     draw_density_selected = false;
     draw_density_pool = false;
     
-    spot_scale = 0.0;
-    density_maxima_val = 3000.0;
+    spot_scale = 0.2;
+    density_maxima_val = 300.0;
     // spots_maxima_life_cut = 0;
     // spots_minima_life_cut = 0;
     // spots_sellae_life_cut = 0;
@@ -73,15 +74,18 @@ TrackDisplay::TrackDisplay()
     // spots_minima_life_add = 0;
     // spots_sellae_life_add = 0;
 
-    maxima_always_selected_num = 0;
-    maxima_density_pool_num = 0;
+    maxima_always_selected_num = 12;
+    maxima_density_pool_num = 60;
     spots_maxima_imp_cut = 0.0;
-    minima_always_selected_num = 0;
-    minima_density_pool_num = 0;
+    minima_always_selected_num = 2;
+    minima_density_pool_num = 10;
     spots_minima_imp_cut = 0.0;
-    sellae_always_selected_num = 0;
-    sellae_density_pool_num = 0;
-    spots_sellae_imp_cut = 0.0;    
+    sellae_always_selected_num = 6;
+    sellae_density_pool_num = 30;
+    spots_sellae_imp_cut = 0.0;
+
+    swpts_display = false;
+    swpts_active = false;
 };
 
 
@@ -93,6 +97,9 @@ TrackDisplay::TrackDisplay()
 void TrackDisplay::read_ssp (char *file)
 {
     ssp = new ScaleSpace (file, ScaleSpaceOpts());
+
+    clip_white = ssp->dem[0]->max;
+    clip_black = ssp->dem[0]->min;
 }
 
 void TrackDisplay::read_track (char *file)
@@ -127,36 +134,12 @@ void TrackDisplay::getbb (Point* a, Point* b)
     b->y = (double) ssp->dem[0]->height;
 }
 
-
-
-void __draw_critical_color (CriticalType t)
+void __draw_quad ()
 {
     double qs = 10.0;
     double qh = (qs / 2.0);
     double st = 1.0;
-
-    switch (t)
-    {
-    case MIN:
-	glColor3dv (blue);
- 	break;
-
-    case MAX:
-	glColor3dv(red);
-	break;
-
-    case SA2:
-	glColor3dv(green);
-	break;
-
-    case SA3:
-	glColor3dv(yellow);
-	break;
-	
-    default:
-	fprintf (stderr, "__draw_critical_color() problem\n");
-    }
-
+    
     glBegin (GL_QUADS);
     glVertex2f (-qh, -qh);
     glVertex2f (-qh,  qh);
@@ -188,7 +171,62 @@ void __draw_critical_color (CriticalType t)
     glVertex2f ( qh, -qh + st);
     glVertex2f ( qh, -qh);
     glEnd ();
+}
+
+void __draw_critical_color (CriticalType t)
+{
+    switch (t)
+    {
+    case MIN:
+	glColor3dv (blue);
+ 	break;
+
+    case MAX:
+	glColor3dv(red);
+	break;
+
+    case SA2:
+    case SA3:
+	glColor3dv(green);
+	break;
+
+    // case SA3:
+    // 	glColor3dv(yellow);
+    // 	break;
+	
+    default:
+	fprintf (stderr, "__draw_critical_color() problem\n");
+    }
+
+    __draw_quad ();
+    
  }
+
+void __draw_cross ()
+{
+    double qs = 10.0;
+    double qh = (qs / 2.0);
+
+    double ss = 8.0;
+    double sg = 2.0;
+    double sd = 1.5;
+    double st = 1.0;
+    double sh = (ss / 2.0);
+
+    glBegin (GL_QUADS);
+    glVertex2f (-sh+sg, -sh);
+    glVertex2f (-sh   , -sh+sg);
+    glVertex2f ( sh-sg,  sh);
+    glVertex2f ( sh   ,  sh-sg);
+    glEnd ();	
+    glBegin (GL_QUADS);
+    glVertex2f (-sh+sg,  sh);
+    glVertex2f (-sh   ,  sh-sg);
+    glVertex2f ( sh-sg, -sh);
+    glVertex2f ( sh   , -sh+sg);
+    glEnd ();	
+    
+}
 
 void __draw_critical_sym (CriticalType t)
 {
@@ -622,7 +660,8 @@ void TrackDisplay::draw (int dem_idx)
     {
 	vector<CritElix> spots_cut;
 	vector<int> spots_add;
-	vector<int> spots_current;
+	// vector<int> spots_current;
+	spots_current.clear();
 
 	total_num = spots_maxima.size() + spots_minima.size() + spots_sellae.size();
 	maxima_total_num = spots_maxima.size();
@@ -790,6 +829,8 @@ void TrackDisplay::draw (int dem_idx)
 	always_selected_num = spots_add.size();
 	density_selected_num = spots_current.size() - spots_add.size();
 	density_pool_num = spots_cut.size();
+
+	double mmm = multiply_elix_spots? 0.5 : 0.0; // 0.0); elixir_mult);
 	
 	if (draw_final)
 	    for (unsigned i = 0; i < spots_current.size(); i++)
@@ -798,7 +839,7 @@ void TrackDisplay::draw (int dem_idx)
 		__draw_critical_elixir (track->lines[idx].entries[0].c,
 					track->original_type (idx),
 					track->lifetime_elixir (idx),
-					spot_scale, 0.0); // elixir_mult);
+					spot_scale, mmm);
 	    }
 
 	if (draw_always_selected)
@@ -808,7 +849,7 @@ void TrackDisplay::draw (int dem_idx)
 		__draw_critical_elixir (track->lines[idx].entries[0].c,
 					track->original_type (idx),
 					track->lifetime_elixir (idx),
-					spot_scale, 0.0); // elixir_mult);
+					spot_scale, mmm);
 	    }	
 
 	if (draw_density_selected)
@@ -818,7 +859,7 @@ void TrackDisplay::draw (int dem_idx)
 	    	__draw_critical_elixir (track->lines[idx].entries[0].c,
 	    				track->original_type (idx),
 	    				track->lifetime_elixir (idx),
-	    				spot_scale, 0.0); // elixir_mult);
+	    				spot_scale, mmm);
 	    }
 
 	if (draw_density_pool)
@@ -828,7 +869,7 @@ void TrackDisplay::draw (int dem_idx)
 	    	__draw_critical_elixir (track->lines[idx].entries[0].c,
 	    				track->original_type (idx),
 	    				track->lifetime_elixir (idx),
-	    				spot_scale, 0.0); // elixir_mult);
+	    				spot_scale, mmm);
 	    }	
 
     }
@@ -872,7 +913,9 @@ void TrackDisplay::draw (int dem_idx)
 	    glEnd();
 	}
     }
-
+    
+    swpts_draw ();
+    
     glMatrixMode (GL_PROJECTION);
     glPopMatrix ();
     glMatrixMode (GL_MODELVIEW);
@@ -904,3 +947,104 @@ void TrackDisplay::draw_line_test (double d)
     glEnd();
     //   exit (0);
 }
+
+void TrackDisplay::swpts_load_asc (char* filename)
+{
+    swpts_active = true;
+
+    ASCReader ascr (filename);
+
+    swpts_xllcorner = ascr.xllcorner;
+    swpts_yllcorner = ascr.yllcorner;
+    swpts_cellsize = ascr.cellsize;
+}
+
+void TrackDisplay::swpts_draw ()
+{
+    // static bool check = true;
+    
+    for (int i = 0; i < swpts_ground_truth.size(); i++)
+    {
+	double x = swpts_ground_truth[i].x;
+	double y = swpts_ground_truth[i].y;
+
+	// if (check)
+	//     printf ("GRUNTH: %lf,%lf %s ", x, y,
+	// 	    i < swpts_ground_truth.size()-1? "--" : "|\n");
+	
+	glPushMatrix ();
+	glTranslated ((double) x, (double) y, 0.0);
+	glScaled (spot_scale, spot_scale, 1.0);
+	glColor3dv(magenta);	
+	__draw_cross ();
+	glPopMatrix();
+
+    }
+
+    // check = false;
+}
+
+void TrackDisplay::swpts_load_csv (char* filename)
+{
+    FILE *fp = fopen (filename, "r");
+
+    // for every line
+    fscanf (fp, "%*s");
+    Point pa;
+    while (true)
+    {
+	int r = fscanf (fp, "%lf,%lf,%*s", &pa.x, &pa.y);
+	// printf ("%s: %d\n", filename, r);
+
+	if (r != 2)
+	    break;
+	
+	Point pi;
+	swpts_asc2img (pa, &pi);
+	swpts_ground_truth.push_back (pi);
+    }
+
+    swpts_display  = true;
+}
+
+void TrackDisplay::swpts_save_csv (char* filename)
+{
+    FILE *fp = fopen (filename, "w");
+
+    fprintf (fp, "X,Y,TYPE,STRENGTH\n");
+    
+    for (unsigned i = 0; i < spots_current.size(); i++)
+    {
+	int idx = spots_current[i];
+	// coords:      track->lines[idx].entries[0].c,
+	// type:        track->original_type (idx)
+	// importance:  track->lifetime_elixir (idx)
+
+	Point pi (track->lines[idx].entries[0].c.x + 0.5,
+		  track->lines[idx].entries[0].c.y + 0.5);
+	Point pa;
+	swpts_img2asc (pi, &pa);
+	    
+	fprintf (fp, "%lf,%lf,%s,%lf,\n", pa.x, pa.y,
+		 critical2string (track->original_type (idx)),
+		 track->lifetime_elixir (idx));
+    }
+
+    
+    // for every point in final selection
+    // img2asc
+    // write: xcoord, ycoord, type, importance
+}
+
+void TrackDisplay::swpts_asc2img (Point a, Point* i)
+{
+    i->x = (a.x - swpts_xllcorner) / swpts_cellsize;
+    i->y = (a.y - swpts_yllcorner) / swpts_cellsize;
+}
+
+void TrackDisplay::swpts_img2asc (Point i, Point* a)
+{
+    a->x = (i.x * swpts_cellsize) + swpts_xllcorner;
+    a->y = (i.y * swpts_cellsize) + swpts_yllcorner;
+}
+

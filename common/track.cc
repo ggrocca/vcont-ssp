@@ -397,7 +397,8 @@ Track::Track (FILE *f)
 {
     int critical_points_num = 0;
     fscanf (f, "#lines: %d\n", &critical_points_num);
-    fscanf (f, "tol: %lf\n\n\n", &time_of_life);
+    fscanf (f, "tol: %lf\n", &time_of_life);
+    fscanf (f, "width: %d , height: %d\n\n\n", &width, &height);
 
     tprints (SCOPE_TRACKING, "reading %d criticals, lifetime %lf\n",
 	    critical_points_num, time_of_life);
@@ -455,6 +456,43 @@ void Track::get_strength (Dem *d)
 
 	    lines[i].strength = strength;
 	    lines[i].scale = ScaleSpace::window2scale (kernel_max);
+	}
+    }
+}
+
+int Track::__get_min_border_distance (int i)
+{
+    std::vector<int> bds;
+    bds.push_back (lines[i].entries[0].c.x);
+    bds.push_back (width-1 - lines[i].entries[0].c.x);
+    bds.push_back (lines[i].entries[0].c.y);
+    bds.push_back (height-1 - lines[i].entries[0].c.y);
+
+    int min = std::numeric_limits<short>::max();
+    for (int i = 0; i < bds.size(); i++)
+	if (bds[i] < min)
+	    min = bds[i];
+
+    return min;
+}
+
+void Track::normalize_border_points ()
+{
+    for (unsigned i = 0; i < lines.size(); i++)
+    {
+	if (is_original(i))
+	{
+	    int mindist = __get_min_border_distance (i);
+	    double curlex = lines[i].elixir;
+	    double normlex = ScaleSpace::coord2time (mindist);
+	    
+	    if (curlex > normlex)
+	    {
+		printf ("BORDER PATROL. [%d].[%d,%d] md:%d || from %lf to %lf\n",
+			i, lines[i].entries[0].c.x, lines[i].entries[0].c.y,
+			mindist, curlex, normlex);
+		lines[i].elixir = normlex;
+	    }
 	}
     }
 }
@@ -595,7 +633,8 @@ void Track::drink_elixir ()
 void Track::write (FILE *f)
 {
     fprintf (f, "#lines: %zu\n", lines.size());
-    fprintf (f, "tol: %.80lf\n\n\n", time_of_life);
+    fprintf (f, "tol: %.80lf\n", time_of_life);
+    fprintf (f, "width: %d , height: %d\n\n\n", width, height);
 
     for (unsigned i = 0; i < lines.size(); i++)
     {

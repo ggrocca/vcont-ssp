@@ -114,7 +114,13 @@ public:
     static inline double time2scale (double time)
     {
 	return pow (2.0, time);
-}
+    }
+
+    // special function for normalizing life of border points
+    static inline double coord2time (int coord)
+    {
+	return scale2time (window2scale ((coord * 2) + 1));
+    }
 };
 
 
