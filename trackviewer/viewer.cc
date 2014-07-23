@@ -296,7 +296,12 @@ int main (int argc, char *argv[])
     TwAddVarRW(cBar, "clip_white", TW_TYPE_DOUBLE, &(td.clip_white),
 	       /*"min=0.0 max=65536.0 step=10.0"*/"step=1.0");
     td.multiply = 1.0;
+<<<<<<< local
+    TwAddVarRW(cBar, "mult factor", TW_TYPE_DOUBLE, &td.multiply,
+	       "min=1.0 step=1.0");
+=======
     TwAddVarRW(cBar, "mult factor", TW_TYPE_DOUBLE, &td.multiply, "min=1.0 "/*max=256.0*/" step=1.0");
+>>>>>>> other
 
     TwAddSeparator (cBar, 0, 0);
     TwAddSeparator (cBar, 0, 0);
