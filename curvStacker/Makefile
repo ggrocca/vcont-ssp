@@ -40,7 +40,7 @@ BUILD_DIR = build
 
 ## Additional directories for source files
 # VPATH = add/dir1 ../add/dir2 ../../etc/
-VPATH = ../../clusterizer
+VPATH = ../clusterizer
 
 ## Directory for external libraries
 ## not used outside the configuration section and provided for your
