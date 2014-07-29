@@ -96,7 +96,7 @@ public:
   bool draw_sel;
   double min_scale[3], max_scale[3];
   double min_importance[3], max_importance[3];
-  
+  double min_life[3], max_life[3];
   
   bool draw_importance;
   double importance_mult;

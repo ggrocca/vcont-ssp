@@ -55,6 +55,10 @@ ifeq ($(USERNAME),deggio)
 BASELIBS_DIR = ../../Libraries
 endif
 
+ifeq ($(USERNAME),nikolas)
+BASELIBS_DIR = ../../Libraries
+endif
+
 ## C, CXX compiler
 # CXXC = g++
 # CC = gcc
