@@ -447,9 +447,9 @@ int main (int argc, char *argv[])
     /* Minima */
 
     TwAddVarRW(cBar, "show MINIMA", TW_TYPE_BOOLCPP, &(td.draw_min), "");
-    TwAddVarRW(cBar, "Min life of Minima", TW_TYPE_DOUBLE, &(td.min_life[0]),
+    TwAddVarRW(cBar, "Min life of Minima", TW_TYPE_DOUBLE, &(td.min_life[1]),
 	       "min=0 step=0.001");
-    TwAddVarRW(cBar, "Max life of Minima", TW_TYPE_DOUBLE, &(td.max_life[0]),
+    TwAddVarRW(cBar, "Max life of Minima", TW_TYPE_DOUBLE, &(td.max_life[1]),
 	       "min=0 step=0.001");
     TwAddSeparator (cBar, 0, 0);
     TwAddVarRW(cBar, "Min scale of Minima", TW_TYPE_DOUBLE, &(td.min_scale[1]),
@@ -465,9 +465,9 @@ int main (int argc, char *argv[])
     TwAddSeparator (cBar, 0, 0);
     TwAddSeparator (cBar, 0, 0);
     TwAddVarRW(cBar, "show SELLAE", TW_TYPE_BOOLCPP, &(td.draw_sel), "");
-    TwAddVarRW(cBar, "Min life of Sellae", TW_TYPE_DOUBLE, &(td.min_life[0]),
+    TwAddVarRW(cBar, "Min life of Sellae", TW_TYPE_DOUBLE, &(td.min_life[2]),
 	       "min=0 step=0.001");
-    TwAddVarRW(cBar, "Max life of Sellae", TW_TYPE_DOUBLE, &(td.max_life[0]),
+    TwAddVarRW(cBar, "Max life of Sellae", TW_TYPE_DOUBLE, &(td.max_life[2]),
 	       "min=0 step=0.001");
     TwAddSeparator (cBar, 0, 0);
     TwAddVarRW(cBar, "Min scale of Sellae", TW_TYPE_DOUBLE, &(td.min_scale[2]),
