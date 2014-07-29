@@ -113,6 +113,7 @@
 //=////////////////////////////=//
 
 #include <assert.h>
+#include <errno.h>
 
 // set fancy function names with class and signature if we're using gcc
 #ifdef __GNUC__

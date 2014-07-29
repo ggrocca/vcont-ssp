@@ -301,11 +301,8 @@ ScaleSpace::ScaleSpace (Dem& idem, int levels, ScaleSpaceOpts opts)
 ScaleSpace::ScaleSpace(const char* filename, ScaleSpaceOpts opts)
 {
     FILE* fp = fopen (filename, "r");
-
     if (fp == NULL)
-	eprint ("Could not read file %s\n", filename);
-
-    // read ssp file
+	eprintx (2, "Could not open file `%s'. %s\n", filename, strerror (errno));
 
     fread (&levels, sizeof (int), 1, fp);
 
@@ -346,9 +343,8 @@ ScaleSpace::ScaleSpace(const char* filename, ScaleSpaceOpts opts)
 void ScaleSpace::write_scalespace (char* filename)
 {
     FILE* fp = fopen (filename, "w");
-
     if (fp == NULL)
-	eprint ("Could not write file %s\n", filename);
+	eprintx (2, "Could not open file `%s'. %s\n", filename, strerror (errno));
 
     fwrite (&levels, sizeof (int), 1, fp);
 

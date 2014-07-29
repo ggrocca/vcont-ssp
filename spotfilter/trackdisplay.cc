@@ -205,13 +205,13 @@ void __draw_critical_color (CriticalType t)
 
 void __draw_cross ()
 {
-    double qs = 10.0;
-    double qh = (qs / 2.0);
+    // double qs = 10.0;
+    // double qh = (qs / 2.0);
 
     double ss = 8.0;
     double sg = 2.0;
-    double sd = 1.5;
-    double st = 1.0;
+    // double sd = 1.5;
+    // double st = 1.0;
     double sh = (ss / 2.0);
 
     glBegin (GL_QUADS);
@@ -966,7 +966,7 @@ void TrackDisplay::swpts_draw ()
 {
     // static bool check = true;
     
-    for (int i = 0; i < swpts_ground_truth.size(); i++)
+    for (unsigned i = 0; i < swpts_ground_truth.size(); i++)
     {
 	double x = swpts_ground_truth[i].x;
 	double y = swpts_ground_truth[i].y;
@@ -998,6 +998,8 @@ void TrackDisplay::swpts_draw ()
 void TrackDisplay::swpts_load_csv (char* filename)
 {
     FILE *fp = fopen (filename, "r");
+    if (fp == NULL)
+	eprintx (2, "Could not open file `%s'. %s\n", filename, strerror (errno));
 
     // for every line
     fscanf (fp, "%*s");
@@ -1024,25 +1026,33 @@ void TrackDisplay::swpts_save_csv (char* filename)
 {
     char cwd[2048] = "\0";
     
-    // if (getcwd(cwd, sizeof(cwd)) == NULL)
-    // 	fprintf(stdout, "Could not get working dir: %s\n", strerror(errno));
+    printf ("cwd: %s\n", cwd);
+    printf ("filename: %s\n", filename);
 
-    // printf ("cwd: %s\n", cwd);
-    // printf ("filename: %s\n", filename);
+    if (filename != NULL && filename[0] != '/')
+    {
+	if (getcwd(cwd, sizeof(cwd)) == NULL)
+	    fprintf(stdout, "Could not get working dir: %s\n", strerror(errno));
+	
+	printf ("cwd: %s\n", cwd);
+	printf ("filename: %s\n", filename);
 
-    
-    strlcat (cwd, "../../../", 2048);    
+	char *app_ending = ".app/Contents/Resources";
+	if (ends_with (cwd, app_ending))
+	{
+	    cwd[0] = '\0';
+	    strlcat (cwd, "../../../", 2048);
+	}
+	else
+	    cwd[0] = '\0';	    
+    }
     strlcat (cwd, filename, 2048);
 
-    // printf ("cwd: %s\n", cwd);
+    printf ("final: %s\n", cwd);
     
     FILE *fp = fopen (cwd, "w");
-
     if (fp == NULL)
-    {
-    	printf ("Could not open file %s: %s\n", cwd, strerror (errno));
-    	exit (1);
-    }
+	eprintx (2, "Could not open file `%s'. %s\n", cwd, strerror (errno));
     
     fprintf (fp, "X,Y,Z,TYPE,STRENGTH\n");
     

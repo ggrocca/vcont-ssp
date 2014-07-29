@@ -121,7 +121,8 @@ public:
 	FILE* fp = fopen (filename.c_str(), "r");
 
 	if (fp == NULL)
-	    eprintx (2, "Could not open file %s\n", filename.c_str());
+	    eprintx (2, "Could not open file %s. %s\n",
+		     filename.c_str(), strerror (errno));
 
 	fscanf (fp,
 		"%lf , %lf : %lf , %lf \n "

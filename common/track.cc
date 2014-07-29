@@ -1013,9 +1013,8 @@ CriticalType TrackOrdering::point_type (int line)
 void track_writer (const char *filename, Track* track, TrackOrdering* order)
 {
     FILE *f = fopen (filename, "w");
-
     if (f == NULL)
-	eprintx (54, "Could not open file %s.\n", filename);
+	eprintx (2, "Could not open file `%s'. %s\n", filename, strerror (errno));
 
     track->write (f);
     order->write (f);
@@ -1026,9 +1025,8 @@ void track_writer (const char *filename, Track* track, TrackOrdering* order)
 void track_reader (const char *filename, Track** track, TrackOrdering** order)
 {
     FILE *f = fopen (filename, "r");
-
     if (f == NULL)
-	eprintx (54, "Could not open file %s.\n", filename);
+	eprintx (2, "Could not open file `%s'. %s\n", filename, strerror (errno));
 
     *track = new Track (f);
     *order = new TrackOrdering (f);

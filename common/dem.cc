@@ -77,25 +77,25 @@ static inline double __random_value (double fmin, double fmax)
     return fmin + f * (fmax - fmin);
 }
 
-void __write_random (int i, int j, double o, double r, double p, bool end = false)
-{
-    static FILE* fp = NULL;
+// void __write_random (int i, int j, double o, double r, double p, bool end = false)
+// {
+//     static FILE* fp = NULL;
 
-    if (end && fp != NULL)
-    {
-	fclose (fp);
-	return;
-    }
+//     if (end && fp != NULL)
+//     {
+// 	fclose (fp);
+// 	return;
+//     }
 
-    if (fp == NULL)
-	fp = fopen ("perturbed.txt", "w");
+//     if (fp == NULL)
+// 	fp = fopen ("perturbed.txt", "w");
     
-    fprintf (fp, "== [%d][%d] ==\n", i, j);
-    fprintf (fp, "ORIG: %4.60lf\n", o);
-    fprintf (fp, "RAND: %4.60lf\n", r);
-    fprintf (fp, "PERT: %4.60lf\n", p);
-    fprintf (fp, "-----------------------\n");
-}
+//     fprintf (fp, "== [%d][%d] ==\n", i, j);
+//     fprintf (fp, "ORIG: %4.60lf\n", o);
+//     fprintf (fp, "RAND: %4.60lf\n", r);
+//     fprintf (fp, "PERT: %4.60lf\n", p);
+//     fprintf (fp, "-----------------------\n");
+// }
 
 // copy & perturb dem
 Dem::Dem (Dem& dem, double amp, unsigned int seed) :

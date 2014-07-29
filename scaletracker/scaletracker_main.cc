@@ -262,6 +262,9 @@ int main (int argc, char *argv[])
     if (demfile != NULL)
     {
 	FILE *fp = fopen (demfile, "r");
+	if (fp == NULL)
+	    eprintx (2, "Could not open file `%s'. %s\n", demfile, strerror (errno));
+
 	idem = new Dem (fp);
 	fclose (fp);
     }

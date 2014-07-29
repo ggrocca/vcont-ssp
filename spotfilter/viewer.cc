@@ -338,7 +338,7 @@ int main (int argc, char *argv[])
     // int dem_num;
     // read_dems (argv[2], dem_num = atoi (argv[3]));
     td.read_ssp (ssp_file);
-    int dem_num = td.ssp->levels;
+    // int dem_num = td.ssp->levels;
 
     if (asc_file != NULL)
     {

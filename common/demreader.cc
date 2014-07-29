@@ -143,6 +143,9 @@ HGTReader::HGTReader(const char* filename)
     int len;
 
     fp = fopen (filename, "r");
+    if (fp == NULL)
+	eprintx (2, "Could not open file `%s'. %s\n", filename, strerror (errno));
+    
 
     for (len = 0; (byte = getc (fp)) != EOF; len++)
 	;
@@ -211,7 +214,9 @@ ASCReader::ASCReader(const char* filename)
 {
     FILE* fp;
     fp = fopen (filename, "r");
-
+    if (fp == NULL)
+	eprintx (2, "Could not open file `%s'. %s\n", filename, strerror (errno));
+    
     fscanf (fp, "ncols %d\n", &width);
     fscanf (fp, "nrows %d\n", &height);
     fscanf (fp, "xllcorner %lf\n", &xllcorner);

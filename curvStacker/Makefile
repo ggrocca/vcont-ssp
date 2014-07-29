@@ -24,10 +24,13 @@ MAKEFILE_FORCEBUILD := true
 NEW_TARGET_FORCEBUILD := true
 NEW_TARGET_FOCERBUILD_FILE := .file_old_goal
 
-
-
 ##################################
 ### Project configuration section.
+
+## Use ifeq ($(USERNAME),yourname) to add user-specific configurations
+## in multideveloper settings
+# USERNAME := $(shell whoami)
+USERNAME := $(shell whoami)
 
 ## executable name
 # TARGET = exe
@@ -46,7 +49,17 @@ VPATH = ../clusterizer
 ## not used outside the configuration section and provided for your
 ## convenience when defining INCLUDES and LDFLAGS. Define as many as
 ## such variables as you need.
+# BASELIBS_DIR = ../../external/libs/dir
+ifeq ($(USERNAME),deggio)
 BASELIBS_DIR = ../../Libraries
+endif
+ifeq ($(USERNAME),nikolas)
+BASELIBS_DIR = ../../Libraries
+endif
+ifeq ($(USERNAME),gg)
+BASELIBS_DIR = ../../
+endif
+
 
 ## C, CXX compiler
 # CXXC = g++
@@ -71,16 +84,15 @@ OBJ_EXT = oo
 # CPPSOURCES = file1.cc file2.cc
 # CSOURCES = file1.c file2.c
 CPPSOURCES = mainStack.cc pngtomesh.cc curvStacker.cc vertex.cc face.cc cluster.cc topologyIndex.cc miniBall.cc mtxlib.cc
-#CSOURCES = rastertiff.c
 
 ## add directives -D__FILENAME_EXISTS for every file "filename.h" added here.
 ## purpose: untracked files with custom build configurations.
 # CUSTOM_HEADERS = custom_header.h
-#CUSTOM_HEADERS = custom_debug.h
 
-## generic compilation configuration, to be used for both C++ and C
-## on every OS. FLAGS are always used, while DEBUG_FLAGS are used
-## instead of RELEASE flags when "make debug" is used.
+## generic compilation configuration, to be used for both C++ and C on
+## every OS. FLAGS are always used, while DEBUG_FLAGS are used instead
+## of RELEASE flags when "make debug" is used. STATIC_LDFLAGS are used
+## instead of LDFLAGS if "make static" is used.
 # override FLAGS +=
 # override DEBUG_FLAGS +=
 # override TRACE_FLAGS +=
@@ -91,13 +103,22 @@ CPPSOURCES = mainStack.cc pngtomesh.cc curvStacker.cc vertex.cc face.cc cluster.
 # override LDFLAGS +=
 # override STATIC_LDFLAGS +=
 # override FRAMEWORKS +=
-override FLAGS += 
+override FLAGS += -lpthread
 override DEBUG_FLAGS += -Wall -W -g
 override TRACE_FLAGS += -DDEBUGTRACE
 override RELEASE_FLAGS += -O3 -DNDEBUG
+override INCLUDES +=  -I../common/ -I../clusterizer
+
+ifneq (,$(filter $(USERNAME),deggio nikolas))
 override INCLUDES +=  -I${BASELIBS_DIR}/igl_LOCAL/libigl/include -I${BASELIBS_DIR}/Eigen -I../common/ -I../clusterizer
+endif
+
+ifeq ($(USERNAME),gg)
+override INCLUDES +=  -I${BASELIBS_DIR}/libigl/include -I${BASELIBS_DIR}/eigen/ -I../common/ -I../clusterizer
+endif
+
 override DEFINES += 
-override LDFLAGS += -lpthread
+override LDFLAGS += 
 override STATIC_LDFLAGS +=
 override FRAMEWORKS += 
 
@@ -113,14 +134,16 @@ override FRAMEWORKS +=
 # override CFLAGS +=
 # override CINCLUDES +=
 # override CDEFINES +=
-override CFLAGS += -std=gnu99
-override CINCLUDES += 
-override CDEFINES += 
 
 # C++ specific conf
 # override CXXFLAGS +=
 # override CXXINCLUDES +=
 # override CXXDEFINES +=
+
+override CFLAGS += -std=gnu99
+override CINCLUDES += 
+override CDEFINES += 
+
 override CXXFLAGS += -pipe  -D_THREAD_SAFE -pthread -Wno-write-strings
 override CXXINCLUDES += 
 override CXXDEFINES += 
@@ -145,14 +168,13 @@ override CXXDEFINES +=
 # GENERIC = false
 # endif
 
-# # eventually add here other specific OSes, remembering to set 
+# # eventually add here other specific OSes, remembering to set
 # # `GENERIC = false' once you're done
 
 # # generic UNIX
 # ifeq ($(GENERIC),true)
 # override VAR += whatever
 # endif
-
 
 UNAME := $(shell uname -s)
 GENERIC = true
@@ -178,6 +200,9 @@ override STATIC_LDFLAGS += -Dcimg_use_png -lpng -lz -ltiff -lm
 override STATIC_LDFLAGS +=  -lX11 -lpthread
 override INCLUDES += 
 endif
+
+
+
 
 
 

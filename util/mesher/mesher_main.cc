@@ -164,6 +164,8 @@ int main (int argc, char *argv[])
 	}
 
     FILE *f = fopen (out_name, "w");
+    if (f == NULL)
+	eprintx (2, "Could not open file `%s'. %s\n", out_name, strerror (errno));
     
     fprintf (f, "OFF\n%zu %zu 0\n", vs.size(), fs.size());
 
