@@ -421,7 +421,8 @@ void TopologyIndex::miniball(Level* levelNN)
     {
       //TODO: qui devo estrarre i punti, ciclare, metterli in un array e chiamare miniball */
       vector<int>* vert = (*cluster)->getVertices();
-      Point P[vert->size()];
+      //Point P[vert->size()];
+      Point *P = new Point[vert->size()];
 
       for (int i=0; i<vert->size(); i++)
 	P[i]=Point(V.row((*vert)[i])[0],V.row((*vert)[i])[1],V.row((*vert)[i])[2]);
@@ -429,6 +430,8 @@ void TopologyIndex::miniball(Level* levelNN)
       miniBall ms = MinSphere(P,vert->size());
       (*cluster)->setCenter(ms.center);
       (*cluster)->setRadius(ms.radius);
+
+      delete P;
     }
 }
 
@@ -464,8 +467,9 @@ void TopologyIndex::fusion(Level* levelNN)
 	      candidate_neighbor->insertVertices((*child)->getVertices());
 
 	      vector<int>* vert = candidate_neighbor->getVertices();
-	      Point P[vert->size()];
-
+	      //Point P[vert->size()];
+	      Point *P = new Point[vert->size()];
+	      
 	      for (int i=0; i<vert->size(); i++)
 		P[i]=Point(V.row((*vert)[i])[0],V.row((*vert)[i])[1],V.row((*vert)[i])[2]);
       
@@ -473,6 +477,9 @@ void TopologyIndex::fusion(Level* levelNN)
 
 	      candidate_neighbor->setCenter(ms.center);
 	      candidate_neighbor->setRadius(ms.radius);
+
+	      delete P;
+
 	      //Il vicino trovato è il nuovo padre del figlio
 	      (*child)->setFather(candidate_neighbor);
 	      //E viceversa

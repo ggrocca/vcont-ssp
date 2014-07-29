@@ -5,6 +5,7 @@
 
 #include "mtxlib.hh"
 #include <math.h>
+#include <vector>
 
 #define radiusEpsilon 1e-4f
 

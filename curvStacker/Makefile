@@ -57,7 +57,7 @@ ifeq ($(USERNAME),nikolas)
 BASELIBS_DIR = ../../Libraries
 endif
 ifeq ($(USERNAME),gg)
-BASELIBS_DIR = ../../
+BASELIBS_DIR = ../../libs
 endif
 
 
@@ -103,7 +103,7 @@ CPPSOURCES = mainStack.cc pngtomesh.cc curvStacker.cc vertex.cc face.cc cluster.
 # override LDFLAGS +=
 # override STATIC_LDFLAGS +=
 # override FRAMEWORKS +=
-override FLAGS += -lpthread
+override FLAGS += 
 override DEBUG_FLAGS += -Wall -W -g
 override TRACE_FLAGS += -DDEBUGTRACE
 override RELEASE_FLAGS += -O3 -DNDEBUG
@@ -114,7 +114,7 @@ override INCLUDES +=  -I${BASELIBS_DIR}/igl_LOCAL/libigl/include -I${BASELIBS_DI
 endif
 
 ifeq ($(USERNAME),gg)
-override INCLUDES +=  -I${BASELIBS_DIR}/libigl/include -I${BASELIBS_DIR}/eigen/ -I../common/ -I../clusterizer
+override INCLUDES +=  -I${BASELIBS_DIR}/igl_LOCAL/libigl/include -I${BASELIBS_DIR}/Eigen/ -I../common/ -I../clusterizer
 endif
 
 override DEFINES += 
@@ -193,6 +193,7 @@ GENERIC = false
 endif
 
 ifeq ($(GENERIC),true) # UNIX/LINUX
+override FLAGS += -lpthread
 override LDFLAGS += -Dcimg_use_png -lpng -lz -ltiff -lm
 override LDFLAGS +=  -lX11 -lpthread
 override STATIC_LDFLAGS += -static -static-libgcc -static-libstdc++
