@@ -297,19 +297,9 @@ int main (int argc, char *argv[])
     TwAddVarRW(cBar, "clip_white", TW_TYPE_DOUBLE, &(td.clip_white),
 	       /*"min=0.0 max=65536.0 step=10.0"*/"step=1.0");
     td.multiply = 1.0;
-<<<<<<< local
-    TwAddVarRW(cBar, "mult factor", TW_TYPE_DOUBLE, &td.multiply,
-	       "min=1.0 step=1.0");
-=======
->>>>>>> other
 
-<<<<<<< local
-=======
     TwAddVarRW(cBar, "mult factor", TW_TYPE_DOUBLE, &td.multiply, "min=1.0 "/*max=256.0*/" step=1.0");
->>>>>>> other
 
-    TwAddSeparator (cBar, 0, 0);
-    TwAddSeparator (cBar, 0, 0);
 
     // TwAddVarRW(cBar, "show tracking", TW_TYPE_BOOLCPP, &(td.draw_track), "");
     // // TwAddVarRW(cBar, "scale criticals coarse", TW_TYPE_DOUBLE,
@@ -404,13 +394,6 @@ int main (int argc, char *argv[])
     // 	       "min=0.5 max=3000.0 step=0.5");
 
 
-
-    TwAddSeparator (cBar, 0, 0);
-    TwAddSeparator (cBar, 0, 0);
-    TwAddSeparator (cBar, 0, 0);
-
-
-
     TwAddVarRW(cBar, "show life", TW_TYPE_BOOLCPP, &(td.draw_elixir), "");
     TwAddVarRW(cBar, "draw normal life", TW_TYPE_BOOLCPP, &(td.normal_lives), "");
     TwAddButton(cBar, "DO LIFE", do_elixir, NULL, "");
@@ -441,40 +424,57 @@ int main (int argc, char *argv[])
 	       "min=0.0 step=0.000001");
 
     TwAddSeparator (cBar, 0, 0);
-
+    TwAddSeparator (cBar, 0, 0);
     /* Maxima */
 
     TwAddVarRW(cBar, "show MAXIMA", TW_TYPE_BOOLCPP, &(td.draw_max), "");
-
+    TwAddVarRW(cBar, "Min life of Maxima", TW_TYPE_DOUBLE, &(td.min_life[0]),
+	       "min=0 step=0.001");
+    TwAddVarRW(cBar, "Max life of Maxima", TW_TYPE_DOUBLE, &(td.max_life[0]),
+	       "min=0 step=0.001");    
+    TwAddSeparator (cBar, 0, 0);
     TwAddVarRW(cBar, "Min scale of Maxima", TW_TYPE_DOUBLE, &(td.min_scale[0]),
-	       "min=0 step=0.000001");
+	       "min=0 step=0.001");
     TwAddVarRW(cBar, "Max scale of Maxima", TW_TYPE_DOUBLE, &(td.max_scale[0]),
-	       "min=0 step=0.000001");
+	       "min=0 step=0.001");
+    TwAddSeparator (cBar, 0, 0);
     TwAddVarRW(cBar, "Min importance of Maxima", TW_TYPE_DOUBLE, &(td.min_importance[0]),
 	       "min=0 step=0.000001");
     TwAddVarRW(cBar, "Max importance of Maxima", TW_TYPE_DOUBLE, &(td.max_importance[0]),
 	       "min=0 step=0.000001");
-
+    TwAddSeparator (cBar, 0, 0);
+    TwAddSeparator (cBar, 0, 0);
     /* Minima */
 
     TwAddVarRW(cBar, "show MINIMA", TW_TYPE_BOOLCPP, &(td.draw_min), "");
-
+    TwAddVarRW(cBar, "Min life of Minima", TW_TYPE_DOUBLE, &(td.min_life[0]),
+	       "min=0 step=0.001");
+    TwAddVarRW(cBar, "Max life of Minima", TW_TYPE_DOUBLE, &(td.max_life[0]),
+	       "min=0 step=0.001");
+    TwAddSeparator (cBar, 0, 0);
     TwAddVarRW(cBar, "Min scale of Minima", TW_TYPE_DOUBLE, &(td.min_scale[1]),
-	       "min=0 step=0.000001");
+	       "min=0 step=0.001");
     TwAddVarRW(cBar, "Max scale of Minima", TW_TYPE_DOUBLE, &(td.max_scale[1]),
-	       "min=0 step=0.000001");
+	       "min=0 step=0.001");
+    TwAddSeparator (cBar, 0, 0);
     TwAddVarRW(cBar, "Min importance of Minima", TW_TYPE_DOUBLE, &(td.min_importance[1]),
 	       "min=0 step=0.000001");
     TwAddVarRW(cBar, "Max importance of Minima", TW_TYPE_DOUBLE, &(td.max_importance[1]),
 	       "min=0 step=0.000001");
     /* Maxima */
-
+    TwAddSeparator (cBar, 0, 0);
+    TwAddSeparator (cBar, 0, 0);
     TwAddVarRW(cBar, "show SELLAE", TW_TYPE_BOOLCPP, &(td.draw_sel), "");
-
+    TwAddVarRW(cBar, "Min life of Sellae", TW_TYPE_DOUBLE, &(td.min_life[0]),
+	       "min=0 step=0.001");
+    TwAddVarRW(cBar, "Max life of Sellae", TW_TYPE_DOUBLE, &(td.max_life[0]),
+	       "min=0 step=0.001");
+    TwAddSeparator (cBar, 0, 0);
     TwAddVarRW(cBar, "Min scale of Sellae", TW_TYPE_DOUBLE, &(td.min_scale[2]),
-	       "min=0 step=0.000001");
+	       "min=0 step=0.001");
     TwAddVarRW(cBar, "Max scale of Sellae", TW_TYPE_DOUBLE, &(td.max_scale[2]),
-	       "min=0 step=0.000001");
+	       "min=0 step=0.001");
+    TwAddSeparator (cBar, 0, 0);
     TwAddVarRW(cBar, "Min importance of Sellae", TW_TYPE_DOUBLE, &(td.min_importance[2]),
 	       "min=0 step=0.000001");
     TwAddVarRW(cBar, "Max importance of Sellae", TW_TYPE_DOUBLE, &(td.max_importance[2]),
