@@ -40,7 +40,7 @@ BUILD_DIR = build
 
 ## Additional directories for source files
 # VPATH = add/dir1 ../add/dir2 ../../etc/
-VPATH = ../../clusterizer
+VPATH = ../clusterizer
 
 ## Directory for external libraries
 ## not used outside the configuration section and provided for your
@@ -95,7 +95,7 @@ override FLAGS +=
 override DEBUG_FLAGS += -Wall -W -g
 override TRACE_FLAGS += -DDEBUGTRACE
 override RELEASE_FLAGS += -O3 -DNDEBUG
-override INCLUDES +=  -I${BASELIBS_DIR}/igl_LOCAL/libigl/include -I${BASELIBS_DIR}/Eigen -I../common/ -I${BASELIBS_DIR}/../clusterizer
+override INCLUDES +=  -I${BASELIBS_DIR}/igl_LOCAL/libigl/include -I${BASELIBS_DIR}/Eigen -I../common/ -I../clusterizer
 override DEFINES += 
 override LDFLAGS += -lpthread
 override STATIC_LDFLAGS +=

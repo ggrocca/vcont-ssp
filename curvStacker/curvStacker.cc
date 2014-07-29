@@ -42,7 +42,8 @@ void curvStacker::printHeader()
       std::cerr << "Error opening scalespace output file " << outfile << std::endl;
       return;
     }
-  fwrite(&(n_levels),sizeof(int),1,fp);
+  if (n_levels>1)
+   fwrite(&(n_levels),sizeof(int),1,fp);
   return;
 }
 
@@ -89,7 +90,7 @@ void curvStacker::initializeScaleSpace(Eigen::MatrixXd V)
 
 void curvStacker::printLevel(Eigen::MatrixXd V, vector<vector<double> > curv)
 {
-  double min, max;
+  double min=DBL_MAX, max=-DBL_MAX;
   //  minmaxCurvatures(min,max,curv);
   double * data = (double*)malloc(sizeof(double)*width*height);
   for (int i=0; i<width*height; i++)
@@ -100,7 +101,12 @@ void curvStacker::printLevel(Eigen::MatrixXd V, vector<vector<double> > curv)
 
   for (int k=0; k<V.rows(); k++)
     {
-      double curvT=curv[k][0]*curv[k][1];
+      double curvT=curv[k][0]*curv[k][1]*10e3;
+
+      if (curvT<min)
+	min=curvT;
+      if (curvT>max)
+	max=curvT;
       int x=V.row(k)[0];
       int y=V.row(k)[1];
       int i=(y-ymin)/2;
@@ -109,7 +115,8 @@ void curvStacker::printLevel(Eigen::MatrixXd V, vector<vector<double> > curv)
       int j_gg=(i*width+j)%height;
       data[i*width+j]=curvT;
     }
-
+  for (int k=0; k<width*height; k++) if (data[k]!=-DBL_MAX) data[k]+=fabs(min);
+  cout << "Range dei livelli di curvatura: ["<<min+fabs(min)<<","<<max+abs(min)<<"]"<<endl;
   fwrite(&(data[0]), sizeof(double), width*height, fp);
   free(data);
  }
@@ -128,6 +135,7 @@ void curvStacker::executeOnMesh(string meshFile)
   cerr << "Mesh read with " << V.rows() << " vertices "  << endl;
   c.zeroDetCheck=false;
   c.init(V,F);
+  cout << "expStep: " << isExpStep << " step: " << step << endl;
   for (double r=base_radius; r<=max_radius; isExpStep?r*=step:r+=step)
     {
       cerr << "Starting computing radius " << r << endl;

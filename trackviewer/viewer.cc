@@ -193,6 +193,7 @@ void TW_CALL call_quit (void *clientData)
     quit();
 }
 
+
 //////////
 // MAIN //
 //////////
@@ -296,10 +297,9 @@ int main (int argc, char *argv[])
     TwAddVarRW(cBar, "clip_white", TW_TYPE_DOUBLE, &(td.clip_white),
 	       /*"min=0.0 max=65536.0 step=10.0"*/"step=1.0");
     td.multiply = 1.0;
+
     TwAddVarRW(cBar, "mult factor", TW_TYPE_DOUBLE, &td.multiply, "min=1.0 "/*max=256.0*/" step=1.0");
 
-    TwAddSeparator (cBar, 0, 0);
-    TwAddSeparator (cBar, 0, 0);
 
     // TwAddVarRW(cBar, "show tracking", TW_TYPE_BOOLCPP, &(td.draw_track), "");
     // // TwAddVarRW(cBar, "scale criticals coarse", TW_TYPE_DOUBLE,
@@ -331,74 +331,67 @@ int main (int argc, char *argv[])
     // TwAddSeparator (cBar, 0, 0);
 
 
-    // GG use statistics
+    // // GG use statistics
     
-    TwAddVarRW(cBar, "show spots", TW_TYPE_BOOLCPP, &(td.draw_spots), "");
-    TwAddButton(cBar, "DO INIT_SPOTS", do_init_spots, NULL, "");
-    TwAddVarRW(cBar, "spot scale", TW_TYPE_DOUBLE,
-	       &(td.spot_scale), "min=0.001 max=100.00 step=0.001");
-    // TwAddVarRW(cBar, "spot elixir life mult", TW_TYPE_DOUBLE, &(td.elixir_mult),
-    // 	       "min=0.0 max=100.00 step=0.05");
+    // TwAddVarRW(cBar, "show spots", TW_TYPE_BOOLCPP, &(td.draw_spots), "");
+    // TwAddButton(cBar, "DO INIT_SPOTS", do_init_spots, NULL, "");
+    // TwAddVarRW(cBar, "spot scale", TW_TYPE_DOUBLE,
+    // 	       &(td.spot_scale), "min=0.001 max=100.00 step=0.001");
+    // // TwAddVarRW(cBar, "spot elixir life mult", TW_TYPE_DOUBLE, &(td.elixir_mult),
+    // // 	       "min=0.0 max=100.00 step=0.05");
 
-    TwAddVarRW(cBar, "show final selection", TW_TYPE_BOOLCPP, &(td.draw_final), "");
-    TwAddVarRW(cBar, "show always selection", TW_TYPE_BOOLCPP, &(td.draw_always_selected), "");
-    TwAddVarRW(cBar, "show density selection", TW_TYPE_BOOLCPP, &(td.draw_density_selected), "");
-    TwAddVarRW(cBar, "show density pool", TW_TYPE_BOOLCPP, &(td.draw_density_pool), "");
+    // TwAddVarRW(cBar, "show final selection", TW_TYPE_BOOLCPP, &(td.draw_final), "");
+    // TwAddVarRW(cBar, "show always selection", TW_TYPE_BOOLCPP, &(td.draw_always_selected), "");
+    // TwAddVarRW(cBar, "show density selection", TW_TYPE_BOOLCPP, &(td.draw_density_selected), "");
+    // TwAddVarRW(cBar, "show density pool", TW_TYPE_BOOLCPP, &(td.draw_density_pool), "");
 
-    TwAddButton(cBar, "maxima", NULL, NULL, "");
-    TwAddVarRO(cBar, "^ total", TW_TYPE_INT32, &(td.maxima_total_num), "");
-    TwAddVarRW(cBar, "^ always add", TW_TYPE_INT32, &(td.maxima_always_selected_num),
-	       "min=0 step=1");
-    TwAddVarRO(cBar, "^ always life", TW_TYPE_DOUBLE, &(td.maxima_always_life), "");
-    TwAddVarRW(cBar, "^ pool add", TW_TYPE_INT32, &(td.maxima_density_pool_num),
-	       "min=0 step=1");
-    TwAddVarRO(cBar, "^ pool life", TW_TYPE_DOUBLE, &(td.maxima_excluded_life), "");
-    TwAddVarRO(cBar, "^ pool survived", TW_TYPE_INT32, &(td.maxima_density_selected_num), "");
-    TwAddVarRW(cBar, "^ importance cut", TW_TYPE_DOUBLE, &(td.spots_maxima_imp_cut),
-	       "min=0.0 step=0.0000001");
-    TwAddVarRO(cBar, "^ always discarded", TW_TYPE_INT32, &(td.maxima_always_discarded_num), "");
-    TwAddVarRO(cBar, "^ importance discarded", TW_TYPE_INT32, &(td.maxima_importance_discarded_num), "");
-
-
-    TwAddButton(cBar, "minima", NULL, NULL, "");
-    TwAddVarRO(cBar, ". total", TW_TYPE_INT32, &(td.minima_total_num), "");
-    TwAddVarRW(cBar, ". always add", TW_TYPE_INT32, &(td.minima_always_selected_num),
-	       "min=0 step=1");
-    TwAddVarRO(cBar, ". always life", TW_TYPE_DOUBLE, &(td.minima_always_life), "");
-    TwAddVarRW(cBar, ". pool add", TW_TYPE_INT32, &(td.minima_density_pool_num),
-	       "min=0 step=1");
-    TwAddVarRO(cBar, ". pool life", TW_TYPE_DOUBLE, &(td.minima_excluded_life), "");
-    TwAddVarRO(cBar, ". pool survived", TW_TYPE_INT32, &(td.minima_density_selected_num), "");
-    TwAddVarRW(cBar, ". importance cut", TW_TYPE_DOUBLE, &(td.spots_minima_imp_cut),
-	       "min=0.0 step=0.0000001");
-    TwAddVarRO(cBar, ". always discarded", TW_TYPE_INT32, &(td.minima_always_discarded_num), "");
-    TwAddVarRO(cBar, ". importance discarded", TW_TYPE_INT32, &(td.minima_importance_discarded_num), "");
-    
-    TwAddButton(cBar, "sellae", NULL, NULL, "");
-    TwAddVarRO(cBar, "+ total", TW_TYPE_INT32, &(td.sellae_total_num), "");
-    TwAddVarRW(cBar, "+ always add", TW_TYPE_INT32, &(td.sellae_always_selected_num),
-	       "min=0 step=1");
-    TwAddVarRO(cBar, "+ always life", TW_TYPE_DOUBLE, &(td.sellae_always_life), "");
-    TwAddVarRW(cBar, "+ pool add", TW_TYPE_INT32, &(td.sellae_density_pool_num),
-	       "min=0 step=1");
-    TwAddVarRO(cBar, "+ pool life", TW_TYPE_DOUBLE, &(td.sellae_excluded_life), "");
-    TwAddVarRO(cBar, "+ pool survived", TW_TYPE_INT32, &(td.sellae_density_selected_num), "");    
-    TwAddVarRW(cBar, "+ importance cut", TW_TYPE_DOUBLE, &(td.spots_sellae_imp_cut),
-	       "min=0.0 step=0.0000001");
-    TwAddVarRO(cBar, "+ always discarded", TW_TYPE_INT32, &(td.sellae_always_discarded_num), "");
-    TwAddVarRO(cBar, "+ importance discarded", TW_TYPE_INT32, &(td.sellae_importance_discarded_num), "");
-    
-    // TwAddVarRW(cBar, "density num", TW_TYPE_INT32, &(td.density_maxima_num),
+    // TwAddButton(cBar, "maxima", NULL, NULL, "");
+    // TwAddVarRO(cBar, "^ total", TW_TYPE_INT32, &(td.maxima_total_num), "");
+    // TwAddVarRW(cBar, "^ always add", TW_TYPE_INT32, &(td.maxima_always_selected_num),
     // 	       "min=0 step=1");
-    TwAddVarRW(cBar, "density val", TW_TYPE_DOUBLE, &(td.density_maxima_val),
-	       "min=0.5 max=3000.0 step=0.5");
+    // TwAddVarRO(cBar, "^ always life", TW_TYPE_DOUBLE, &(td.maxima_always_life), "");
+    // TwAddVarRW(cBar, "^ pool add", TW_TYPE_INT32, &(td.maxima_density_pool_num),
+    // 	       "min=0 step=1");
+    // TwAddVarRO(cBar, "^ pool life", TW_TYPE_DOUBLE, &(td.maxima_excluded_life), "");
+    // TwAddVarRO(cBar, "^ pool survived", TW_TYPE_INT32, &(td.maxima_density_selected_num), "");
+    // TwAddVarRW(cBar, "^ importance cut", TW_TYPE_DOUBLE, &(td.spots_maxima_imp_cut),
+    // 	       "min=0.0 step=0.0000001");
+    // TwAddVarRO(cBar, "^ always discarded", TW_TYPE_INT32, &(td.maxima_always_discarded_num), "");
+    // TwAddVarRO(cBar, "^ importance discarded", TW_TYPE_INT32, &(td.maxima_importance_discarded_num), "");
 
 
-
-    TwAddSeparator (cBar, 0, 0);
-    TwAddSeparator (cBar, 0, 0);
-    TwAddSeparator (cBar, 0, 0);
-
+    // TwAddButton(cBar, "minima", NULL, NULL, "");
+    // TwAddVarRO(cBar, ". total", TW_TYPE_INT32, &(td.minima_total_num), "");
+    // TwAddVarRW(cBar, ". always add", TW_TYPE_INT32, &(td.minima_always_selected_num),
+    // 	       "min=0 step=1");
+    // TwAddVarRO(cBar, ". always life", TW_TYPE_DOUBLE, &(td.minima_always_life), "");
+    // TwAddVarRW(cBar, ". pool add", TW_TYPE_INT32, &(td.minima_density_pool_num),
+    // 	       "min=0 step=1");
+    // TwAddVarRO(cBar, ". pool life", TW_TYPE_DOUBLE, &(td.minima_excluded_life), "");
+    // TwAddVarRO(cBar, ". pool survived", TW_TYPE_INT32, &(td.minima_density_selected_num), "");
+    // TwAddVarRW(cBar, ". importance cut", TW_TYPE_DOUBLE, &(td.spots_minima_imp_cut),
+    // 	       "min=0.0 step=0.0000001");
+    // TwAddVarRO(cBar, ". always discarded", TW_TYPE_INT32, &(td.minima_always_discarded_num), "");
+    // TwAddVarRO(cBar, ". importance discarded", TW_TYPE_INT32, &(td.minima_importance_discarded_num), "");
+    
+    // TwAddButton(cBar, "sellae", NULL, NULL, "");
+    // TwAddVarRO(cBar, "+ total", TW_TYPE_INT32, &(td.sellae_total_num), "");
+    // TwAddVarRW(cBar, "+ always add", TW_TYPE_INT32, &(td.sellae_always_selected_num),
+    // 	       "min=0 step=1");
+    // TwAddVarRO(cBar, "+ always life", TW_TYPE_DOUBLE, &(td.sellae_always_life), "");
+    // TwAddVarRW(cBar, "+ pool add", TW_TYPE_INT32, &(td.sellae_density_pool_num),
+    // 	       "min=0 step=1");
+    // TwAddVarRO(cBar, "+ pool life", TW_TYPE_DOUBLE, &(td.sellae_excluded_life), "");
+    // TwAddVarRO(cBar, "+ pool survived", TW_TYPE_INT32, &(td.sellae_density_selected_num), "");    
+    // TwAddVarRW(cBar, "+ importance cut", TW_TYPE_DOUBLE, &(td.spots_sellae_imp_cut),
+    // 	       "min=0.0 step=0.0000001");
+    // TwAddVarRO(cBar, "+ always discarded", TW_TYPE_INT32, &(td.sellae_always_discarded_num), "");
+    // TwAddVarRO(cBar, "+ importance discarded", TW_TYPE_INT32, &(td.sellae_importance_discarded_num), "");
+    
+    // // TwAddVarRW(cBar, "density num", TW_TYPE_INT32, &(td.density_maxima_num),
+    // // 	       "min=0 step=1");
+    // TwAddVarRW(cBar, "density val", TW_TYPE_DOUBLE, &(td.density_maxima_val),
+    // 	       "min=0.5 max=3000.0 step=0.5");
 
 
     TwAddVarRW(cBar, "show life", TW_TYPE_BOOLCPP, &(td.draw_elixir), "");
@@ -431,9 +424,63 @@ int main (int argc, char *argv[])
 	       "min=0.0 step=0.000001");
 
     TwAddSeparator (cBar, 0, 0);
+    TwAddSeparator (cBar, 0, 0);
+    /* Maxima */
+
+    TwAddVarRW(cBar, "show MAXIMA", TW_TYPE_BOOLCPP, &(td.draw_max), "");
+    TwAddVarRW(cBar, "Min life of Maxima", TW_TYPE_DOUBLE, &(td.min_life[0]),
+	       "min=0 step=0.001");
+    TwAddVarRW(cBar, "Max life of Maxima", TW_TYPE_DOUBLE, &(td.max_life[0]),
+	       "min=0 step=0.001");    
+    TwAddSeparator (cBar, 0, 0);
+    TwAddVarRW(cBar, "Min scale of Maxima", TW_TYPE_DOUBLE, &(td.min_scale[0]),
+	       "min=0 step=0.001");
+    TwAddVarRW(cBar, "Max scale of Maxima", TW_TYPE_DOUBLE, &(td.max_scale[0]),
+	       "min=0 step=0.001");
+    TwAddSeparator (cBar, 0, 0);
+    TwAddVarRW(cBar, "Min importance of Maxima", TW_TYPE_DOUBLE, &(td.min_importance[0]),
+	       "min=0 step=0.000001");
+    TwAddVarRW(cBar, "Max importance of Maxima", TW_TYPE_DOUBLE, &(td.max_importance[0]),
+	       "min=0 step=0.000001");
+    TwAddSeparator (cBar, 0, 0);
+    TwAddSeparator (cBar, 0, 0);
+    /* Minima */
+
+    TwAddVarRW(cBar, "show MINIMA", TW_TYPE_BOOLCPP, &(td.draw_min), "");
+    TwAddVarRW(cBar, "Min life of Minima", TW_TYPE_DOUBLE, &(td.min_life[0]),
+	       "min=0 step=0.001");
+    TwAddVarRW(cBar, "Max life of Minima", TW_TYPE_DOUBLE, &(td.max_life[0]),
+	       "min=0 step=0.001");
+    TwAddSeparator (cBar, 0, 0);
+    TwAddVarRW(cBar, "Min scale of Minima", TW_TYPE_DOUBLE, &(td.min_scale[1]),
+	       "min=0 step=0.001");
+    TwAddVarRW(cBar, "Max scale of Minima", TW_TYPE_DOUBLE, &(td.max_scale[1]),
+	       "min=0 step=0.001");
+    TwAddSeparator (cBar, 0, 0);
+    TwAddVarRW(cBar, "Min importance of Minima", TW_TYPE_DOUBLE, &(td.min_importance[1]),
+	       "min=0 step=0.000001");
+    TwAddVarRW(cBar, "Max importance of Minima", TW_TYPE_DOUBLE, &(td.max_importance[1]),
+	       "min=0 step=0.000001");
+    /* Maxima */
+    TwAddSeparator (cBar, 0, 0);
+    TwAddSeparator (cBar, 0, 0);
+    TwAddVarRW(cBar, "show SELLAE", TW_TYPE_BOOLCPP, &(td.draw_sel), "");
+    TwAddVarRW(cBar, "Min life of Sellae", TW_TYPE_DOUBLE, &(td.min_life[0]),
+	       "min=0 step=0.001");
+    TwAddVarRW(cBar, "Max life of Sellae", TW_TYPE_DOUBLE, &(td.max_life[0]),
+	       "min=0 step=0.001");
+    TwAddSeparator (cBar, 0, 0);
+    TwAddVarRW(cBar, "Min scale of Sellae", TW_TYPE_DOUBLE, &(td.min_scale[2]),
+	       "min=0 step=0.001");
+    TwAddVarRW(cBar, "Max scale of Sellae", TW_TYPE_DOUBLE, &(td.max_scale[2]),
+	       "min=0 step=0.001");
+    TwAddSeparator (cBar, 0, 0);
+    TwAddVarRW(cBar, "Min importance of Sellae", TW_TYPE_DOUBLE, &(td.min_importance[2]),
+	       "min=0 step=0.000001");
+    TwAddVarRW(cBar, "Max importance of Sellae", TW_TYPE_DOUBLE, &(td.max_importance[2]),
+	       "min=0 step=0.000001");
 
 
-    
     // TwAddSeparator (cBar, 0, 0);
 
     // TwAddVarRW(cBar, "show lines", TW_TYPE_BOOLCPP, &(td.draw_lines), "");
