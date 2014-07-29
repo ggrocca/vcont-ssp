@@ -155,6 +155,7 @@ public:
 
 
     // swisstopo additional points load/save/show
+    bool draw_csv;
     bool swpts_active;
     bool swpts_display;
     double swpts_xllcorner, swpts_yllcorner;

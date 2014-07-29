@@ -303,7 +303,7 @@ void app_init(int argc, char *argv[])
 
     if ((csv_out_file != NULL || csv_in_file != NULL) && asc_file == NULL)
     {
-	fprintf (stderr, "Error: asc file needed for swisstopo"
+	fprintf (stderr, "Error: asc file needed for csv"
 		 " points input/output.\n\n");
 	goto die;
     }
@@ -355,6 +355,10 @@ int main (int argc, char *argv[])
     // camera.reset (cx, cy, diam);
     Point a,b;
     td.getbb (&a, &b);
+
+    if (csv_in_file != NULL)
+	td.draw_csv = true;
+	
     // camera.set_bb (a, b);
     // camera.reshape (W, H);
     
@@ -389,7 +393,7 @@ int main (int argc, char *argv[])
     TwDeleteAllBars();
     TwBar *cBar;
     cBar = TwNewBar("SpotFilter");
-    TwDefine("SpotFilter size='268 730' position='10 6'");
+    TwDefine("SpotFilter size='268 746' position='10 4'");
     // TwDefine("SpotFilter valueswidth=fit");
     TwDefine("SpotFilter valueswidth=80");
     TwDefine("SpotFilter color='120 220 150' alpha=190 text=dark");
@@ -409,6 +413,7 @@ int main (int argc, char *argv[])
     // 	       " keyIncr='<' keyDecr='>'"); 
 
     TwAddVarRW(cBar, "render terrain", TW_TYPE_BOOLCPP, &(td.draw_terrain), "");
+    TwAddVarRW(cBar, "render csv points", TW_TYPE_BOOLCPP, &(td.draw_csv), "");
 // #define __FNLEN 512
 //     char dem_num_bounds[__FNLEN] = {'\0'};
 //     snprintf (dem_num_bounds, __FNLEN, "min=0 max=%d step=1 "
@@ -456,7 +461,7 @@ int main (int argc, char *argv[])
 
 
     TwAddVarRW(cBar, "render spots", TW_TYPE_BOOLCPP, &(td.draw_spots), "");
-    TwAddVarRW(cBar, "scale by size", TW_TYPE_BOOLCPP, &(td.multiply_elix_spots), "");
+    TwAddVarRW(cBar, "scale by life", TW_TYPE_BOOLCPP, &(td.multiply_elix_spots), "");
 
     //TwAddButton(cBar, "DO INIT_SPOTS", do_init_spots, NULL, "");
     td.init_spots ();

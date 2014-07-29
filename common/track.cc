@@ -469,7 +469,7 @@ int Track::__get_min_border_distance (int i)
     bds.push_back (height-1 - lines[i].entries[0].c.y);
 
     int min = std::numeric_limits<short>::max();
-    for (int i = 0; i < bds.size(); i++)
+    for (unsigned i = 0; i < bds.size(); i++)
 	if (bds[i] < min)
 	    min = bds[i];
 
@@ -488,10 +488,10 @@ void Track::normalize_border_points ()
 	    
 	    if (curlex > normlex)
 	    {
-		printf ("BORDER PATROL. [%d].[%d,%d] md:%d || from %lf to %lf\n",
-			i, lines[i].entries[0].c.x, lines[i].entries[0].c.y,
-			mindist, curlex, normlex);
-		lines[i].elixir = normlex;
+	    	// printf ("BORDER PATROL. [%d].[%d,%d] md:%d || from %lf to %lf\n",
+	    	// 	i, lines[i].entries[0].c.x, lines[i].entries[0].c.y,
+	    	// 	mindist, curlex, normlex);
+	    	lines[i].elixir = normlex;
 	    }
 	}
     }

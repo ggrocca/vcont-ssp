@@ -33,6 +33,7 @@ TrackDisplay::TrackDisplay()
     draw_terrain = true;
     draw_track = false;
     draw_query = false;
+    draw_csv = false;
     clip_black = 0.0;
     clip_white = 65535.0;
     query_scale = 0.1;
@@ -218,14 +219,15 @@ void __draw_cross ()
     glVertex2f (-sh   , -sh+sg);
     glVertex2f ( sh-sg,  sh);
     glVertex2f ( sh   ,  sh-sg);
-    glEnd ();	
+    glEnd ();
+
+    
     glBegin (GL_QUADS);
     glVertex2f (-sh+sg,  sh);
     glVertex2f (-sh   ,  sh-sg);
     glVertex2f ( sh-sg, -sh);
     glVertex2f ( sh   , -sh+sg);
-    glEnd ();	
-    
+    glEnd ();
 }
 
 void __draw_critical_sym (CriticalType t)
@@ -913,8 +915,9 @@ void TrackDisplay::draw (int dem_idx)
 	    glEnd();
 	}
     }
-    
-    swpts_draw ();
+
+    if (draw_csv)
+	swpts_draw ();
     
     glMatrixMode (GL_PROJECTION);
     glPopMatrix ();
@@ -979,6 +982,14 @@ void TrackDisplay::swpts_draw ()
 	__draw_cross ();
 	glPopMatrix();
 
+	glPushMatrix ();
+	glTranslated ((double) x, (double) y, 0.0);
+	glScaled (spot_scale / 2.0, spot_scale / 2.0, 1.0);
+	glColor3dv(black);
+	__draw_cross ();
+
+	glPopMatrix();
+
     }
 
     // check = false;
@@ -1007,11 +1018,33 @@ void TrackDisplay::swpts_load_csv (char* filename)
     swpts_display  = true;
 }
 
+#include "../common/strlcat.h"
+
 void TrackDisplay::swpts_save_csv (char* filename)
 {
-    FILE *fp = fopen (filename, "w");
+    char cwd[2048] = "\0";
+    
+    // if (getcwd(cwd, sizeof(cwd)) == NULL)
+    // 	fprintf(stdout, "Could not get working dir: %s\n", strerror(errno));
 
-    fprintf (fp, "X,Y,TYPE,STRENGTH\n");
+    // printf ("cwd: %s\n", cwd);
+    // printf ("filename: %s\n", filename);
+
+    
+    strlcat (cwd, "../../../", 2048);    
+    strlcat (cwd, filename, 2048);
+
+    // printf ("cwd: %s\n", cwd);
+    
+    FILE *fp = fopen (cwd, "w");
+
+    if (fp == NULL)
+    {
+    	printf ("Could not open file %s: %s\n", cwd, strerror (errno));
+    	exit (1);
+    }
+    
+    fprintf (fp, "X,Y,Z,TYPE,STRENGTH\n");
     
     for (unsigned i = 0; i < spots_current.size(); i++)
     {
@@ -1025,7 +1058,8 @@ void TrackDisplay::swpts_save_csv (char* filename)
 	Point pa;
 	swpts_img2asc (pi, &pa);
 	    
-	fprintf (fp, "%lf,%lf,%s,%lf,\n", pa.x, pa.y,
+	fprintf (fp, "%lf,%lf,%lf,%s,%lf,\n", pa.x, pa.y,
+		 (*(ssp->dem[0]))(track->lines[idx].entries[0].c.x, track->lines[idx].entries[0].c.y),
 		 critical2string (track->original_type (idx)),
 		 track->lifetime_elixir (idx));
     }

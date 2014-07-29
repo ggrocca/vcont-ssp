@@ -127,7 +127,7 @@ int main (int argc, char *argv[])
     std::vector< std::vector<int> > vs;
     std::vector< std::vector<int> > fs;
 
-    int k = 0;
+    // int k = 0;
     for (int i = 0; i < dem->width; i++)
 	for (int j = 0; j < dem->width; j++)
 	{
