@@ -634,7 +634,7 @@ void TrackDisplay::draw (int dem_idx)
 	{
 	case MAX:
 	  if (!draw_max) break;
-	  if (track->is_original (i) && track->lines[i].strength < max_importance[0] && track->lines[i].strength > min_importance[0]  && track->lines[i].scale < max_scale[0] && track->lines[i].scale > min_scale[0] && track->lines[i].life < max_life[0] && track->lines[i].life > min_life[0])
+	  if (track->is_original (i) && track->lines[i].strength < max_importance[0] && track->lines[i].strength > min_importance[0]  && track->lines[i].scale < max_scale[0] && track->lines[i].scale > min_scale[0] && track->lines[i].elixir < max_life[0] && track->lines[i].elixir > min_life[0])
 	    __draw_critical_elixir (track->lines[i].entries[0].c,
 				    track->original_type (i),
 				    track->lines[i].strength,
@@ -643,7 +643,7 @@ void TrackDisplay::draw (int dem_idx)
 	  break;
 	case MIN:
 	  if (!draw_min) break;
-	  if (track->is_original (i) && track->lines[i].strength < max_importance[1] && track->lines[i].strength > min_importance[1]  && track->lines[i].scale < max_scale[1] && track->lines[i].scale > min_scale[1] track->lines[i].life < max_life[1] && track->lines[i].life > min_life[1] )
+	  if (track->is_original (i) && track->lines[i].strength < max_importance[1] && track->lines[i].strength > min_importance[1]  && track->lines[i].scale < max_scale[1] && track->lines[i].scale > min_scale[1] && track->lines[i].elixir < max_life[1] && track->lines[i].elixir > min_life[1] )
 	    __draw_critical_elixir (track->lines[i].entries[0].c,
 				    track->original_type (i),
 				    track->lines[i].strength,
@@ -652,7 +652,7 @@ void TrackDisplay::draw (int dem_idx)
 	  break;
 	case SA2:
 	  if (!draw_sel) break;
-	  if (track->is_original (i) && track->lines[i].strength < max_importance[2] && track->lines[i].strength > min_importance[2]  && track->lines[i].scale < max_scale[2] && track->lines[i].scale > min_scale[2]  track->lines[i].life < max_life[2] && track->lines[i].life > min_life[2])
+	  if (track->is_original (i) && track->lines[i].strength < max_importance[2] && track->lines[i].strength > min_importance[2]  && track->lines[i].scale < max_scale[2] && track->lines[i].scale > min_scale[2]  && track->lines[i].elixir < max_life[2] && track->lines[i].elixir > min_life[2])
 	    __draw_critical_elixir (track->lines[i].entries[0].c,
 				    track->original_type (i),
 				    track->lines[i].strength,
