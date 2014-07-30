@@ -19,6 +19,7 @@ void print_help ()
 	     "[-S stepRad] : step to increase radius (ssp output)\n"
 	     "[-F skipFactor] : skip factor in png2mesh conversion (ssp output)\n"
 	     "[-e] : increase radius exponentially (ssp output)\n"
+	     "[-C mapfile] : write map of curvature signs\n"
 	     "\n"
 	     );
 }
@@ -33,7 +34,7 @@ string * meshFile = NULL;
 string * pngFile = NULL;
 string * sspFile = NULL;
 string * demFile = NULL;
-
+string * mapFile = NULL;
 
 
 void app_init(int argc, char *argv[])
@@ -83,6 +84,10 @@ void app_init(int argc, char *argv[])
 	    case 'e':
 	      expStep=true;
 	      break;
+	    case 'c':
+	      mapFile = new string(*++argv);
+	      argc--;
+	      break;
 	    case 'h':
 	      print_help();
 	      exit(0);
@@ -116,7 +121,7 @@ int main(int argc, char* argv[])
 
   if (demFile)
   {
-      curvStacker s(radius,radius,step,expStep,skip);
+    curvStacker s(radius,radius,step,expStep,skip,mapFile);
 
       if (pngFile)
 	  s.executeOnPNG(*pngFile, *demFile);
@@ -126,7 +131,7 @@ int main(int argc, char* argv[])
 
   if (sspFile)
   {
-      curvStacker s(base,maxV,step,expStep,skip);
+    curvStacker s(base,maxV,step,expStep,skip,mapFile);
 
       if (pngFile)
 	  s.executeOnPNG(*pngFile, *sspFile);

@@ -12,7 +12,7 @@ of sampling */
 #include <float.h>
 
 
-curvStacker::curvStacker(double base_rad, double max_rad, double step, bool expStep, int skipFactor)
+curvStacker::curvStacker(double base_rad, double max_rad, double step, bool expStep, int skipFactor, string* mapFile)
 {
   isExpStep=expStep;
 
@@ -20,7 +20,7 @@ curvStacker::curvStacker(double base_rad, double max_rad, double step, bool expS
   max_radius=max_rad;
   this->step=step;
   this->skipFactor=skipFactor;
-
+  this->mapFile=mapFile;
   if (expStep)
     n_levels=log(max_rad/base_rad)/log(step)+1;
   else
@@ -33,8 +33,6 @@ void curvStacker::printHeader(string outfile)
 {
     //string outfile; /* Here we must obtain the output filename starting from the pngfile (or meshfile*/
 
-  /* Fix temporaneo TODO togliere */
-  //outfile=pngFile+".ssp";
 
   fp=fopen(outfile.c_str(), "wb");
   if (!fp)
@@ -45,6 +43,13 @@ void curvStacker::printHeader(string outfile)
   if (n_levels>1)
    fwrite(&(n_levels),sizeof(int),1,fp);
   return;
+
+  if (mapFile!=NULL)
+    {
+      map=fopen(mapFile->c_str(),"wb");
+      
+    }
+
 }
 
 void curvStacker::executeOnPNG(string pngFile, string outFile)
@@ -84,7 +89,8 @@ void curvStacker::initializeScaleSpace(Eigen::MatrixXd V)
     }
   width=((xmax-xmin)/skipFactor+1);
   height=((ymax-ymin)/skipFactor+1);
- 
+
+   
 }
 
 
@@ -101,7 +107,7 @@ void curvStacker::printLevel(Eigen::MatrixXd V, vector<vector<double> > curv)
 
   for (int k=0; k<V.rows(); k++)
     {
-      double curvT=curv[k][0]*curv[k][1]*10e3;
+      double curvT=curv[k][0]*curv[k][1];
 
       if (curvT<min)
 	min=curvT;
@@ -115,10 +121,14 @@ void curvStacker::printLevel(Eigen::MatrixXd V, vector<vector<double> > curv)
       int j_gg=(i*width+j)%height;
       data[i*width+j]=curvT;
     }
-  for (int k=0; k<width*height; k++) if (data[k]!=-DBL_MAX) data[k]+=fabs(min);
-  cout << "Range dei livelli di curvatura: ["<<min+fabs(min)<<","<<max+abs(min)<<"]"<<endl;
+  
+  cout << "Range dei livelli di curvatura: ["<<min<<","<<max<<"]"<<endl;
   fwrite(&(data[0]), sizeof(double), width*height, fp);
   free(data);
+
+  /* Now I print the curvature signs */
+  
+
  }
 
 void curvStacker::executeOnMesh(string meshFile,string outFile)
