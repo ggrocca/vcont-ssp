@@ -28,6 +28,7 @@ public:
     // get_pixel returns -DBL_MAX in case of error or missing data
     virtual double get_pixel (unsigned int x, unsigned int y) = 0; 
     virtual void print_info (char* filename = 0) = 0;
+    // virtual double cell_size () = 0;
     void set_maxmin ();
 };
 
@@ -41,6 +42,7 @@ public:
     virtual ~HGTReader ();
     double get_pixel (unsigned int x, unsigned int y);
     void print_info (char* filename);
+    // double cell_size ();
     // multiplier was: 13;
 };
 
@@ -55,6 +57,7 @@ public:
     virtual ~ASCReader ();
     double get_pixel (unsigned int x, unsigned int y);
     void print_info (char* filename);
+    // double cell_size ();
 };
 
 
@@ -66,6 +69,7 @@ public:
     double get_pixel (unsigned int x, unsigned int y);
     void print_info (char* filename);
     // multiplier was: 1;
+    // double cell_size ();
 };
 
 class BMPReader : public DEMReader {
@@ -75,6 +79,7 @@ public:
     virtual ~BMPReader ();
     double get_pixel (unsigned int x, unsigned int y);
     void print_info (char* filename);
+    // double cell_size ();
     // multiplier was: 1;
 };
 
@@ -85,6 +90,7 @@ public:
     virtual ~TIFReader ();
     double get_pixel (unsigned int x, unsigned int y);
     void print_info (char* filename);
+    // double cell_size ();
     // multiplier was: 1;
 };
 

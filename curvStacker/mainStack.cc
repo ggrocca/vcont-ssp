@@ -17,8 +17,10 @@ void print_help ()
 	     "[-B baseRad] : base radius to compute (ssp output)\n"
 	     "[-M maxRad] : max radius to compute (ssp output)\n"
 	     "[-S stepRad] : step to increase radius (ssp output)\n"
-	     "[-F skipFactor] : skip factor in png2mesh conversion (ssp output)\n"
+	     "[-F skipFactor] : skip factor in png2mesh conversion\n"
 	     "[-e] : increase radius exponentially (ssp output)\n"
+	     "[-G width height] : assume input mesh is a complete grid of given dim.\n"
+	     "[-C curvMultFactor] : multiply curvature values by this value.\n"
 	     "\n"
 	     );
 }
@@ -33,8 +35,10 @@ string * meshFile = NULL;
 string * pngFile = NULL;
 string * sspFile = NULL;
 string * demFile = NULL;
-
-
+bool grid = false;
+int grid_width = 0;
+int grid_height = 0;
+double curvMultFactor = 0.0;
 
 void app_init(int argc, char *argv[])
 {
@@ -76,9 +80,20 @@ void app_init(int argc, char *argv[])
 	      step = atof(*++argv);
 	      argc--;
 	      break;
+	    case 'C':
+	      curvMultFactor = atof(*++argv);
+	      argc--;
+	      break;
 	    case 'F':
 	      skip = atoi(*++argv);
 	      argc--;
+	      break;
+	    case 'G':
+	      grid_width = atoi(*++argv);
+	      argc--;
+	      grid_height = atoi(*++argv);
+	      argc--;
+	      grid = true;
 	      break;
 	    case 'e':
 	      expStep=true;
@@ -116,8 +131,13 @@ int main(int argc, char* argv[])
 
   if (demFile)
   {
-      curvStacker s(radius,radius,step,expStep,skip);
+      curvStacker s(radius,radius,1,0,0);
+      if (grid)
+	 s.setGrid (grid_width, grid_height);
 
+      if (curvMultFactor != 0.0)
+	  s.curvMultFactor = curvMultFactor;
+      
       if (pngFile)
 	  s.executeOnPNG(*pngFile, *demFile);
       if (meshFile)
@@ -127,6 +147,8 @@ int main(int argc, char* argv[])
   if (sspFile)
   {
       curvStacker s(base,maxV,step,expStep,skip);
+      if (grid)
+	  s.setGrid (grid_width, grid_height);
 
       if (pngFile)
 	  s.executeOnPNG(*pngFile, *sspFile);

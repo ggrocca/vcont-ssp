@@ -26,6 +26,9 @@ curvStacker::curvStacker(double base_rad, double max_rad, double step, bool expS
   else
     n_levels=((max_rad-base_rad)/step)+1;
 
+  curvMultFactor = 10e3;
+  
+  grid = false;
 }
 
 
@@ -101,7 +104,7 @@ void curvStacker::printLevel(Eigen::MatrixXd V, vector<vector<double> > curv)
 
   for (int k=0; k<V.rows(); k++)
     {
-      double curvT=curv[k][0]*curv[k][1]*10e3;
+      double curvT=curv[k][0]*curv[k][1]*curvMultFactor;
 
       if (curvT<min)
 	min=curvT;
@@ -115,11 +118,59 @@ void curvStacker::printLevel(Eigen::MatrixXd V, vector<vector<double> > curv)
       int j_gg=(i*width+j)%height;
       data[i*width+j]=curvT;
     }
-  for (int k=0; k<width*height; k++) if (data[k]!=-DBL_MAX) data[k]+=fabs(min);
-  cout << "Range dei livelli di curvatura: ["<<min+fabs(min)<<","<<max+abs(min)<<"]"<<endl;
+  // for (int k=0; k<width*height; k++) if (data[k]!=-DBL_MAX) data[k]+=fabs(min);
+  // cout << "Range dei livelli di curvatura: ["<<min+fabs(min)<<","<<max+abs(min)<<"]"<<endl;
+
+  cout << "Range dei livelli di curvatura: "
+	"["<<min<<","<<max<<"]"<<endl;  
+  
   fwrite(&(data[0]), sizeof(double), width*height, fp);
   free(data);
  }
+
+
+void curvStacker::printLevelGrid(Eigen::MatrixXd V, vector<vector<double> > curv)
+{
+    double min=DBL_MAX;
+    double max=-DBL_MAX;
+    //  minmaxCurvatures(min,max,curv);
+    double * data = (double*) malloc (sizeof(double) * grid_width * grid_height);
+
+    for (int i = 0; i < grid_width * grid_height; i++)
+	data[i]=-DBL_MAX;
+
+    fwrite(&grid_width, sizeof(int), 1, fp);
+    fwrite(&grid_height, sizeof(int), 1, fp);
+
+    for (int i = 0; i < grid_width; i++)
+	for (int j = 0; j < grid_height; j++)
+	{
+	    int k = (j * grid_width) + i;
+	    data[k] = curv[k][0] * curv[k][1] * curvMultFactor;
+	    if (data[k] < min)
+		min = data[k];
+	    if (data[k] > max)
+		max = data[k];
+
+	}
+    
+    cerr << "printLevelGrid(): Range dei livelli di curvatura. "
+	"[min:"<<min<<", max:"<<max<<"]. -C factor: "<<curvMultFactor<<endl;
+
+    fwrite(&(data[0]), sizeof(double), grid_width * grid_height, fp);
+    free(data);
+ }
+
+
+
+void curvStacker::setGrid (int w, int h)
+{
+    grid = true;
+    grid_width = w;
+    grid_height = h;
+
+    cout << "setGrid(): grid["<<grid_width<<","<<grid_height<<"]"<<endl;    
+}
 
 void curvStacker::executeOnMesh(string meshFile,string outFile)
 {
@@ -131,6 +182,15 @@ void curvStacker::executeOnMesh(string meshFile,string outFile)
   cerr << "Reading mesh " << meshFile << endl;
   igl::read(meshFile,V,F);
   initializeScaleSpace(V);
+
+  if (grid && (V.rows() != grid_width * grid_height))
+    {
+	fprintf (stderr, "Number of vertices [%zu] and given grid [%d,%d]->[%d]"
+		 " do not coincide. Abort.\n",
+		 V.rows(), grid_width, grid_height, grid_width * grid_height);
+	exit (-5);
+    }
+  
   printHeader(outFile);
   cerr << "Mesh read with " << V.rows() << " vertices "  << endl;
   c.zeroDetCheck=false;
@@ -142,7 +202,7 @@ void curvStacker::executeOnMesh(string meshFile,string outFile)
       c.sphereRadius=r;
       c.computeCurvature();
       cerr << "Computed radius " << r << endl;
-      printLevel(V,c.curv);
+      grid? printLevelGrid (V,c.curv) : printLevel(V,c.curv);
   }
   fclose(fp);
 }

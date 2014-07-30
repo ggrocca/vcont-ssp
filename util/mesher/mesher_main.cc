@@ -129,12 +129,12 @@ int main (int argc, char *argv[])
 
     // int k = 0;
     for (int i = 0; i < dem->width; i++)
-	for (int j = 0; j < dem->width; j++)
+	for (int j = 0; j < dem->height; j++)
 	{
 	    // vertices
 	    std::vector<int> vertex;
-	    vertex.push_back (i * 30);
-	    vertex.push_back (j * 30);
+	    vertex.push_back (i * 25);
+	    vertex.push_back (j * 25);
 	    vertex.push_back ((*dem)(i, j));
 
 	    vs.push_back (vertex);
