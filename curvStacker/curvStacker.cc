@@ -29,12 +29,12 @@ curvStacker::curvStacker(double base_rad, double max_rad, double step, bool expS
 }
 
 
-void curvStacker::printHeader()
+void curvStacker::printHeader(string outfile)
 {
-  string outfile; /* Here we must obtain the output filename starting from the pngfile (or meshfile*/
+    //string outfile; /* Here we must obtain the output filename starting from the pngfile (or meshfile*/
 
   /* Fix temporaneo TODO togliere */
-  outfile=pngFile+".ssp";
+  //outfile=pngFile+".ssp";
 
   fp=fopen(outfile.c_str(), "wb");
   if (!fp)
@@ -47,11 +47,11 @@ void curvStacker::printHeader()
   return;
 }
 
-void curvStacker::executeOnPNG(string pngFile)
+void curvStacker::executeOnPNG(string pngFile, string outFile)
 {
   this->pngFile=pngFile;
   p= new PngToMesh(pngFile,skipFactor,10);
-  executeOnMesh(p->execute());
+  executeOnMesh(p->execute(), outFile);
 }
 
 
@@ -121,7 +121,7 @@ void curvStacker::printLevel(Eigen::MatrixXd V, vector<vector<double> > curv)
   free(data);
  }
 
-void curvStacker::executeOnMesh(string meshFile)
+void curvStacker::executeOnMesh(string meshFile,string outFile)
 {
 
   cerr << "Starting execute on mesh " << endl;
@@ -131,7 +131,7 @@ void curvStacker::executeOnMesh(string meshFile)
   cerr << "Reading mesh " << meshFile << endl;
   igl::read(meshFile,V,F);
   initializeScaleSpace(V);
-  printHeader();
+  printHeader(outFile);
   cerr << "Mesh read with " << V.rows() << " vertices "  << endl;
   c.zeroDetCheck=false;
   c.init(V,F);

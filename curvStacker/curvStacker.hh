@@ -23,9 +23,9 @@ class curvStacker
   int skipFactor;
  public:
   curvStacker(double,double,double,bool,int);
-  void executeOnMesh(string);
-  void executeOnPNG(string);
-  void printHeader();
+    void executeOnMesh(string,string);
+    void executeOnPNG(string,string);
+  void printHeader(string);
   void printLevel(Eigen::MatrixXd V, vector<vector<double> > curv);
   void initializeScaleSpace(Eigen::MatrixXd V);
   void minmaxCurvatures(double& min, double& max, vector<vector<double> > curv);
