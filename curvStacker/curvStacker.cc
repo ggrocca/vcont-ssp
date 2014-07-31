@@ -147,17 +147,33 @@ void curvStacker::printLevelGrid(Eigen::MatrixXd V, vector<vector<double> > curv
     fwrite(&grid_width, sizeof(int), 1, fp);
     fwrite(&grid_height, sizeof(int), 1, fp);
 
-    for (int i = 0; i < grid_width; i++)
-	for (int j = 0; j < grid_height; j++)
-	{
-	    int k = (j * grid_width) + i;
-	    data[k] = curv[k][0] * curv[k][1] * curvMultFactor;
-	    if (data[k] < min)
-		min = data[k];
-	    if (data[k] > max)
-		max = data[k];
+    // for (int i = 0; i < grid_width; i++)
+    // 	for (int j = 0; j < grid_height; j++)
+    // 	{
+    // 	    int k = (i * grid_height) + j; //(j * grid_width) + i;
+    // 	    data[k] = curv[k][0] * curv[k][1] * curvMultFactor;
+    // 	    if (data[k] < min)
+    // 		min = data[k];
+    // 	    if (data[k] > max)
+    // 		max = data[k];
 
-	}
+    // 	}
+
+    for (int kk=0; kk<V.rows(); kk++)
+    {
+      int x = V.row(kk)[0];
+      int y=  V.row(kk)[1];
+      int i = x / 25;
+      int j = y / 25;
+      int k = (j * grid_width) + i;
+      
+      data[k] = curv[kk][0] * curv[kk][1] * curvMultFactor;
+
+      if (data[k] < min)
+	  min = data[k];
+      if (data[k] > max)
+	  max = data[k];
+    }
     
     cerr << "printLevelGrid(): Range dei livelli di curvatura. "
 	"[min:"<<min<<", max:"<<max<<"]. -C factor: "<<curvMultFactor<<endl;
