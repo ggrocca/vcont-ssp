@@ -45,12 +45,15 @@ void curvStacker::printHeader(string outfile)
     }
   if (n_levels>1)
    fwrite(&(n_levels),sizeof(int),1,fp);
-  return;
-
+  
   if (mapFile!=NULL)
     {
-      map=fopen(mapFile->c_str(),"wb");
-      
+      map=fopen(mapFile->c_str(),"wb");      
+      if (!map)
+	{
+	  std::cerr << "Error opening curvature sign output file " << *mapFile << std::endl;
+	  return;
+	}
     }
 
 }
@@ -102,9 +105,12 @@ void curvStacker::printLevel(Eigen::MatrixXd V, vector<vector<double> > curv)
   double min=DBL_MAX, max=-DBL_MAX;
   //  minmaxCurvatures(min,max,curv);
   double * data = (double*)malloc(sizeof(double)*width*height);
+  short * signs = (short*)malloc(sizeof(short)*width*height);
   for (int i=0; i<width*height; i++)
-    data[i]=-DBL_MAX;
-
+    {
+      data[i]=-DBL_MAX;
+      signs[i]=0;
+    }
   fwrite(&width, sizeof(int), 1, fp);
   fwrite(&height, sizeof(int), 1, fp);
 
@@ -123,14 +129,26 @@ void curvStacker::printLevel(Eigen::MatrixXd V, vector<vector<double> > curv)
       int i_gg=(i*width+j)/height;
       int j_gg=(i*width+j)%height;
       data[i*width+j]=curvT;
+      unsigned char sign1=curv[k][0]>0?1:(curvT<0?2:0);
+      unsigned char sign2=curv[k][1]>0?1:(curvT<0?2:0);
+      short val=sign1;
+      val = val << 4;
+      val += sign2;
+      signs[i*width+j]=val;
     }
   cout << "Range dei livelli di curvatura: ["<<min<<","<<max<<"]"<<endl;
   fwrite(&(data[0]), sizeof(double), width*height, fp);
   free(data);
 
   /* Now I print the curvature signs */
-  
 
+  if (mapFile!=NULL)
+    {
+      fwrite(&width, sizeof(int), 1, map);
+      fwrite(&height, sizeof(int), 1, map);
+      fwrite(&(signs[0]), sizeof(short), width*height, map);
+    }  
+  free(signs);
  }
 
 

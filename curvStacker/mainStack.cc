@@ -137,7 +137,7 @@ int main(int argc, char* argv[])
 
   if (demFile)
   {
-      curvStacker s(radius,radius,1,0,0, mapFile);
+      curvStacker s(radius,radius,1,0,skip, mapFile);
       if (grid)
 	 s.setGrid (grid_width, grid_height);
 
