@@ -21,6 +21,7 @@ void print_help ()
 	     "[-e] : increase radius exponentially (ssp output)\n"
 	     "[-G width height] : assume input mesh is a complete grid of given dim.\n"
 	     "[-C curvMultFactor] : multiply curvature values by this value.\n"
+	     "[-c mapfile] : write map of curvature signs\n"
 	     "\n"
 	     );
 }
@@ -39,6 +40,7 @@ bool grid = false;
 int grid_width = 0;
 int grid_height = 0;
 double curvMultFactor = 0.0;
+string * mapFile = NULL;
 
 void app_init(int argc, char *argv[])
 {
@@ -98,6 +100,10 @@ void app_init(int argc, char *argv[])
 	    case 'e':
 	      expStep=true;
 	      break;
+	    case 'c':
+	      mapFile = new string(*++argv);
+	      argc--;
+	      break;
 	    case 'h':
 	      print_help();
 	      exit(0);
@@ -131,7 +137,7 @@ int main(int argc, char* argv[])
 
   if (demFile)
   {
-      curvStacker s(radius,radius,1,0,0);
+      curvStacker s(radius,radius,1,0,0, mapFile);
       if (grid)
 	 s.setGrid (grid_width, grid_height);
 
@@ -146,7 +152,7 @@ int main(int argc, char* argv[])
 
   if (sspFile)
   {
-      curvStacker s(base,maxV,step,expStep,skip);
+      curvStacker s(base,maxV,step,expStep,skip,mapFile);
       if (grid)
 	  s.setGrid (grid_width, grid_height);
 

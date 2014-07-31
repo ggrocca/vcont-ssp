@@ -16,6 +16,7 @@ class curvStacker
   double base_radius, max_radius, step;
   bool isExpStep;
   FILE * fp;
+  FILE * map;
   PngToMesh * p;
   double xmin,xmax,ymin,ymax;
   int width,height;
@@ -23,9 +24,9 @@ class curvStacker
   int skipFactor;
   int grid_width, grid_height;
   bool grid;
-    
+  string * mapFile;
  public:
-  curvStacker(double,double,double,bool,int);
+  curvStacker(double,double,double,bool,int,string*);
   void executeOnMesh(string,string);
   void executeOnPNG(string,string);
   void printHeader(string);
