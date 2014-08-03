@@ -10,6 +10,7 @@
 #include "track.hh"
 #include "demreader.hh"
 #include "grid.hh"
+#include "csvreader.hh"
 
 #include <vector>
 #include <algorithm>
@@ -160,17 +161,12 @@ public:
     bool swpts_display;
     double swpts_xllcorner, swpts_yllcorner;
     double swpts_cellsize;
-    std::vector<Point> swpts_ground_truth;
+    std::vector<SwissSpotHeight> swpts_ground_truth;
     
     void swpts_load_asc (char* filename);
     void swpts_draw ();
     void swpts_load_csv (char* filename);
     void swpts_save_csv (char* filename);
-
-private:
-    void swpts_asc2img (Point a, Point* i);
-    void swpts_img2asc (Point i, Point* a);
-
 };
 
 

@@ -968,8 +968,8 @@ void TrackDisplay::swpts_draw ()
     
     for (unsigned i = 0; i < swpts_ground_truth.size(); i++)
     {
-	double x = swpts_ground_truth[i].x;
-	double y = swpts_ground_truth[i].y;
+	double x = swpts_ground_truth[i].p.x;
+	double y = swpts_ground_truth[i].p.y;
 
 	// if (check)
 	//     printf ("GRUNTH: %lf,%lf %s ", x, y,
@@ -995,28 +995,12 @@ void TrackDisplay::swpts_draw ()
     // check = false;
 }
 
+
 void TrackDisplay::swpts_load_csv (char* filename)
 {
-    FILE *fp = fopen (filename, "r");
-    if (fp == NULL)
-	eprintx (2, "Could not open file `%s'. %s\n", filename, strerror (errno));
-
-    // for every line
-    fscanf (fp, "%*s");
-    Point pa;
-    while (true)
-    {
-	int r = fscanf (fp, "%lf,%lf,%*s", &pa.x, &pa.y);
-	// printf ("%s: %d\n", filename, r);
-
-	if (r != 2)
-	    break;
-	
-	Point pi;
-	swpts_asc2img (pa, &pi);
-	swpts_ground_truth.push_back (pi);
-    }
-
+    CSVReader csvio (swpts_cellsize, swpts_xllcorner, swpts_yllcorner);
+    csvio.load (filename, swpts_ground_truth);
+    
     swpts_display  = true;
 }
 
@@ -1026,16 +1010,16 @@ void TrackDisplay::swpts_save_csv (char* filename)
 {
     char cwd[2048] = "\0";
     
-    printf ("cwd: %s\n", cwd);
-    printf ("filename: %s\n", filename);
+    // printf ("cwd: %s\n", cwd);
+    // printf ("filename: %s\n", filename);
 
     if (filename != NULL && filename[0] != '/')
     {
 	if (getcwd(cwd, sizeof(cwd)) == NULL)
 	    fprintf(stdout, "Could not get working dir: %s\n", strerror(errno));
 	
-	printf ("cwd: %s\n", cwd);
-	printf ("filename: %s\n", filename);
+	// printf ("cwd: %s\n", cwd);
+	// printf ("filename: %s\n", filename);
 
 	char *app_ending = ".app/Contents/Resources";
 	if (ends_with (cwd, app_ending))
@@ -1048,47 +1032,8 @@ void TrackDisplay::swpts_save_csv (char* filename)
     }
     strlcat (cwd, filename, 2048);
 
-    printf ("final: %s\n", cwd);
-    
-    FILE *fp = fopen (cwd, "w");
-    if (fp == NULL)
-	eprintx (2, "Could not open file `%s'. %s\n", cwd, strerror (errno));
-    
-    fprintf (fp, "X,Y,Z,TYPE,STRENGTH\n");
-    
-    for (unsigned i = 0; i < spots_current.size(); i++)
-    {
-	int idx = spots_current[i];
-	// coords:      track->lines[idx].entries[0].c,
-	// type:        track->original_type (idx)
-	// importance:  track->lifetime_elixir (idx)
+    // printf ("final: %s\n", cwd);
 
-	Point pi (track->lines[idx].entries[0].c.x + 0.5,
-		  track->lines[idx].entries[0].c.y + 0.5);
-	Point pa;
-	swpts_img2asc (pi, &pa);
-	    
-	fprintf (fp, "%lf,%lf,%lf,%s,%lf,\n", pa.x, pa.y,
-		 (*(ssp->dem[0]))(track->lines[idx].entries[0].c.x, track->lines[idx].entries[0].c.y),
-		 critical2string (track->original_type (idx)),
-		 track->lifetime_elixir (idx));
-    }
-
-    
-    // for every point in final selection
-    // img2asc
-    // write: xcoord, ycoord, type, importance
+    CSVReader csvio (swpts_cellsize, swpts_xllcorner, swpts_yllcorner);
+    csvio.save (cwd, spots_current, track, ssp);
 }
-
-void TrackDisplay::swpts_asc2img (Point a, Point* i)
-{
-    i->x = (a.x - swpts_xllcorner) / swpts_cellsize;
-    i->y = (a.y - swpts_yllcorner) / swpts_cellsize;
-}
-
-void TrackDisplay::swpts_img2asc (Point i, Point* a)
-{
-    a->x = (i.x * swpts_cellsize) + swpts_xllcorner;
-    a->y = (i.y * swpts_cellsize) + swpts_yllcorner;
-}
-
