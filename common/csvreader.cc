@@ -4,7 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-CSVReader::CSVReader (double cellsize, double xllcorner, double yllcorner) :
+CSVReader::CSVReader (int width, int height,
+		      double cellsize, double xllcorner, double yllcorner) :
+    width (width), height (height), 
     cellsize (cellsize), xllcorner (xllcorner), yllcorner (yllcorner) {}
 
 void CSVReader::asc2img (Point a, Point* i)
@@ -19,7 +21,7 @@ void CSVReader::img2asc (Point i, Point* a)
     a->y = (i.y * cellsize) + yllcorner;
 }
 
-void CSVReader::load (char* filename, std::vector<SwissSpotHeight> points)
+void CSVReader::load (char* filename, std::vector<SwissSpotHeight>& points)
 {
     points.clear ();
     
@@ -40,12 +42,14 @@ void CSVReader::load (char* filename, std::vector<SwissSpotHeight> points)
 	
 	SwissSpotHeight sh;
 	asc2img (pa, &sh.p);
-	points.push_back (sh);
+	if (sh.p.is_inside ((double) width, (double) height))
+	    points.push_back (sh);
     }
 
+    // printf ("read %d points from file %s\n", points.size (), filename);
 }
 
-void CSVReader::save (char* filename, std::vector<int> spots,
+void CSVReader::save (char* filename, std::vector<int>& spots,
 		      Track* track, ScaleSpace* ssp)
 {
     FILE *fp = fopen (filename, "w");

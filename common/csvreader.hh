@@ -11,16 +11,18 @@ public:
 
 class CSVReader {
 public:
-    CSVReader (double cellsize, double xllcorner, double yllcorner);
+    CSVReader (int width, int height,
+	       double cellsize, double xllcorner, double yllcorner);
     
-    void load (char* filename, std::vector<SwissSpotHeight> points);
-    void save (char* filename, std::vector<int> spots,
+    void load (char* filename, std::vector<SwissSpotHeight>& points);
+    void save (char* filename, std::vector<int>& spots,
 	       Track* track, ScaleSpace* ssp);
 
 private:
     void asc2img (Point a, Point* i);
     void img2asc (Point i, Point* a);
-    
+
+    int width, height;
     double xllcorner, yllcorner;
     double cellsize;
 };

@@ -492,10 +492,10 @@ void TrackDisplay::init_spots ()
     std::sort (spots_sellae.begin(), spots_sellae.end());
 }
 
-double density_distance (Point a, Point b)
-{
-    return sqrt ((a.x - b.x) * (a.x - b.x)) + ((a.y - b.y) * (a.y - b.y));
-}
+// double density_distance (Point a, Point b)
+// {
+//     return sqrt ((a.x - b.x) * (a.x - b.x)) + ((a.y - b.y) * (a.y - b.y));
+// }
 
 bool TrackDisplay::is_density (double val, int idx, vector<int>& spots_current)
 {
@@ -503,7 +503,7 @@ bool TrackDisplay::is_density (double val, int idx, vector<int>& spots_current)
     for (unsigned i = 0; i < spots_current.size (); i++)
     {
     	Point pb = track->start_point (spots_current[i]);
-    	if (density_distance (pa, pb) < val)
+    	if (point_distance (pa, pb) < val)
     	    return false;
     }
     return true;
@@ -998,7 +998,8 @@ void TrackDisplay::swpts_draw ()
 
 void TrackDisplay::swpts_load_csv (char* filename)
 {
-    CSVReader csvio (swpts_cellsize, swpts_xllcorner, swpts_yllcorner);
+    CSVReader csvio (ssp->dem[0]->width, ssp->dem[0]->height,
+		     swpts_cellsize, swpts_xllcorner, swpts_yllcorner);
     csvio.load (filename, swpts_ground_truth);
     
     swpts_display  = true;
@@ -1034,6 +1035,7 @@ void TrackDisplay::swpts_save_csv (char* filename)
 
     // printf ("final: %s\n", cwd);
 
-    CSVReader csvio (swpts_cellsize, swpts_xllcorner, swpts_yllcorner);
+    CSVReader csvio (ssp->dem[0]->width, ssp->dem[0]->height,
+		     swpts_cellsize, swpts_xllcorner, swpts_yllcorner);
     csvio.save (cwd, spots_current, track, ssp);
 }

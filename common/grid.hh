@@ -7,6 +7,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <stdio.h>
+#include <math.h>
 
 #include "debug.h"
 
@@ -143,6 +144,12 @@ public:
 
 
 typedef Pair<double> Point;
+
+static double point_distance (Point a, Point b)
+{
+    return sqrt ((a.x - b.x) * (a.x - b.x)) + ((a.y - b.y) * (a.y - b.y));
+}
+
 
 // class Point : public Pair<double>
 // {
