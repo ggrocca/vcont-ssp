@@ -18,6 +18,8 @@ char *tiffnames = 0;
 bool do_crop = false;
 Coord crop_a;
 Coord crop_b;
+int cell_size = 25;
+int mult_factor = 1;
 
 // GG things todo or add back in:
 
@@ -32,6 +34,8 @@ void print_help (FILE* f)
 	     "[-o mesh.off] : write output mesh, in off format.\n"
 	     "[-c x0 y0 x1 y1] : crop original image.\n"
 	     "[-t tiffname] : write a tiff image for debug.\n"
+	     "[-C CELLSIZE] : multiply xy pixel coordinates by this value.\n"
+	     "[-M MULTFACTOR] : multiply z intensities by this value.\n"
 	     "\n"
 	     );
 }
@@ -68,6 +72,16 @@ void app_init(int argc, char *argv[])
                 argc--;
                 argc--;
                 argc--;
+                argc--;
+                break;
+
+	    case 'C':
+                cell_size = atoi (*++argv);
+                argc--;
+                break;
+
+	    case 'M':
+                mult_factor = atoi (*++argv);
                 argc--;
                 break;
 
@@ -133,9 +147,9 @@ int main (int argc, char *argv[])
 	{
 	    // vertices
 	    std::vector<int> vertex;
-	    vertex.push_back (i * 25);
-	    vertex.push_back (j * 25);
-	    vertex.push_back ((*dem)(i, j));
+	    vertex.push_back (i * cell_size);
+	    vertex.push_back (j * cell_size);
+	    vertex.push_back (((*dem)(i, j)) * mult_factor);
 
 	    vs.push_back (vertex);
 
