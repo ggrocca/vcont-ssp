@@ -39,11 +39,12 @@ caricare curvatura e tracking e confrontare anche loro?
 #include <vector>
 #include <algorithm>
 
-double target_distance = 2.0;
 char *terrain_file = 0;
 char *curvature_file = 0;
 char *swiss_file = 0;
 char *asc_file = 0;
+double target_distance = 2.0;
+double filter_curvature = 2.9;
 
 bool do_terrain2swiss;
 bool do_curvature2swiss;
@@ -59,7 +60,8 @@ void print_help (FILE* f)
 	     "[-c curvature trackfile.trk]\n"
 	     "[-s swiss input points.csv]\n"
 	     "[-a dem.asc]\n"
-	     "[-d DISTANCE] : distance window for matching points.\n"
+	     "[-D DISTANCE] : distance window for matching points.\n"
+	     "[-F FILTER] : keep only curvature points with life higher than filter.\n"
 	     "\n"
 	     );
 }
@@ -107,8 +109,13 @@ void app_init(int argc, char *argv[])
                 argc--;
                 break;
 
-            case 'd':
+            case 'D':
                 target_distance = atof (*++argv);
+                argc--;
+                break;
+
+            case 'F':
+                filter_curvature = atof (*++argv);
                 argc--;
                 break;
 
@@ -293,7 +300,11 @@ int main (int argc, char *argv[])
 	track_reader (curvature_file, &curvature_track, &curvature_track_order);
 	curvature.clear ();
 	for (unsigned i = 0; i < curvature_track->lines.size(); i++)
-	    if (curvature_track->is_original (i))
+	    if (curvature_track->is_original (i)
+		&& (curvature_track->get_type (i) == MAX ||
+		    curvature_track->get_type (i) == MIN)
+		&& curvature_track->lifetime_elixir (i) >= filter_curvature
+		)
 		curvature.push_back (TrackSpot (i, curvature_track->start_point (i),
 						curvature_track->lifetime_elixir (i),
 						curvature_track->lines[i].strength));
@@ -336,15 +347,25 @@ int main (int argc, char *argv[])
 	    if (terrain2curvature[i].size () > 0)
 		t2c++;
 	printf ("Terrain vs Curvature | found: %d, "
-		"terrain left out: %d, curvature left out: %d\n", t2c, t-t2c, c-t2c);
+		"terrain left out: %d, curvature left out: %d\n\n", t2c, t-t2c, c-t2c);
     }
     
     // contare tutti i punti in terrain2swiss che hanno qualcuno anche in terrain2curv 
     if (do_allthree)
     {
 	for (int i = 0; i < terrain2swiss.size (); i++)
+	{
 	    if (terrain2swiss[i].size () > 0 && terrain2curvature[i].size () > 0)
 		t2s2c++;
+	}
+
+	int tc = t + c;
+	int tc2s = t2s + c2s - t2s2c;
+	printf ("T+C total: %d\n", tc);
+	printf ("T+C vs Swiss | found:%d, "
+		"left out in T+C: %d, left out in swiss: %d\n", tc2s, tc-tc2s, s-tc2s);
 	printf ("At the same time in Terrain/Curvature/Swiss: %d\n", t2s2c);
     }
+
+    
 }
