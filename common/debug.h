@@ -56,6 +56,7 @@
 #define SCOPE_BOUNDINGBOX 0
 #define SCOPE_CAMERA 0
 #define SCOPE_SEEK 0
+#define SCOPE_IO 0
 
 // if 1, perform an assert when a non critical error is reached.
 #define DO_ASSERT 0

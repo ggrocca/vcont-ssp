@@ -176,6 +176,7 @@ Dem::Dem (FILE* fp) : Grid<double> (), max (-DBL_MAX), min (DBL_MAX)
     fread (&height, sizeof (int), 1, fp);
 
     // int length = width * height;
+    tprints (SCOPE_IO, "w: %d, h:%d\n", width, height);
 
     resize (width, height);
     fread (&(data[0]), sizeof (double), data.size(), fp);
@@ -273,7 +274,7 @@ bool Dem::has_plateaus ()
 		if (is_equal (c, nc))
 		{
 		    tprintsp (SCOPE_PLATEUS, "----> PLATEUS:",
-			      "[%d,%d]==[%d,%d]. Values: %lf,%lf\n",
+			      "[%d,%d]==[%d,%d]. Values: %lf,%lf == Values: %le,%le\n",
 			      c.x, c.y, nc.x, nc.y, (*this)(c), (*this)(nc));
 		    return true;
 		}

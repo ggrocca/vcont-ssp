@@ -136,7 +136,8 @@ int main (int argc, char *argv[])
 	dem = td;
     }
 
-    _mesher_write_tiff (dem, 14, tiffnames);
+    if (tiffnames)
+	_mesher_write_tiff (dem, 14, tiffnames);
 
     std::vector< std::vector<int> > vs;
     std::vector< std::vector<int> > fs;
