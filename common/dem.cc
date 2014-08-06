@@ -191,6 +191,7 @@ Dem::Dem (FILE* fp) : Grid<double> (), max (-DBL_MAX), min (DBL_MAX)
 		max = v;
 
 	}
+    tprints (SCOPE_IO, "min: %le, max:%le\n", min, max);
 }
     
 void Dem::write (FILE* fp)
@@ -273,9 +274,9 @@ bool Dem::has_plateaus ()
 		c.round_trip_6 (&nc);
 		if (is_equal (c, nc))
 		{
-		    tprintsp (SCOPE_PLATEUS, "----> PLATEUS:",
-			      "[%d,%d]==[%d,%d]. Values: %lf,%lf == Values: %le,%le\n",
-			      c.x, c.y, nc.x, nc.y, (*this)(c), (*this)(nc));
+		    tprintsp (SCOPE_PLATEUS, "----> PLATEAUS:",
+			      "[%d,%d]==[%d,%d]. Values: %le,%le --- -DBL_MAX=%le\n",
+			      c.x, c.y, nc.x, nc.y, (*this)(c), (*this)(nc), -DBL_MAX);
 		    return true;
 		}
 	    }

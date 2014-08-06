@@ -344,12 +344,6 @@ int main (int argc, char *argv[])
     else
 	eprintx (1, "%s","No image or scalespace input given.\n");
 
-
-    if (check_plateaus)
-	for (int i = 0; i < ssp->levels; i++)
-	    if (ssp->dem[i]->has_plateaus())
-		eprintx (2, "Dem at level %d has flat areas. Aborting.\n", i);
-
     if (stage == 2)
 	exit (0);
 
@@ -370,6 +364,11 @@ int main (int argc, char *argv[])
 	    tprintp ("###$$$", "Finished writing tiff %d!\n", i);
 	}
     }
+    
+    if (check_plateaus)
+	for (int i = 0; i < ssp->levels; i++)
+	    if (ssp->dem[i]->has_plateaus())
+		eprintx (2, "Dem at level %d has flat areas. Aborting.\n", i);
 
     if (stage == 3)
 	exit (0);

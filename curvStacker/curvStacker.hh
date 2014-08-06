@@ -22,7 +22,7 @@ class curvStacker
   int width,height;
   string pngFile;
   int skipFactor;
-  int grid_width, grid_height;
+    int grid_width, grid_height, grid_cell_size;  
   bool grid;
   string * mapFile;
  public:
@@ -34,7 +34,7 @@ class curvStacker
   void printLevelGrid(Eigen::MatrixXd V, vector<vector<double> > curv);
   void initializeScaleSpace(Eigen::MatrixXd V);
   void minmaxCurvatures(double& min, double& max, vector<vector<double> > curv);
-  void setGrid (int, int);
+    void setGrid (int, int, int);
 
   double curvMultFactor;  
 

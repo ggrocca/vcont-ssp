@@ -245,11 +245,11 @@ ScaleSpace::ScaleSpace (Dem& idem, int levels, ScaleSpaceOpts opts)
 	}
 
 	tprintp ("###$$$", "%s", " !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-	tprintp ("###$$$", "Blurred level %d, window %d, elapsed %s\n",
+	tprintp ("###$$$", "Blurred level %d, window %d, elapsed %s.\n",
 		 i, window, H2S_f (ht_get(&h), 's'));
 	tprintp ("###$$$", "%s", " !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
     }
-
+    
     if (opts.check (ScaleSpaceOpts::CLIP))
     {
 	tprintp ("!!!!!!!!", "%s", " CLIP \n");

@@ -181,8 +181,8 @@ void curvStacker::printLevelGrid(Eigen::MatrixXd V, vector<vector<double> > curv
     {
       int x = V.row(kk)[0];
       int y=  V.row(kk)[1];
-      int i = x / 25;
-      int j = y / 25;
+      int i = x / grid_cell_size;
+      int j = y / grid_cell_size;
       int k = (j * grid_width) + i;
       
       data[k] = curv[kk][0] * curv[kk][1] * curvMultFactor;
@@ -194,7 +194,9 @@ void curvStacker::printLevelGrid(Eigen::MatrixXd V, vector<vector<double> > curv
     }
     
     cerr << "printLevelGrid(): Range dei livelli di curvatura. "
-	"[min:"<<min<<", max:"<<max<<"]. -C factor: "<<curvMultFactor<<endl;
+	"[min:"<<min<<", max:"<<max<<"]. Mult factor: "<<curvMultFactor<<
+	". -- grid["<<grid_width<<"],["<<grid_height<<"]. cellsize="<<grid_cell_size
+	 <<endl;
 
     fwrite(&(data[0]), sizeof(double), grid_width * grid_height, fp);
     free(data);
@@ -202,11 +204,12 @@ void curvStacker::printLevelGrid(Eigen::MatrixXd V, vector<vector<double> > curv
 
 
 
-void curvStacker::setGrid (int w, int h)
+void curvStacker::setGrid (int w, int h, int c)
 {
     grid = true;
     grid_width = w;
     grid_height = h;
+    grid_cell_size = c;
 
     cout << "setGrid(): grid["<<grid_width<<","<<grid_height<<"]"<<endl;    
 }

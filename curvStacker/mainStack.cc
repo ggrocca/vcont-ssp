@@ -20,7 +20,8 @@ void print_help ()
 	     "[-F skipFactor] : skip factor in png2mesh conversion\n"
 	     "[-e] : increase radius exponentially (ssp output)\n"
 	     "[-G width height] : assume input mesh is a complete grid of given dim.\n"
-	     "[-C curvMultFactor] : multiply curvature values by this value.\n"
+	     "[-C cellSize] : grid cells have cellSize size.\n"
+	     "[-Z curvMultFactor] : multiply curvature values by this value.\n"
 	     "[-c mapfile] : write map of curvature signs\n"
 	     "\n"
 	     );
@@ -41,6 +42,7 @@ int grid_width = 0;
 int grid_height = 0;
 double curvMultFactor = 0.0;
 string * mapFile = NULL;
+int cellSize = 25;
 
 void app_init(int argc, char *argv[])
 {
@@ -82,8 +84,12 @@ void app_init(int argc, char *argv[])
 	      step = atof(*++argv);
 	      argc--;
 	      break;
-	    case 'C':
+	    case 'Z':
 	      curvMultFactor = atof(*++argv);
+	      argc--;
+	      break;
+	    case 'C':
+	      cellSize = atoi(*++argv);
 	      argc--;
 	      break;
 	    case 'F':
@@ -139,7 +145,7 @@ int main(int argc, char* argv[])
   {
       curvStacker s(radius,radius,1,0,skip, mapFile);
       if (grid)
-	 s.setGrid (grid_width, grid_height);
+	  s.setGrid (grid_width, grid_height, cellSize);
 
       if (curvMultFactor != 0.0)
 	  s.curvMultFactor = curvMultFactor;
@@ -154,7 +160,7 @@ int main(int argc, char* argv[])
   {
       curvStacker s(base,maxV,step,expStep,skip,mapFile);
       if (grid)
-	  s.setGrid (grid_width, grid_height);
+	  s.setGrid (grid_width, grid_height, cellSize);
 
       if (pngFile)
 	  s.executeOnPNG(*pngFile, *sspFile);
