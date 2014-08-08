@@ -14,6 +14,7 @@ of sampling */
 
 curvStacker::curvStacker(double base_rad, double max_rad, double step, bool expStep, int skipFactor, string* mapFile)
 {
+  srand((unsigned)time(NULL));
   isExpStep=expStep;
 
   base_radius=base_rad;
@@ -108,7 +109,9 @@ void curvStacker::printLevel(Eigen::MatrixXd V, vector<vector<double> > curv)
   short * signs = (short*)malloc(sizeof(short)*width*height);
   for (int i=0; i<width*height; i++)
     {
-      data[i]=-DBL_MAX;
+      double X=((double)rand()/(double)RAND_MAX);
+      data[i]=-200000+X;
+      cout << "Aggiunto X: " << X << endl;
       signs[i]=0;
     }
   fwrite(&width, sizeof(int), 1, fp);

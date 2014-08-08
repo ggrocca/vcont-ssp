@@ -84,6 +84,9 @@ ifeq ($(USERNAME),gg)
 CUSTOM_HEADERS = custom_debug.h
 endif
 
+ifeq ($(USERNAME),deggio)
+CUSTOM_HEADERS = custom_debug.h
+endif
 ## generic compilation configuration, to be used for both C++ and C on
 ## every OS. FLAGS are always used, while DEBUG_FLAGS are used instead
 ## of RELEASE flags when "make debug" is used. STATIC_LDFLAGS are used
