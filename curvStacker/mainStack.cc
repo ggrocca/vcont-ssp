@@ -13,6 +13,7 @@ void print_help ()
 	     "-m meshFile : path to input mesh file\n"
 	     "-s sspFile : path to output ssp file\n"
 	     "-d demFile : path to output dem file.\n"
+	     "[-c mapfile] : write map of curvature signs\n"
 	     "[-R radius] : radius to compute (dem output)"
 	     "[-B baseRad] : base radius to compute (ssp output)\n"
 	     "[-M maxRad] : max radius to compute (ssp output)\n"
@@ -22,7 +23,7 @@ void print_help ()
 	     "[-G width height] : assume input mesh is a complete grid of given dim.\n"
 	     "[-C cellSize] : grid cells have cellSize size.\n"
 	     "[-Z curvMultFactor] : multiply curvature values by this value.\n"
-	     "[-c mapfile] : write map of curvature signs\n"
+	     "[-L LowestRandomizedValue] : background has this value, randomized"
 	     "\n"
 	     );
 }
@@ -43,6 +44,7 @@ int grid_height = 0;
 double curvMultFactor = 0.0;
 string * mapFile = NULL;
 int cellSize = 25;
+double lowestRandomValue = 0.0;
 
 void app_init(int argc, char *argv[])
 {
@@ -86,6 +88,10 @@ void app_init(int argc, char *argv[])
 	      break;
 	    case 'Z':
 	      curvMultFactor = atof(*++argv);
+	      argc--;
+	      break;
+	    case 'L':
+	      lowestRandomValue = atof(*++argv);
 	      argc--;
 	      break;
 	    case 'C':
@@ -141,15 +147,22 @@ int main(int argc, char* argv[])
   app_init(argc,argv);
   cout << "exp : " << expStep << " step: " << step << endl;
 
+  int now_base; int now_max; int now_step; int now_exp;
+  now_base = demFile? radius : base;
+  now_max = demFIle? radius : maxV;
+  now_step = demFile? 1 : step;
+  now_exp = demFile? 0 : expStep;
+  curvStacker s(now_base, now_max, now_step, now_exp ,skip, mapFile);
+  
+  if (grid)
+      s.setGrid (grid_width, grid_height, cellSize);
+  if (curvMultFactor != 0.0)
+      s.curvMultFactor = curvMultFactor;
+  if (lowestRandomValue != 0.0)
+      s.lowestRandomValue = lowestRandomValue;
+  
   if (demFile)
   {
-      curvStacker s(radius,radius,1,0,skip, mapFile);
-      if (grid)
-	  s.setGrid (grid_width, grid_height, cellSize);
-
-      if (curvMultFactor != 0.0)
-	  s.curvMultFactor = curvMultFactor;
-      
       if (pngFile)
 	  s.executeOnPNG(*pngFile, *demFile);
       if (meshFile)
@@ -158,10 +171,6 @@ int main(int argc, char* argv[])
 
   if (sspFile)
   {
-      curvStacker s(base,maxV,step,expStep,skip,mapFile);
-      if (grid)
-	  s.setGrid (grid_width, grid_height, cellSize);
-
       if (pngFile)
 	  s.executeOnPNG(*pngFile, *sspFile);
       if (meshFile)

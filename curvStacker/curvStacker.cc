@@ -109,9 +109,15 @@ void curvStacker::printLevel(Eigen::MatrixXd V, vector<vector<double> > curv)
   short * signs = (short*)malloc(sizeof(short)*width*height);
   for (int i=0; i<width*height; i++)
     {
-      double X=((double)rand()/(double)RAND_MAX);
-      data[i]=-200000+X;
-      cout << "Aggiunto X: " << X << endl;
+      if (lowestRandomValue != 0.0)
+        {
+	  double X=((double)rand()/(double)RAND_MAX);
+	  data[i]=lowestRandomValue+X;
+	  cout << "Aggiunto X: " << X << endl;
+	}
+	else
+	  data[i] = -DBL_MAX;
+      
       signs[i]=0;
     }
   fwrite(&width, sizeof(int), 1, fp);

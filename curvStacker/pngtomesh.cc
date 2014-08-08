@@ -155,7 +155,17 @@ void PngToMesh::removeIsolatedVertices(std::vector<Vertex> vertices, std::vector
   for (int i=0; i<faces.size(); i++)
     of << "3 " << faces[i].x << " " <<faces[i].y << " " <<faces[i].z  << std::endl;
 
-
-  std::string cmd = "meshlabserver -i " + outpath + " -o " +outpath + " -s remove.mlx";
+  // GG ugly hack to make the call to meshlabserver work for both me and nikolas
+#include <unistd.h>
+  char un[64] = "\0";
+  getlogin_r (un, 64);
+  std::string username_curr (un);
+  std::string username_gg ("gg");
+  std::string meshlabserver_path ((username_gg == username_curr)?
+				  "/Applications/meshlab.app/Contents/MacOS/meshlabserver":
+				  "meshlabserver");
+  // std::cout << username_curr <<":"<< username_gg<<":"<<meshlabserver_path<<std::endl;
+  
+  std::string cmd = meshlabserver_path+" -i "+outpath+" -o "+outpath+" -s remove.mlx";
   system(cmd.c_str());
 }

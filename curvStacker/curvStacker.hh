@@ -34,8 +34,8 @@ class curvStacker
   void printLevelGrid(Eigen::MatrixXd V, vector<vector<double> > curv);
   void initializeScaleSpace(Eigen::MatrixXd V);
   void minmaxCurvatures(double& min, double& max, vector<vector<double> > curv);
-    void setGrid (int, int, int);
+  void setGrid (int, int, int);
 
   double curvMultFactor;  
-
+  double lowestRandomValue;
 };
