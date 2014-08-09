@@ -29,24 +29,47 @@ void CSVReader::load (char* filename, std::vector<SwissSpotHeight>& points)
     if (fp == NULL)
 	eprintx (2, "Could not open file `%s'. %s\n", filename, strerror (errno));
 
-    // for every line
+    // header
     fscanf (fp, "%*s");
-    Point pa;
+    // for every line
     while (true)
     {
-	int r = fscanf (fp, "%lf,%lf,%*s", &pa.x, &pa.y);
+	Point pa;
+	int id;
+	int r = fscanf (fp, "%lf,%lf,%d,%*s", &pa.x, &pa.y, &id);
 	// printf ("%s: %d\n", filename, r);
 
-	if (r != 2)
+	if (r != 3)
 	    break;
 	
 	SwissSpotHeight sh;
 	asc2img (pa, &sh.p);
+	sh.oid = id;
 	if (sh.p.is_inside ((double) width, (double) height))
 	    points.push_back (sh);
     }
 
     // printf ("read %d points from file %s\n", points.size (), filename);
+    fclose (fp);
+}
+
+void CSVReader::save (char* filename, std::vector<SwissSpotHeight>& points)
+{
+    FILE *fp = fopen (filename, "w");
+    if (fp == NULL)
+	eprintx (2, "Could not open file `%s'. %s\n", filename, strerror (errno));
+    
+    fprintf (fp, "X,Y,OBJECTID\n");
+    
+    for (unsigned i = 0; i < points.size(); i++)
+    {
+	Point pa;
+	img2asc (points[i].p, &pa);
+
+	fprintf (fp, "%lf,%lf,%d\n", pa.x, pa.y, points[i].oid);
+    }
+
+    fclose (fp);
 }
 
 void CSVReader::save (char* filename, std::vector<int>& spots,
@@ -76,4 +99,6 @@ void CSVReader::save (char* filename, std::vector<int>& spots,
 		 critical2string (track->original_type (idx)),
 		 track->lifetime_elixir (idx));
     }
+
+    fclose (fp);
 }
