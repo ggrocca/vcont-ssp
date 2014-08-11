@@ -149,7 +149,7 @@ int main(int argc, char* argv[])
 
   int now_base; int now_max; int now_step; int now_exp;
   now_base = demFile? radius : base;
-  now_max = demFIle? radius : maxV;
+  now_max = demFile? radius : maxV;
   now_step = demFile? 1 : step;
   now_exp = demFile? 0 : expStep;
   curvStacker s(now_base, now_max, now_step, now_exp ,skip, mapFile);
