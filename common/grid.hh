@@ -75,6 +75,13 @@ public:
 	return x >= 0 && x < w && y >= 0 && y < h;
     }
 
+    bool is_inside (const T w, const T h, double cut)
+    {
+	double wc = w * (cut / 2.0);
+	double hc = h * (cut / 2.0);
+	return x >= 0+wc && x < w-wc && y >= 0+hc && y < h-hc;
+    }
+
     bool is_outside (const T w, const T h)
     {
 	return !is_inside (w, h);

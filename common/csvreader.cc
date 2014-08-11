@@ -23,6 +23,10 @@ void CSVReader::img2asc (Point i, Point* a)
 
 void CSVReader::load (const char* filename, std::vector<SwissSpotHeight>& points)
 {
+    load (filename, points, 0.0);
+}
+void CSVReader::load (const char* filename, std::vector<SwissSpotHeight>& points, double cut)
+{
     points.clear ();
     
     FILE *fp = fopen (filename, "r");
@@ -45,7 +49,7 @@ void CSVReader::load (const char* filename, std::vector<SwissSpotHeight>& points
 	SwissSpotHeight sh;
 	asc2img (pa, &sh.p);
 	sh.oid = id;
-	if (sh.p.is_inside ((double) width, (double) height))
+	if (sh.p.is_inside ((double) width, (double) height, cut))
 	    points.push_back (sh);
     }
 

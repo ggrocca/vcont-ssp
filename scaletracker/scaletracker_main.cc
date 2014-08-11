@@ -58,6 +58,7 @@ void print_help (FILE* f)
 	     "[-p amplitude seed] : randomly perturb data\n"
 	     "[-j numjumps] : do not consider first n levels\n"
 	     "[-b clip_bottom] : do not consider pixel with value less than bottom\n"
+	     "[-B clip -DBL_MAX] : do not consider pixel with value -DBL_MAX\n"
 	     "[-c x0 y0 x1 y1] : crop original image\n"
 	     "[-g stagenum] : stop at a certain point. 0 disable this.\n"
 	     "[-l] : compute integral lines\n"
@@ -197,6 +198,11 @@ void app_init(int argc, char *argv[])
 		do_clip = true;
                 clip_value = atof (*++argv);
                 argc--;
+                break;
+
+	    case 'B':
+		do_clip = true;
+                clip_value = -DBL_MAX;
                 break;
 
             case 'f':

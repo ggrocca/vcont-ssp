@@ -19,6 +19,7 @@ public:
 	       double cellsize, double xllcorner, double yllcorner);
     
     void load (const char* filename, std::vector<SwissSpotHeight>& points);
+    void load (const char* filename, std::vector<SwissSpotHeight>& points, double cut);
     void save (const char* filename, std::vector<SwissSpotHeight>& points);
     void save (const char* filename, std::vector<int>& spots,
 		     Track* track, ScaleSpace* ssp);

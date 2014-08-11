@@ -165,7 +165,10 @@ void PngToMesh::removeIsolatedVertices(std::vector<Vertex> vertices, std::vector
 				  "/Applications/meshlab.app/Contents/MacOS/meshlabserver":
 				  "meshlabserver");
   // std::cout << username_curr <<":"<< username_gg<<":"<<meshlabserver_path<<std::endl;
+
+
+  std::string removescript ((username_gg == username_curr)? "removegg.mlx" : "remove.mlx");
   
-  std::string cmd = meshlabserver_path+" -i "+outpath+" -o "+outpath+" -s remove.mlx";
+  std::string cmd = meshlabserver_path+" -i "+outpath+" -o "+outpath+" -s "+removescript;
   system(cmd.c_str());
 }

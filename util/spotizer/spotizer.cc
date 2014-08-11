@@ -50,6 +50,7 @@ bool do_terrain2swiss;
 bool do_curvature2swiss;
 bool do_terrain2curvature;
 bool do_allthree;
+double cut_borders = 0.0;
 
 /*
 
@@ -167,6 +168,7 @@ void print_help (FILE* f)
 	     "[-a dem.asc]\n"
 	     "[-D DISTANCE] : distance window for matching points.\n"
 	     "[-F FILTER] : keep only curvature points with life higher than filter.\n"
+	     "[-C CUT] : cut border areas by percentage in [0,1].\n"
 	     "\n"
 	     );
 }
@@ -226,6 +228,11 @@ void app_init(int argc, char *argv[])
                 argc--;
                 break;
 
+	    case 'C':
+                cut_borders = atof (*++argv);
+                argc--;
+                break;
+
             case 'F':
                 filter_curvature = atof (*++argv);
                 argc--;
@@ -241,6 +248,13 @@ void app_init(int argc, char *argv[])
     do_curvature2swiss = curvature_file && swiss_file;
     do_terrain2swiss = terrain_file && swiss_file;
     do_allthree = terrain_file && curvature_file && swiss_file;
+
+    if (cut_borders < 0.0 || cut_borders > 1.0)
+    {
+	fprintf (stderr, "Cut border value %lf not valid. Range should be [0,1].\n",
+		 cut_borders);
+	goto die;	
+    }
     
     if (!do_terrain2curvature && !do_curvature2swiss && !do_terrain2swiss)
     {
@@ -283,12 +297,12 @@ public:
 
 bool compare_life (const TrackSpot& r, const TrackSpot l)
 {
-    return (r.life < l.life);
+    return (r.life > l.life);
 }
 
 bool compare_strength (const TrackSpot& r, const TrackSpot l)
 {
-    return (r.strength < l.strength);
+    return (r.strength > l.strength);
 }
 
 // faccio dei vettori di points che corrispondono a trackspot e swisspotheight
@@ -627,12 +641,13 @@ void load_all ()
     if (swiss_file)
     {
 	CSVReader csvio (width, height, cellsize, xllcorner, yllcorner);
-	csvio.load (swiss_file, swiss);
+	csvio.load (swiss_file, swiss, cut_borders);
 	swiss_points.clear ();
 	for (unsigned i = 0; i < swiss.size (); i++)
 	    swiss_points.push_back (swiss[i].p);
     }
 
+    
     if (terrain_file)
     {
 	track_reader (terrain_file, &terrain_track, &terrain_track_order);
@@ -640,7 +655,10 @@ void load_all ()
 	terrain.clear ();
 	terrain_points.clear ();
 	for (unsigned i = 0; i < terrain_track->lines.size(); i++)
-	    if (terrain_track->is_original (i))
+	    if (terrain_track->is_original (i)
+		&& terrain_track->start_point (i).is_inside ((double) width,
+							     (double) height,
+							     cut_borders))
 	    {
 		terrain.push_back (TrackSpot (i, terrain_track->start_point (i),
 					      terrain_track->lifetime_elixir (i),
@@ -651,6 +669,7 @@ void load_all ()
 
     if (curvature_file)
     {
+	double cut = cut_borders;
 	track_reader (curvature_file, &curvature_track, &curvature_track_order);
 	curvature.clear ();
 	curvature_points.clear ();
@@ -659,6 +678,9 @@ void load_all ()
 		&& (curvature_track->get_type (i) == MAX ||
 		    curvature_track->get_type (i) == MIN)
 		&& curvature_track->lifetime_elixir (i) >= filter_curvature
+		&& curvature_track->start_point (i).is_inside ((double) width,
+							       (double) height,
+							       cut_borders)
 		)
 	    {
 		curvature.push_back (TrackSpot (i, curvature_track->start_point (i),
