@@ -21,7 +21,7 @@ void CSVReader::img2asc (Point i, Point* a)
     a->y = (i.y * cellsize) + yllcorner;
 }
 
-void CSVReader::load (char* filename, std::vector<SwissSpotHeight>& points)
+void CSVReader::load (const char* filename, std::vector<SwissSpotHeight>& points)
 {
     points.clear ();
     
@@ -53,7 +53,7 @@ void CSVReader::load (char* filename, std::vector<SwissSpotHeight>& points)
     fclose (fp);
 }
 
-void CSVReader::save (char* filename, std::vector<SwissSpotHeight>& points)
+void CSVReader::save (const char* filename, std::vector<SwissSpotHeight>& points)
 {
     FILE *fp = fopen (filename, "w");
     if (fp == NULL)
@@ -72,7 +72,7 @@ void CSVReader::save (char* filename, std::vector<SwissSpotHeight>& points)
     fclose (fp);
 }
 
-void CSVReader::save (char* filename, std::vector<int>& spots,
+void CSVReader::save (const char* filename, std::vector<int>& spots,
 		      Track* track, ScaleSpace* ssp)
 {
     FILE *fp = fopen (filename, "w");

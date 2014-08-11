@@ -18,9 +18,9 @@ public:
     CSVReader (int width, int height,
 	       double cellsize, double xllcorner, double yllcorner);
     
-    void load (char* filename, std::vector<SwissSpotHeight>& points);
-    void save (char* filename, std::vector<SwissSpotHeight>& points);
-    void save (char* filename, std::vector<int>& spots,
+    void load (const char* filename, std::vector<SwissSpotHeight>& points);
+    void save (const char* filename, std::vector<SwissSpotHeight>& points);
+    void save (const char* filename, std::vector<int>& spots,
 		     Track* track, ScaleSpace* ssp);
 
 private:
