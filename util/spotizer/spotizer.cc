@@ -366,7 +366,7 @@ int main (int argc, char *argv[])
     if (curvature_file)
     {
 	std::vector<int> foo;
-	save_sort_points (terrain, false, foo, path_sort_c_l, path_sort_c_s);
+	save_sort_points (curvature, false, foo, path_sort_c_l, path_sort_c_s);
     }
     
     std::vector <int> t2s_tp, t2s_fp, t2s_fn;
