@@ -22,11 +22,12 @@ class curvStacker
   int width,height;
   string pngFile;
   int skipFactor;
-    int grid_width, grid_height, grid_cell_size;  
+  int grid_width, grid_height, grid_cell_size;  
   bool grid;
   string * mapFile;
+  bool useTopoIndex;
  public:
-  curvStacker(double,double,double,bool,int,string*);
+  curvStacker(double,double,double,bool,int,string*,bool);
   void executeOnMesh(string,string);
   void executeOnPNG(string,string);
   void printHeader(string);

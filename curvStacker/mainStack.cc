@@ -23,7 +23,8 @@ void print_help ()
 	     "[-G width height] : assume input mesh is a complete grid of given dim.\n"
 	     "[-C cellSize] : grid cells have cellSize size.\n"
 	     "[-Z curvMultFactor] : multiply curvature values by this value.\n"
-	     "[-L LowestRandomizedValue] : background has this value, randomized"
+	     "[-L LowestRandomizedValue] : background has this value, randomized."
+	     "[-t] : disable topology Index.\n"
 	     "\n"
 	     );
 }
@@ -45,6 +46,7 @@ double curvMultFactor = 0.0;
 string * mapFile = NULL;
 int cellSize = 25;
 double lowestRandomValue = 0.0;
+bool useTopoIndex = true;
 
 void app_init(int argc, char *argv[])
 {
@@ -116,6 +118,9 @@ void app_init(int argc, char *argv[])
 	      mapFile = new string(*++argv);
 	      argc--;
 	      break;
+	    case 't':
+	      useTopoIndex = false;
+	      break;
 	    case 'h':
 	      print_help();
 	      exit(0);
@@ -152,7 +157,7 @@ int main(int argc, char* argv[])
   now_max = demFile? radius : maxV;
   now_step = demFile? 1 : step;
   now_exp = demFile? 0 : expStep;
-  curvStacker s(now_base, now_max, now_step, now_exp ,skip, mapFile);
+  curvStacker s(now_base, now_max, now_step, now_exp ,skip, mapFile, useTopoIndex);
   
   if (grid)
       s.setGrid (grid_width, grid_height, cellSize);
