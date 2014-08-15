@@ -228,6 +228,8 @@ void curvStacker::executeOnMesh(string meshFile,string outFile)
 
   cerr << "Starting execute on mesh " << endl;
   CurvatureCalculator c;
+  if (do_topoindex)
+      c.st = TOPO_SEARCH;
   Eigen::MatrixXd V;
   Eigen::MatrixXi F;
   cerr << "Reading mesh " << meshFile << endl;

@@ -22,7 +22,7 @@ class curvStacker
   int width,height;
   string pngFile;
   int skipFactor;
-    int grid_width, grid_height, grid_cell_size;  
+  int grid_width, grid_height, grid_cell_size;  
   bool grid;
   string * mapFile;
  public:
@@ -38,4 +38,5 @@ class curvStacker
 
   double curvMultFactor;  
   double lowestRandomValue;
+  bool do_topoindex;  
 };

@@ -24,6 +24,7 @@ void print_help ()
 	     "[-C cellSize] : grid cells have cellSize size.\n"
 	     "[-Z curvMultFactor] : multiply curvature values by this value.\n"
 	     "[-L LowestRandomizedValue] : background has this value, randomized"
+	     "[-t topological index search]"
 	     "\n"
 	     );
 }
@@ -33,6 +34,7 @@ double radius = 8.0;
 double maxV = 256.0;
 double step = 2.0;
 bool expStep = false;
+bool do_topoindex = false;
 unsigned int skip = 2;
 string * meshFile = NULL;
 string * pngFile = NULL;
@@ -112,6 +114,9 @@ void app_init(int argc, char *argv[])
 	    case 'e':
 	      expStep=true;
 	      break;
+	    case 't':
+	      do_topoindex=true;
+	      break;
 	    case 'c':
 	      mapFile = new string(*++argv);
 	      argc--;
@@ -153,13 +158,14 @@ int main(int argc, char* argv[])
   now_step = demFile? 1 : step;
   now_exp = demFile? 0 : expStep;
   curvStacker s(now_base, now_max, now_step, now_exp ,skip, mapFile);
-  
+
   if (grid)
       s.setGrid (grid_width, grid_height, cellSize);
   if (curvMultFactor != 0.0)
       s.curvMultFactor = curvMultFactor;
   if (lowestRandomValue != 0.0)
       s.lowestRandomValue = lowestRandomValue;
+  s.do_topoindex = do_topoindex;
   
   if (demFile)
   {
