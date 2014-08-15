@@ -25,6 +25,8 @@ void print_help ()
 	     "[-Z curvMultFactor] : multiply curvature values by this value.\n"
 	     "[-L LowestRandomizedValue] : background has this value, randomized"
 	     "[-t topological index search]"
+	     "[-L LowestRandomizedValue] : background has this value, randomized."
+	     "[-t] : disable topology Index.\n"
 	     "\n"
 	     );
 }

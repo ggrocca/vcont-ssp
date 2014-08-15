@@ -28,8 +28,8 @@ curvStacker::curvStacker(double base_rad, double max_rad, double step, bool expS
     n_levels=((max_rad-base_rad)/step)+1;
 
   curvMultFactor = 10e3;
-  
   grid = false;
+  do_topoindex = false;
 }
 
 
@@ -256,7 +256,7 @@ void curvStacker::executeOnMesh(string meshFile,string outFile)
       c.computeCurvature();
       cerr << "Computed radius " << r << endl;
       grid? printLevelGrid (V,c.curv) : printLevel(V,c.curv);
-  }
+    }
   fclose(fp);
 }
 
