@@ -4,6 +4,73 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+SwissType string2swiss (std::string s)
+{
+    static const char* other_s = "OTHER";
+    static const char* peak_s = "PEAK";
+    static const char* pit_s = "PIT";
+    static const char* saddle_s = "SADDLE";
+    static const char* human_s = "HUMAN";
+
+    if (s == other_s)
+	return OTHER;
+    else if (s == peak_s)
+	return PEAK;
+    else if (s == pit_s)
+	return PIT;
+    else if (s == saddle_s)
+	return SADDLE;
+    else if (s == human_s)
+	return HUMAN;
+
+    eprint ("wrong type: %s\n", s.c_str());
+    return OTHER;
+}
+
+std::string swiss2string (SwissType t)
+{
+    static const char* other_s = "OTHER";
+    static const char* peak_s = "PEAK";
+    static const char* pit_s = "PIT";
+    static const char* saddle_s = "SADDLE";
+    static const char* human_s = "HUMAN";
+
+    if (t == OTHER)
+	return other_s;
+    else if (t == PEAK)
+	return peak_s;
+    else if (t == PIT)
+	return pit_s;
+    else if (t == SADDLE)
+	return saddle_s;
+    else if (t == HUMAN)
+	return human_s;
+
+    eprint ("wrong type: %d\n", t);
+    return "";
+}
+
+SwissType critical2swiss (CriticalType c)
+{
+    switch (c)
+    {
+    case REG:
+	return OTHER;
+    case MAX:
+	return PEAK;
+    case MIN:
+	return PIT;
+    case SA2:
+    case SA3:
+	return SADDLE;
+    case EQU:
+    default:
+	;
+    }
+    eprint ("Wrong type %d\n", c);
+    return OTHER;
+}
+
 CSVReader::CSVReader (int width, int height,
 		      double cellsize, double xllcorner, double yllcorner) :
     width (width), height (height), 
@@ -34,19 +101,47 @@ void CSVReader::load (const char* filename, std::vector<SwissSpotHeight>& points
 	eprintx (2, "Could not open file `%s'. %s\n", filename, strerror (errno));
 
     // header
-    fscanf (fp, "%*s");
+    char header[2048] = "\0";
+    fscanf (fp, "%2048s", header);
+
+    bool swiss_vanilla = false;
+    bool swiss_typed = false;
+    
+    if ((std::string(header)) == "X,Y,OBJECTID,OBJECTVAL,OBJECTORIG,YEAROFCHAN")
+	swiss_vanilla = true;
+    else if ((std::string(header)) == "X,Y,OBJECTID,OBJECTVAL,OBJECTORIG,YEAROFCHAN,TYPE")
+	swiss_typed = true;
+    else
+	eprintx (-1, "%s","unrecognized swiss csv format.\n");
+	
     // for every line
     while (true)
     {
 	Point pa;
 	int id;
-	int r = fscanf (fp, "%lf,%lf,%d,%*s", &pa.x, &pa.y, &id);
-	// printf ("%s: %d\n", filename, r);
-
-	if (r != 3)
-	    break;
-	
 	SwissSpotHeight sh;
+
+	if (swiss_vanilla)
+	{
+	    int r = fscanf (fp, "%lf,%lf,%d,%*s", &pa.x, &pa.y, &id);
+	    // printf ("%s: %d\n", filename, r);
+
+	    if (r != 3)
+		break;
+	}
+
+	if (swiss_typed)
+	{
+	    char stype[16] = "\0";
+	    int r = fscanf (fp, "%lf,%lf,%d,Hoehenkote,LK25,1986,%16s",
+			    &pa.x, &pa.y, &id, stype);
+	    // printf ("%s: %d\n", filename, r);
+	    sh.t = string2swiss (stype);
+	    
+	    if (r != 4)
+		break;
+	}
+
 	asc2img (pa, &sh.p);
 	sh.oid = id;
 	if (sh.p.is_inside ((double) width, (double) height, cut))
@@ -59,18 +154,27 @@ void CSVReader::load (const char* filename, std::vector<SwissSpotHeight>& points
 
 void CSVReader::save (const char* filename, std::vector<SwissSpotHeight>& points)
 {
+    save (filename, points, false);
+}
+void CSVReader::save (const char* filename, std::vector<SwissSpotHeight>& points,
+		      bool save_types)
+{
     FILE *fp = fopen (filename, "w");
     if (fp == NULL)
 	eprintx (2, "Could not open file `%s'. %s\n", filename, strerror (errno));
-    
-    fprintf (fp, "X,Y,OBJECTID\n");
+
+    fprintf (fp, "X,Y,OBJECTID,OBJECTVAL,OBJECTORIG,YEAROFCHAN%s%s\n",
+	     save_types? "," : "",
+	     save_types? "TYPE" : "");
     
     for (unsigned i = 0; i < points.size(); i++)
     {
 	Point pa;
 	img2asc (points[i].p, &pa);
 
-	fprintf (fp, "%lf,%lf,%d\n", pa.x, pa.y, points[i].oid);
+	fprintf (fp, "%lf,%lf,%d,Hoehenkote,LK25,1986%s%s\n",
+		 pa.x, pa.y, points[i].oid, save_types? "," : "",
+		 save_types? (swiss2string (points[i].t)).c_str() : "");
     }
 
     fclose (fp);

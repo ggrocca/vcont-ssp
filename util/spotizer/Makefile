@@ -82,6 +82,7 @@ CPPSOURCES += spotizer.cc
 ## add directives -D__FILENAME_EXISTS for every file "filename.h" added here.
 ## purpose: untracked files with custom build configurations.
 # CUSTOM_HEADERS = custom_header.h
+CUSTOM_HEADERS = custom_header.h
 
 ## generic compilation configuration, to be used for both C++ and C on
 ## every OS. FLAGS are always used, while DEBUG_FLAGS are used instead
