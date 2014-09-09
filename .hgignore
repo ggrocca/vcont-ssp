@@ -27,3 +27,8 @@ spotfilter/spotfilter
 spotfilter/spotfilter_saved_points.csv
 
 util/spotizer/spotizer
+
+util/swissclassifier/swissclassifier
+
+*/run*.txt
+*/*/run*.txt

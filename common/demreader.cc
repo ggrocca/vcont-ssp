@@ -241,8 +241,13 @@ ASCReader::ASCReader(const char* filename)
 
 double ASCReader::get_pixel(unsigned int x, unsigned int y)
 {
+    if (x >= width || y >= height)
+	eprintx (-1,"out of bounds access: (%d,%d). w: %d, h: %d.\n",
+		 x, y, width, height);
+    
     y = height - 1 - y;
     // short pixel = data[(x * height) + y];
+
     short pixel = data[(y * width) + x];
     
     if (pixel == nodata_value)

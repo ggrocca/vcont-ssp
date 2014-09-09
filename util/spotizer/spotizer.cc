@@ -51,6 +51,10 @@ bool do_terrain2swiss;
 bool do_curvature2swiss;
 bool do_terrain2curvature;
 bool do_allthree;
+bool query_mode = false;
+bool prune_swiss_points = false;
+int life_steps = 0;
+int strength_steps = 0;
 double cut_borders = 0.0;
 
 bool do_output = false;
@@ -68,6 +72,12 @@ std::string path_t_fp;
 // std::string path_roc_t_l;
 std::string path_roc_c;
 std::string path_roc_t;
+std::string path_roc_c_max;
+std::string path_roc_t_max;
+std::string path_roc_c_min;
+std::string path_roc_t_min;
+std::string path_roc_c_sad;
+std::string path_roc_t_sad;
 	
 std::string path_sort_c_fp_s;
 std::string path_sort_c_fp_l;
@@ -94,11 +104,20 @@ void create_output_names ()
     path_c_fp = "-groundcurvature-falsepositive.csv";
     path_t_fp = "-groundterrain-falsepositive.csv";
  
-    path_roc_c_s = "-roc-curvature-strength.dat";
-    path_roc_c_l = "-roc-curvature-life.dat";
-    path_roc_t_s = "-roc-terrain-strength.dat";
-    path_roc_t_l = "-roc-terrain-life.dat";
-	
+    // path_roc_c_s = "-roc-curvature-strength.dat";
+    // path_roc_c_l = "-roc-curvature-life.dat";
+    // path_roc_t_s = "-roc-terrain-strength.dat";
+    // path_roc_t_l = "-roc-terrain-life.dat";
+    path_roc_c = "-roc-curvature.dat";
+    path_roc_t = "-roc-terrain.dat";
+    path_roc_c_max = "-roc-curvature-max.dat";
+    path_roc_t_max = "-roc-terrain-max.dat";
+    path_roc_c_min = "-roc-curvature-min.dat";
+    path_roc_t_min = "-roc-terrain-min.dat";
+    path_roc_c_sad = "-roc-curvature-sad.dat";
+    path_roc_t_sad = "-roc-terrain-sad.dat";
+
+    
     path_sort_c_fp_s  = "-sort-curvature-falsepositive-strength.dat";
     path_sort_c_fp_l  = "-sort-curvature-falsepositive-life.dat";
     path_sort_c_tp_s = "-sort-curvature-truepositive-strength.dat";
@@ -108,12 +127,12 @@ void create_output_names ()
     path_sort_t_tp_s = "-sort-terrain-truepositive-strength.dat";
     path_sort_t_tp_l = "-sort-terrain-truepositive-life.dat";
 
-    // path_sort_c_s = "-sort-curvature-strength.dat";
-    // path_sort_c_l = "-sort-curvature-life.dat";
-    // path_sort_t_s = "-sort-terrain-strength.dat";
-    // path_sort_t_l = "-sort-terrain-life.dat";
-    path_sort_c_l = "-sort-curvature.dat";
-    path_sort_t_s = "-sort-terrain.dat";
+    path_sort_c_s = "-sort-curvature-strength.dat";
+    path_sort_c_l = "-sort-curvature-life.dat";
+    path_sort_t_s = "-sort-terrain-strength.dat";
+    path_sort_t_l = "-sort-terrain-life.dat";
+    // path_sort_c_l = "-sort-curvature.dat";
+    // path_sort_t_s = "-sort-terrain.dat";
 
     path_sort_t_ls = "-sort-terrain-lifestrength.dat";
     path_sort_c_ls = "-sort-curvature-lifestrength.dat";
@@ -130,6 +149,12 @@ void create_output_names ()
     // path_roc_t_l = output_name + path_roc_t_l;
     path_roc_c = output_name + path_roc_c;
     path_roc_t = output_name + path_roc_t;
+    path_roc_c_max = output_name + path_roc_c_max;
+    path_roc_t_max = output_name + path_roc_t_max;
+    path_roc_c_min = output_name + path_roc_c_min;
+    path_roc_t_min = output_name + path_roc_t_min;
+    path_roc_c_sad = output_name + path_roc_c_sad;
+    path_roc_t_sad = output_name + path_roc_t_sad;
 	
     path_sort_c_fp_s = output_name + path_sort_c_fp_s;
     path_sort_c_fp_l = output_name + path_sort_c_fp_l;
@@ -159,9 +184,11 @@ void print_help (FILE* f)
 	     "[-s swiss input points.csv]\n"
 	     "[-m modified swiss output points.csv]: dumb classifier\n"
 	     "[-a dem.asc]\n"
+	     "[-Q LIFE_STEPS STRENGTH_STEPS] query mode - ROC analysis.\n"
 	     "[-D DISTANCE] : distance window for matching points.\n"
 	     "[-F FILTER] : keep only curvature points with life higher than filter.\n"
 	     "[-C CUT] : cut border areas by percentage in [0,1].\n"
+	     "[-P] : prune swiss input points using classification.\n"
 	     "\n"
 	     );
 }
@@ -223,6 +250,18 @@ void app_init(int argc, char *argv[])
 
 	    case 'C':
                 cut_borders = atof (*++argv);
+                argc--;
+                break;
+
+	    case 'P':
+		prune_swiss_points = true;
+                break;
+
+	    case 'Q':
+		query_mode = true;
+                life_steps = atoi (*++argv);
+                argc--;
+                strength_steps = atoi (*++argv);
                 argc--;
                 break;
 
@@ -306,11 +345,21 @@ bool compare_strength (const TrackSpot& r, const TrackSpot l)
 
 std::vector <TrackSpot> terrain;
 std::vector <TrackSpot> curvature;
+double terrain_life_max;
+double terrain_strength_max;
+double curvature_life_max;
+double curvature_strength_max;
 std::vector <SwissSpotHeight> swiss;
+std::vector <SwissSpotHeight> swiss_peaks;
+std::vector <SwissSpotHeight> swiss_pits;
+std::vector <SwissSpotHeight> swiss_saddles;
 
 std::vector <Point> terrain_points;
 std::vector <Point> curvature_points;
 std::vector <Point> swiss_points;
+std::vector <Point> swiss_peaks_points;
+std::vector <Point> swiss_pits_points;
+std::vector <Point> swiss_saddles_points;
 
 
 class Ref {
@@ -356,13 +405,284 @@ void classify_swiss (std::vector <SwissSpotHeight> s,
 		     std::vector <std::vector <Ref> > t2s,
 		     std::string fn);
 
+void main_query ();
+void main_old ();
+
 int main (int argc, char *argv[])
 {
     app_init (argc, argv);
 
-    // modify load to function as query
     load_all ();
 
+    if (query_mode)
+	main_query ();
+    else
+	main_old ();
+}
+
+void query_track (Track* track, double life, double strength,
+		  std::vector <TrackSpot>& spots,
+		  std::vector <Point>& points);
+
+char* roc_header = "x y life strength tpr fpr tnr fnr ppv npv "
+		  "f1 f2 f05 informedness markedness mcc";
+enum {
+    TPR_NUM=0, FPR_NUM, TNR_NUM, FNR_NUM,
+    PPV_NUM, NPV_NUM,
+    F1_NUM, F2_NUM, F05_NUM,
+    INFORMEDNESS_NUM, MARKEDNESS_NUM, MCC_NUM,
+} roc_types;
+#define ROC_TYPES_NUMS 12
+void write_roc_stats (FILE* f, int i, int j, bool last, double life, double strength,
+		      double tp, double fp, double fn, double tn,
+		      std::vector<double>& results)
+{
+    double tpr = tp / (tp + fn);
+    double fpr = fp / (fp + tn);
+    double tnr = tn / (fp + tn);
+    double fnr = fn / (tp + fn);
+
+    double ppv = tp / (tp + fp);
+    double npv = tn / (tn + fn);
+
+    double f1 = 2.0 * ppv * tpr / (ppv + tpr);
+    double f2 = 5.0 * ppv * tpr / ((5 * ppv) + tpr);
+    double f05 = 1.25 * ppv * tpr / ((0.25 * ppv) + tpr);
+
+    double informedness = tpr + tnr - 1.0;
+    double markedness = ppv + npv - 1.0;
+    double mcc =
+	((tp * tn) - (fp * fn)) /
+	sqrt ((tp + fn) * (fp + tn) * (tp + fp) * (fn + tn));
+    
+    // salva dati per ROC
+    fprintf (f, "%d %d %lf %lf "
+	     "%lf %lf %lf %lf %lf %lf "
+	     "%lf %lf %lf %lf %lf %lf\n",
+	     i, j, life, strength,
+	     tpr, fpr, tnr, fnr, ppv, npv,
+	     f1, f2, f05, informedness, markedness, mcc);
+
+    if (last)
+	fprintf (f, "\n");
+
+    results.clear ();
+    results.resize (ROC_TYPES_NUMS);
+
+    results[TPR_NUM] = tpr;
+    results[FPR_NUM] = fpr;
+    results[TNR_NUM] = tnr;
+    results[FNR_NUM] = fnr;
+    results[PPV_NUM] = ppv;
+    results[NPV_NUM] = npv;
+    results[F1_NUM] = f1;
+    results[F2_NUM] = f2;
+    results[F05_NUM] = f05;
+    results[INFORMEDNESS_NUM] = informedness;
+    results[MARKEDNESS_NUM] = markedness;
+    results[MCC_NUM] = mcc;
+    
+    //return mcc;
+    // return f05;
+}
+
+void main_query ()
+{
+    double best_query_f05 = -DBL_MAX;
+    double best_query_mcc = -DBL_MAX;
+    double best_query_roc_dist = DBL_MAX;
+    double best_query_tprppv_dist = DBL_MAX;
+    Point best_query_roc_point;
+    Point best_query_tprppv_point;
+    double life_best_f05, strength_best_f05;
+    double life_best_mcc, strength_best_mcc;
+    double life_best_roc, strength_best_roc;
+    double life_best_tprppv, strength_best_tprppv;
+    // per sequenza di vita
+    // e sequenza di forza
+
+
+    std::string kt_output;
+    std::vector<Point> kt_swps;
+    
+    for (int kt = 0; kt < 4; kt++)
+    {
+	if (!prune_swiss_points && kt != 3)
+	    continue;
+	
+	switch (kt)
+	{
+	case 0: // max
+	    kt_output = path_roc_t_max;
+	    kt_swps = swiss_peaks_points;
+	    break;
+	case 1: // min
+	    kt_output = path_roc_t_min;
+	    kt_swps = swiss_pits_points;
+	    break;
+	case 2: // sad
+	    kt_output = path_roc_t_sad;
+	    kt_swps = swiss_saddles_points;
+	    break;
+	case 3: // all
+	    kt_output = path_roc_t;
+	    kt_swps = swiss_points;
+	    break;
+	default:
+	    break;
+	}
+	
+	FILE* fp = fopen (kt_output.c_str(), "w");
+	fprintf (fp, "%s\n", roc_header);
+    
+	for (int i = 0; i < life_steps; i++)
+	    for (int j = 0; j < strength_steps; j++)
+	    {		
+		double life_s = (terrain_life_max / (double) life_steps) * i;
+		double strength_s = (terrain_strength_max / (double) strength_steps) * j;
+
+		// query estrai punti del terreno: terrain + terrain2swiss
+		std::vector <TrackSpot> query_t;
+		std::vector <Point> query_tp;
+		std::vector <std::vector <Ref> > query_t2s;
+
+		query_track (terrain_track, life_s, strength_s,
+			     query_t, query_tp); // here choose type
+		fill_match (query_tp, kt_swps, query_t2s);
+	    
+		// appaiali a punti svizzeri (ce ne freghiamo del tipo)
+		std::vector <int> t2s_tp, t2s_fp, t2s_fn;
+		int t2s_tn = 0;
+		confusion (query_t2s, kt_swps, t2s_tp, t2s_fp, t2s_fn, &t2s_tn);
+
+		std::vector<double> query_results;
+		write_roc_stats (fp, i, j, j == strength_steps-1,
+				 life_s, strength_s,
+				 t2s_tp.size (), t2s_fp.size (),
+				 t2s_fn.size (), t2s_tn,
+				 query_results);
+
+		if (kt == 3)
+		{
+		    double query_mcc = query_results[MCC_NUM];
+		    double query_f05 = query_results[F05_NUM];
+		    Point query_roc_point (query_results[FPR_NUM],
+					   query_results[TPR_NUM]);
+		    double query_roc_dist = point_distance (Point (0.0, 1.0),
+							    query_roc_point);
+		    Point query_tprppv_point (query_results[TPR_NUM],
+					      query_results[PPV_NUM]);
+		    double query_tprppv_dist = point_distance (Point (1.0, 1.0),
+							       query_tprppv_point);
+	    
+		    // di quale parametro devo memorizzare la query?
+		    // memorizza parametri query piu' vicina a 1,1
+		    // sostituire con quello ritornato 
+		    if (best_query_mcc < query_mcc)
+		    {
+			life_best_mcc = life_s;
+			strength_best_mcc = strength_s;
+			best_query_mcc = query_mcc;
+		    }
+
+		    if (best_query_f05 < query_f05)
+		    {
+			life_best_f05 = life_s;
+			strength_best_f05 = strength_s;
+			best_query_f05 = query_f05;
+		    }
+
+		    if (best_query_roc_dist > query_roc_dist)
+		    {
+			life_best_roc = life_s;
+			strength_best_roc = strength_s;
+			best_query_roc_dist = query_roc_dist;
+			best_query_roc_point = query_roc_point;
+		    }
+		    if (best_query_tprppv_dist > query_tprppv_dist)
+		    {
+			life_best_tprppv = life_s;
+			strength_best_tprppv = strength_s;
+			best_query_tprppv_dist = query_tprppv_dist;
+			best_query_tprppv_point = query_tprppv_point;
+		    }
+		}
+	    }
+	fclose (fp);
+    }
+
+    // NO, dovrei salvare solo i csv giusti per tipo e sbattermene del resto!!!
+    // GG WARN dovrei salvare le tre query piu vantaggiose per ogni tipo.
+    // rifai query piu' vantaggiosa
+    fprintf (stdout, "best query mcc: %lf, life: %lf, strength: %lf\n",
+	     best_query_mcc, life_best_mcc, strength_best_mcc);
+    fprintf (stdout, "best query f05: %lf, life: %lf, strength: %lf\n",
+	     best_query_f05, life_best_f05, strength_best_f05);
+    fprintf (stdout, "best query roc: %lf (%lf,%lf), life: %lf, strength: %lf\n",
+	     best_query_roc_dist,
+	     best_query_roc_point.x, best_query_roc_point.y,
+	     life_best_roc, strength_best_roc);
+    fprintf (stdout, "best query tprppv: %lf (%lf,%lf), life: %lf, strength: %lf\n",
+	     best_query_tprppv_dist,
+	     best_query_tprppv_point.x, best_query_tprppv_point.y, 
+	     life_best_tprppv, strength_best_tprppv);
+
+    double life_chosen = life_best_tprppv;
+    double strength_chosen = strength_best_tprppv;
+    
+    std::vector <TrackSpot> query_t;
+    std::vector <Point> query_tp;
+    std::vector <std::vector <Ref> > query_t2s;
+
+    query_track (terrain_track, life_chosen, strength_chosen,
+		 query_t, query_tp);
+    fill_match (query_tp, swiss_points, query_t2s);
+
+    // salva roba terreno
+    std::vector <int> t2s_tp, t2s_fp, t2s_fn;
+    int t2s_tn = 0;
+    confusion (query_t2s, swiss_points, t2s_tp, t2s_fp, t2s_fn, &t2s_tn);
+
+    // sort tp, fp by stre,life. save dat
+    save_sort_points (query_t, true, t2s_tp, path_sort_t_tp_l, path_sort_t_tp_s);
+    save_sort_points (query_t, true, t2s_fp, path_sort_t_fp_l, path_sort_t_fp_s);
+    save_sort_lifestrength (query_t, t2s_tp, t2s_fp, path_sort_t_ls);
+
+    // save csv points sets
+    CSVReader csvio (width, height, cellsize, xllcorner, yllcorner);
+    std::vector<bool> swiss_marked (swiss.size (),  false);
+    std::vector<SwissSpotHeight> st_tp;
+    std::vector<SwissSpotHeight> t_fp;
+    std::vector<SwissSpotHeight> s_fn;
+    // terrain tp, mark curv tp, mark swiss fn, terrain fp.
+    for (unsigned i = 0; i < query_t2s.size (); i++)
+    {
+	if (query_t2s[i].size () > 0)
+	{
+	    st_tp.push_back (swiss[query_t2s[i][0].idx]);
+	    swiss_marked[query_t2s[i][0].idx] = true;
+	}
+	else
+	    t_fp.push_back (SwissSpotHeight(query_tp[i], 100000 + i));
+    }
+    // swiss fn
+    for (unsigned i = 0; i < swiss.size(); i++)
+	if (!swiss_marked[i])
+	    s_fn.push_back (swiss[i]);
+    // write    
+    csvio.save (path_gt_fn.c_str(), s_fn);
+    csvio.save (path_t_fp.c_str(), t_fp);				
+    csvio.save (path_gt_t_tp.c_str(), st_tp);
+
+    fprintf (stdout, "in best query: tp: %zu, fp: %zu, fn: %zu\n",
+	     st_tp.size (), t_fp.size (), s_fn.size ());
+    
+    std::vector<int> foo;
+    save_sort_points (query_t, false, foo, path_sort_t_l, path_sort_t_s);
+}
+
+void main_old ()
+{
     if (do_terrain2swiss)
 	fill_match (terrain_points, swiss_points, terrain2swiss);
     
@@ -377,7 +697,6 @@ int main (int argc, char *argv[])
     if (mod_swiss_file)
 	classify_swiss (swiss, terrain, terrain2swiss, mod_swiss_file);
 
-    // modify outputs to have result query-all. investigate gnuplot sorting.
     if (!do_output)
 	exit (0);
 
@@ -397,9 +716,7 @@ int main (int argc, char *argv[])
 
     // make function of this part with query in mind.
     // make better counts and reporting with query in mind.
-
-    // launch one time for all, query in (life,strength), find best query with ROC
-    // launch again for best query.
+    // this part works on both curvature and terrain
     std::vector <int> t2s_tp, t2s_fp, t2s_fn;
     int t2s_tn = 0;
     std::vector <int> c2s_tp, c2s_fp, c2s_fn;
@@ -427,28 +744,51 @@ int main (int argc, char *argv[])
 	save_sort_lifestrength (curvature, c2s_tp, c2s_fp, path_sort_c_ls);
     }
 
-    if (do_allthree)
+    std::vector<bool> curvature_marked (curvature.size (), false);
+    std::vector<bool> swiss_marked (swiss.size (),  false);
+
+    std::vector<SwissSpotHeight> st_tp;
+    std::vector<SwissSpotHeight> sc_tp;
+    std::vector<SwissSpotHeight> t_fp;
+    std::vector<SwissSpotHeight> c_fp;
+
+    std::vector<SwissSpotHeight> s_fn;
+
+    if (do_terrain2swiss)
     {
-	std::vector<bool> curvature_marked (curvature.size (), false);
-	std::vector<bool> swiss_marked (swiss.size (),  false);
-
-	std::vector<SwissSpotHeight> st_tp;
-	std::vector<SwissSpotHeight> sc_tp;
-	std::vector<SwissSpotHeight> t_fp;
-	std::vector<SwissSpotHeight> c_fp;
-
-	std::vector<SwissSpotHeight> s_fn;
-
 	// terrain tp, mark curv tp, mark swiss fn, terrain fp.
 	for (unsigned i = 0; i < terrain2swiss.size (); i++)
 	{
+	    if (!do_allthree)
+	    {
+		if (terrain2swiss[i].size () > 0)
+		{
+		    st_tp.push_back (swiss[terrain2swiss[i][0].idx]);
+		    swiss_marked[terrain2swiss[i][0].idx] = true;
+		}
+		else
+		    t_fp.push_back (SwissSpotHeight(terrain_points[i], 100000 + i));
+		continue;
+	    }
+
+	    // there is also curvature
 	    if (terrain2swiss[i].size () > 0 &&
 		terrain2curvature[i].size () > 0 &&
 		terrain[i].life >= curvature[terrain2curvature[i][0].idx].life
-		)
+		) // also in curvature but terrain wins
+	    {
 		curvature_marked[terrain2curvature[i][0].idx] = true;
-		
-	    if (terrain2swiss[i].size () > 0)
+		st_tp.push_back (swiss[terrain2swiss[i][0].idx]);
+		swiss_marked[terrain2swiss[i][0].idx] = true;
+	    }
+	    else if (terrain2swiss[i].size () > 0 &&
+		     terrain2curvature[i].size () > 0 &&
+		     terrain[i].life < curvature[terrain2curvature[i][0].idx].life
+		) // also in curvature and curvature wins
+		;
+	    else if (terrain2swiss[i].size () > 0 &&
+		     terrain2curvature[i].size () == 0
+		     ) // in terrain but not in curvature
 	    {
 		st_tp.push_back (swiss[terrain2swiss[i][0].idx]);
 		swiss_marked[terrain2swiss[i][0].idx] = true;
@@ -456,7 +796,10 @@ int main (int argc, char *argv[])
 	    else
 		t_fp.push_back (SwissSpotHeight(terrain_points[i], 100000 + i));
 	}
-
+    }
+    
+    if (do_allthree)
+    {
 	// curvature tp, mark swiss fn, curvature fp.
 	for (unsigned i = 0; i < curvature2swiss.size (); i++)
 	    if (curvature2swiss[i].size () > 0 && !curvature_marked[i])
@@ -466,22 +809,29 @@ int main (int argc, char *argv[])
 	    }
 	    else if (!curvature_marked[i])
 		c_fp.push_back (SwissSpotHeight(curvature_points[i], 200000 + i));
-				
-	// swiss fn
+    }
+
+    if (do_terrain2swiss || do_allthree)
+    {	// swiss fn
 	for (unsigned i = 0; i < swiss.size(); i++)
 	    if (!swiss_marked[i])
 		s_fn.push_back (swiss[i]);
-
-	CSVReader csvio (width, height, cellsize, xllcorner, yllcorner);
-	csvio.save (path_gt_t_tp.c_str(), st_tp);
-	csvio.save (path_gt_c_tp.c_str(), sc_tp);
+    }
+    
+    CSVReader csvio (width, height, cellsize, xllcorner, yllcorner);
+    if (do_terrain2swiss || do_allthree)
+    {
 	csvio.save (path_gt_fn.c_str(), s_fn);
-	csvio.save (path_c_fp.c_str(), c_fp);				
 	csvio.save (path_t_fp.c_str(), t_fp);				
+	csvio.save (path_gt_t_tp.c_str(), st_tp);
+    }
+    if (do_allthree)
+    {
+	csvio.save (path_c_fp.c_str(), c_fp);				
+	csvio.save (path_gt_c_tp.c_str(), sc_tp);
     }
     // GG count all better prints - or use data from confusion
 }
-
 
 void count_all ()
 {
@@ -694,18 +1044,43 @@ void classify_swiss (std::vector <SwissSpotHeight> s,
 {
     std::vector<SwissSpotHeight> sc;
 
-    for (int i = 0; i < s.size(); i++)
+    for (unsigned i = 0; i < s.size(); i++)
     {
 	sc.push_back (s[i]);
 	sc[i].t = OTHER;
     }
     
-    for (int i = 0; i < t.size(); i++)
+    for (unsigned i = 0; i < t.size(); i++)
 	if (t2s[i].size() > 0)
 	    sc[t2s[i][0].idx].t = critical2swiss (t[i].type);
 
     CSVReader csvio (width, height, cellsize, xllcorner, yllcorner);
     csvio.save (fn.c_str(), sc, true);
+}
+
+void query_track (Track* track, double life, double strength,
+		  std::vector <TrackSpot>& spots,
+		  std::vector <Point>& points)
+{
+    spots.clear ();
+    points.clear ();
+    for (unsigned i = 0; i < track->lines.size(); i++)
+	if (track->is_original (i)
+	    && track->start_point (i).is_inside ((double) width,
+						 (double) height,
+						 cut_borders))
+	{
+	    double life_i = track->lifetime_elixir (i);
+	    double strength_i = track->lines[i].strength;
+	    if (life_i >= life && strength_i >= strength)
+	    {
+		spots.push_back (TrackSpot (i, track->start_point (i),
+					    life_i, strength_i,
+					    track->get_type (i)));
+		points.push_back (track->start_point (i));
+	    }
+	}
+
 }
 
 
@@ -727,8 +1102,41 @@ void load_all ()
 	CSVReader csvio (width, height, cellsize, xllcorner, yllcorner);
 	csvio.load (swiss_file, swiss, cut_borders);
 	swiss_points.clear ();
+
+	if (prune_swiss_points)
+	{
+	    std::vector<SwissSpotHeight> swiss_copy;
+	
+	    for (unsigned i = 0; i < swiss.size (); i++)
+		swiss_copy.push_back (swiss[i]);
+
+	    swiss.clear ();
+	    for (unsigned i = 0; i < swiss_copy.size (); i++)
+		// GG se anche curvatura e punti HUMAN check controllo
+	    {
+		if (swiss_copy[i].t == PEAK ||
+		    swiss_copy[i].t == PIT ||
+		    swiss_copy[i].t == SADDLE)
+		    swiss.push_back (swiss_copy[i]);
+		
+		if (swiss_copy[i].t == PEAK)
+		    swiss_peaks.push_back (swiss_copy[i]);
+		if (swiss_copy[i].t == PIT)
+		    swiss_pits.push_back (swiss_copy[i]);
+		if (swiss_copy[i].t == SADDLE)
+		    swiss_saddles.push_back (swiss_copy[i]);
+	    }
+	}
+	
 	for (unsigned i = 0; i < swiss.size (); i++)
 	    swiss_points.push_back (swiss[i].p);
+
+	for (unsigned i = 0; i < swiss_peaks.size (); i++)
+	    swiss_peaks_points.push_back (swiss_peaks[i].p);
+	for (unsigned i = 0; i < swiss_pits.size (); i++)
+	    swiss_pits_points.push_back (swiss_pits[i].p);
+	for (unsigned i = 0; i < swiss_saddles.size (); i++)
+	    swiss_saddles_points.push_back (swiss_saddles[i].p);
     }
 
     
@@ -738,15 +1146,22 @@ void load_all ()
 
 	terrain.clear ();
 	terrain_points.clear ();
+	terrain_life_max = 0.0;
+	terrain_strength_max = 0.0;
 	for (unsigned i = 0; i < terrain_track->lines.size(); i++)
 	    if (terrain_track->is_original (i)
 		&& terrain_track->start_point (i).is_inside ((double) width,
 							     (double) height,
 							     cut_borders))
 	    {
+		double life_i = terrain_track->lifetime_elixir (i);
+		double strength_i = terrain_track->lines[i].strength;
+		if (terrain_life_max < life_i)
+		    terrain_life_max = life_i;
+		if (terrain_strength_max < strength_i)
+		    terrain_strength_max = strength_i;
 		terrain.push_back (TrackSpot (i, terrain_track->start_point (i),
-					      terrain_track->lifetime_elixir (i),
-					      terrain_track->lines[i].strength,
+					      life_i, strength_i,
 					      terrain_track->get_type (i)));
 		terrain_points.push_back (terrain_track->start_point (i));
 	    }
@@ -754,7 +1169,6 @@ void load_all ()
 
     if (curvature_file)
     {
-	double cut = cut_borders;
 	track_reader (curvature_file, &curvature_track, &curvature_track_order);
 	curvature.clear ();
 	curvature_points.clear ();
@@ -768,9 +1182,14 @@ void load_all ()
 							       cut_borders)
 		)
 	    {
+		double life_i = curvature_track->lifetime_elixir (i);
+		double strength_i = curvature_track->lines[i].strength;
+		if (curvature_life_max < life_i)
+		    curvature_life_max = life_i;
+		if (curvature_strength_max < strength_i)
+		    curvature_strength_max = strength_i;
 		curvature.push_back (TrackSpot (i, curvature_track->start_point (i),
-						curvature_track->lifetime_elixir (i),
-						curvature_track->lines[i].strength,
+						life_i, strength_i,
 						curvature_track->get_type (i)));
 		curvature_points.push_back (curvature_track->start_point (i));
 	    }
@@ -788,8 +1207,6 @@ void print_filenames ()
 
 		"%s\n"
 		"%s\n"
-		"%s\n"
-		"%s\n"
 		
 		"%s\n"
 		"%s\n"
@@ -804,10 +1221,8 @@ void print_filenames ()
 		path_gt_t_tp.c_str(),
 		path_gt_fn.c_str(),
 
-		path_roc_c_s.c_str(),
-		path_roc_c_l.c_str(),
-		path_roc_t_s.c_str(),
-		path_roc_t_l.c_str(),
+		path_roc_c.c_str(),
+		path_roc_t.c_str(),
 	
 		path_sort_c_fp_s.c_str(),
 		path_sort_c_fp_l.c_str(),

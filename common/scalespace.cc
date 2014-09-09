@@ -298,7 +298,7 @@ ScaleSpace::ScaleSpace (Dem& idem, int levels, ScaleSpaceOpts opts)
     }
 }
 
-ScaleSpace::ScaleSpace(const char* filename, ScaleSpaceOpts opts)
+ScaleSpace::ScaleSpace (const char* filename, ScaleSpaceOpts opts)
 {
     FILE* fp = fopen (filename, "r");
     if (fp == NULL)

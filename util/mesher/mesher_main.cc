@@ -6,13 +6,17 @@
 #include "../../common/rastertiff.h"
 #include "../../common/dem.hh"
 #include "../../common/demreader.hh"
+#include "../../common/scalespace.hh"
 
 #include <iostream> 
 #include <vector>
-
+#include <iostream>
+#include <string>
+#include <sstream>
 
 
 char *imagefile = 0;
+char *sspname = 0;
 char *out_name = "out.off";
 char *tiffnames = 0;
 bool do_crop = false;
@@ -31,6 +35,7 @@ void print_help (FILE* f)
 {
     fprintf (f, "Usage: mesher\n"
 	     "[-i imagefile] : supported inputs formats hgt, png, bmp\n"
+	     "[-s sspfile] : input file ssp, activation of multiple output format\n"
 	     "[-o mesh.off] : write output mesh, in off format.\n"
 	     "[-c x0 y0 x1 y1] : crop original image.\n"
 	     "[-t tiffname] : write a tiff image for debug.\n"
@@ -63,6 +68,11 @@ void app_init(int argc, char *argv[])
 		argc--;
                 break;
 
+	    case 's':
+		sspname = (*++argv);
+		argc--;
+		break;
+		
             case 'c':
 		do_crop = true;
                 crop_a.x = atoi (*++argv);
@@ -96,9 +106,10 @@ void app_init(int argc, char *argv[])
         }
     }
 
-    if (imagefile == NULL)
+    if ((imagefile == NULL && sspname == NULL) ||
+	(imagefile != NULL && sspname != NULL))
     {
-	fprintf (stderr, "No image input given.\n");
+	fprintf (stderr, "An input image OR an input ssp required.\n");
 	goto die;
     }
 
@@ -112,33 +123,66 @@ void app_init(int argc, char *argv[])
 // GG should use imagewriter
 void _mesher_write_tiff (Dem *dem, int mult, char* name);
 
+void mesher (Dem* dem, const char* offname);
+
 
 int main (int argc, char *argv[])
 {
     app_init (argc, argv);
-    
-    DEMReader* dr = NULL;
 
-    if (imagefile != NULL)
+    if (imagefile)
     {
-	dr = DEMSelector::get (imagefile);
-	dr->print_info ();
+	DEMReader* dr = NULL;
+
+	if (imagefile != NULL)
+	{
+	    dr = DEMSelector::get (imagefile);
+	    dr->print_info ();
+	}
+	else
+	    exit (1);
+
+	Dem* dem = new Dem (dr);
+
+	if (do_crop)
+	{
+	    Dem* td = new Dem (*dem, crop_a, crop_b);
+	    delete (dem);
+	    dem = td;
+	}
+
+	if (tiffnames)
+	    _mesher_write_tiff (dem, 14, tiffnames);
+
+	// call mesher
+	mesher (dem, out_name);
+
+	delete dr;
+	delete dem;
     }
-    else
-	exit (1);
 
-    Dem *dem = new Dem (dr);
-
-    if (do_crop)
+    if (sspname)
     {
-    	Dem* td = new Dem (*dem, crop_a, crop_b);
-	delete (dem);
-	dem = td;
+	ScaleSpace *ssp = new ScaleSpace (sspname, ScaleSpaceOpts());
+
+	for (int i = 0; i < ssp->levels; i++)
+	{
+	    std::string ss (out_name);
+	    ss += "-";
+	    std::stringstream sstm;
+	    sstm << ss << i;
+	    std::string offname = sstm.str();
+	    offname += ".off";
+	    mesher (ssp->dem[i], offname.c_str());
+	}
+	delete ssp;
     }
+    exit (0);
+}
 
-    if (tiffnames)
-	_mesher_write_tiff (dem, 14, tiffnames);
 
+void mesher (Dem* dem, const char* offname)
+{
     std::vector< std::vector<int> > vs;
     std::vector< std::vector<int> > fs;
 
@@ -178,9 +222,9 @@ int main (int argc, char *argv[])
 	    }
 	}
 
-    FILE *f = fopen (out_name, "w");
+    FILE *f = fopen (offname, "w");
     if (f == NULL)
-	eprintx (2, "Could not open file `%s'. %s\n", out_name, strerror (errno));
+	eprintx (2, "Could not open file `%s'. %s\n", offname, strerror (errno));
     
     fprintf (f, "OFF\n%zu %zu 0\n", vs.size(), fs.size());
 
@@ -189,13 +233,7 @@ int main (int argc, char *argv[])
 
     for (unsigned i = 0; i < fs.size(); i++)
 	fprintf (f, "3 %d %d %d\n", fs[i][0], fs[i][1], fs[i][2]);
-
-    delete dr;
-    delete dem;
-
-    exit (0);
 }
-
 
 
 

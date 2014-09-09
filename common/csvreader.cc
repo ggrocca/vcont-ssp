@@ -136,10 +136,10 @@ void CSVReader::load (const char* filename, std::vector<SwissSpotHeight>& points
 	    int r = fscanf (fp, "%lf,%lf,%d,Hoehenkote,LK25,1986,%16s",
 			    &pa.x, &pa.y, &id, stype);
 	    // printf ("%s: %d\n", filename, r);
-	    sh.t = string2swiss (stype);
-	    
 	    if (r != 4)
 		break;
+
+	    sh.t = string2swiss (stype);
 	}
 
 	asc2img (pa, &sh.p);

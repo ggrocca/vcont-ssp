@@ -148,11 +148,12 @@ void special(int k, int x, int y)
 // ANTTWEAKBAR CALLBACKS //
 ///////////////////////////
 
-char *ssp_file = 0;
-char *trk_file = 0;
-char *csv_in_file = 0;
-char *csv_out_file = 0;
-char *csv_out_file_default = "spotfilter_saved_points.csv";
+char* ssp_file = 0;
+char* trk_file = 0;
+char* csv_in_file = 0;
+char* csv_out_file;
+char* csv_out_file_default = "spotfilter_saved_points.csv";
+// char* plan_oblique = "plan_oblique"
 char *asc_file = 0;
 
 
@@ -236,6 +237,7 @@ void TW_CALL save_points (void *clientData)
 // }
 
 
+double mult_factor = 1.0;
 bool do_normalize_border_points = true;
 
 void print_help (FILE* f)
@@ -247,6 +249,7 @@ void print_help (FILE* f)
 	     "[-o outputpoints.csv]\n"
 	     "[-a dem.asc]\n"
 	     "[-u] leave border points unnormalized\n"
+	     "[-m MULT] multiply values by MULT\n"
 	     "\n"
 	     );
 }
@@ -266,6 +269,11 @@ void app_init(int argc, char *argv[])
 
             case 's':
                 ssp_file = (*++argv);
+                argc--;
+                break;
+
+	    case 'm':
+                mult_factor = atof (*++argv);
                 argc--;
                 break;
 
@@ -330,7 +338,7 @@ int main (int argc, char *argv[])
     // }
 
     app_init (argc, argv);
-    
+
     td.read_track (trk_file);
     if (do_normalize_border_points)
 	td.track->normalize_border_points ();
@@ -424,7 +432,9 @@ int main (int argc, char *argv[])
 	       /*"min=0.0 max=65536.0 step=10.0"*/"step=1.0");
     TwAddVarRW(cBar, "clip_white", TW_TYPE_DOUBLE, &(td.clip_white),
 	       /*"min=0.0 max=65536.0 step=10.0"*/"step=1.0");
-    td.multiply = 1.0;
+
+    // td.multiply = 1.0;
+    td.multiply = mult_factor;
     // TwAddVarRW(cBar, "mult factor", TW_TYPE_DOUBLE, &td.multiply, "min=1.0 "max=256.0" step=1.0");
 
     TwAddSeparator (cBar, 0, 0);

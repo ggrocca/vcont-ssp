@@ -74,7 +74,7 @@ public:
     {
 	return x >= 0 && x < w && y >= 0 && y < h;
     }
-
+    
     bool is_inside (const T w, const T h, double cut)
     {
 	double wc = w * (cut / 2.0);
@@ -82,6 +82,11 @@ public:
 	return x >= 0+wc && x < w-wc && y >= 0+hc && y < h-hc;
     }
 
+    bool is_inside (const T w, const T h, int window)
+    {
+	return x >= window && x < w-window && y >= window && y < h-window;
+    }
+    
     bool is_outside (const T w, const T h)
     {
 	return !is_inside (w, h);
@@ -154,7 +159,7 @@ typedef Pair<double> Point;
 
 static double point_distance (Point a, Point b)
 {
-    return sqrt ((a.x - b.x) * (a.x - b.x)) + ((a.y - b.y) * (a.y - b.y));
+    return sqrt (((a.x - b.x) * (a.x - b.x)) + ((a.y - b.y) * (a.y - b.y)));
 }
 
 
@@ -187,7 +192,7 @@ public:
            [-1,-1] [ 0,-1] [  ,  ]
        <0>           <5>
      **/
-
+    
     int linear_index (Coord c)
     {
 	int idx = -1;
@@ -292,10 +297,10 @@ public:
 	static int pc = 0;
 	static int ps = 1;
 
-    static int _x = INT_MIN;
-    static int _y = INT_MIN;
+	static int _x = INT_MIN;
+	static int _y = INT_MIN;
 
-    if (_x == INT_MIN && _y == INT_MIN)
+	if (_x == INT_MIN && _y == INT_MIN)
 	{
 	    _x = x;
 	    _y = y;
@@ -328,11 +333,13 @@ public:
 	if (pc != 0 && ! ((pc) % 4))
 	    ps = -ps;
     }
-
 };
 
 
-
+static Coord point2coord (Point p)
+{
+    return Coord (floor (p.x), floor (p.y));
+}
 
 template <class T> class Grid
 {

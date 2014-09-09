@@ -107,6 +107,10 @@ void TrackDisplay::read_track (char *file)
 {
     track_reader (file, &track, &track_order);
     // track = new Track (file);
+
+    // for (unsigned i = 0; i < track->lines.size(); i++)
+    // 	if (track->is_original (i))
+    // 	    track->lines[i].strength = track->lines[i].strength * multiply;
 }
 
 void TrackDisplay::query (double t)
@@ -694,7 +698,8 @@ void TrackDisplay::draw (int dem_idx)
 		if (k < 0)
 		    break;
 	    }
-	    while (track->lines[spots_maxima[k].crit].strength < spots_maxima_imp_cut);
+	    while (track->lines[spots_maxima[k].crit].strength * multiply <
+		   spots_maxima_imp_cut);
 
 	    if (k < 0)
 	    {
@@ -730,7 +735,8 @@ void TrackDisplay::draw (int dem_idx)
 		if (k < 0)
 		    break;
 	    }
-	    while (track->lines[spots_minima[k].crit].strength < spots_minima_imp_cut);
+	    while (track->lines[spots_minima[k].crit].strength * multiply <
+		   spots_minima_imp_cut);
 
 	    if (k < 0)
 	    {
@@ -766,7 +772,8 @@ void TrackDisplay::draw (int dem_idx)
 		if (k < 0)
 		    break;
 	    }
-	    while (track->lines[spots_sellae[k].crit].strength < spots_sellae_imp_cut);
+	    while (track->lines[spots_sellae[k].crit].strength * multiply <
+		   spots_sellae_imp_cut);
 
 	    if (k < 0)
 	    {
