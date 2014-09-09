@@ -29,6 +29,7 @@ class curvStacker
   curvStacker(double,double,double,bool,int,string*);
   void executeOnMesh(string,string);
   void executeOnPNG(string,string);
+  void executeOnMultipleMeshes(vector<string>,string);
   void printHeader(string);
   void printLevel(Eigen::MatrixXd V, vector<vector<double> > curv);
   void printLevelGrid(Eigen::MatrixXd V, vector<vector<double> > curv);

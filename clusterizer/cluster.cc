@@ -5,7 +5,7 @@ Cluster::Cluster()
   father = NULL;
 }
 
-Cluster::Cluster (int vertex, Point point)
+Cluster::Cluster (int vertex, Point3 point)
 {
   radius = 0;
   center = point;
@@ -22,7 +22,7 @@ Cluster::Cluster(Cluster* cluster)
   markQuery=false;
 }
 
-Point Cluster::getCenter()
+Point3 Cluster::getCenter()
 {
   return center;
 }
@@ -67,12 +67,12 @@ void Cluster::setFather(Cluster* father)
   this->father = father;
 }
 
-void Cluster::setCenter(Point center)
+void Cluster::setCenter(Point3 center)
 {
   this->center = center;
 }
 
-/*void Cluster::setCenter(Point3d center)
+/*void Cluster::setCenter(Point33d center)
   {
   this->center = Eigen::Vector3d(center.X(), center.Y(), center.Z());
   }*/

@@ -1,5 +1,5 @@
 /* Program to build the discrete representation of a scalespace to serve as an input
-to Luigi's framewoek. The input is the path to a .png range images, which is then converted to 
+to Luigi's framework. The input is the path to a .png range images, which is then converted to 
 a 3D mesh, and three integers representing the base radius, the largest radius, and the step
 of sampling */
 
@@ -10,7 +10,7 @@ of sampling */
 #include <igl/principal_curvature.h>
 #include <igl/read.h>
 #include <float.h>
-
+#include "../common/scalespace.hh"
 
 curvStacker::curvStacker(double base_rad, double max_rad, double step, bool expStep, int skipFactor, string* mapFile)
 {
@@ -35,7 +35,6 @@ curvStacker::curvStacker(double base_rad, double max_rad, double step, bool expS
 
 void curvStacker::printHeader(string outfile)
 {
-    //string outfile; /* Here we must obtain the output filename starting from the pngfile (or meshfile*/
 
 
   fp=fopen(outfile.c_str(), "wb");
@@ -113,7 +112,7 @@ void curvStacker::printLevel(Eigen::MatrixXd V, vector<vector<double> > curv)
         {
 	  double X=((double)rand()/(double)RAND_MAX);
 	  data[i]=lowestRandomValue+X;
-	  cout << "Aggiunto X: " << X << endl;
+	  //	  cout << "Aggiunto X: " << X << endl;
 	}
 	else
 	  data[i] = -DBL_MAX;
@@ -223,13 +222,38 @@ void curvStacker::setGrid (int w, int h, int c)
     cout << "setGrid(): grid["<<grid_width<<","<<grid_height<<"]"<<endl;    
 }
 
+void curvStacker::executeOnMultipleMeshes(vector<string> meshNames, string outFile)
+{
+  for (int i=0; i<meshNames.size(); i++)
+    {
+      cout << "QUI ESTRAGGO IL TIME APPENA SO IN CHE FORMATO GIGI SALVA\n";
+      cout << "IN REALTÀ SE SALVA DA O A N-1 NON MI SERVE\n";
+      int time=i;
+      int radius=ceil((double)(ScaleSpace::time2window(i))/(double)2);
+      CurvatureCalculator c;
+      Eigen::MatrixXd V;
+      Eigen::MatrixXi F;
+      cerr << "Reading mesh " << meshNames[i] << endl;
+      igl::read(meshNames[i],V,F);
+      initializeScaleSpace(V);
+      printHeader(outFile);
+      cerr << "Mesh read with " << V.rows() << " vertices "  << endl;
+      c.zeroDetCheck=false;
+      c.init(V,F);
+      cerr << "Starting computing radius " << radius << endl;
+      c.sphereRadius=radius;
+      c.computeCurvature(do_topoindex);
+      cerr << "Computed radius " << radius << endl;
+      grid? printLevelGrid (V,c.curv) : printLevel(V,c.curv);
+      fclose(fp);
+    }
+}
+
 void curvStacker::executeOnMesh(string meshFile,string outFile)
 {
 
   cerr << "Starting execute on mesh " << endl;
   CurvatureCalculator c;
-  if (do_topoindex)
-      c.st = TOPO_SEARCH;
   Eigen::MatrixXd V;
   Eigen::MatrixXi F;
   cerr << "Reading mesh " << meshFile << endl;
@@ -253,7 +277,7 @@ void curvStacker::executeOnMesh(string meshFile,string outFile)
     {
       cerr << "Starting computing radius " << r << endl;
       c.sphereRadius=r;
-      c.computeCurvature();
+      c.computeCurvature(do_topoindex);
       cerr << "Computed radius " << r << endl;
       grid? printLevelGrid (V,c.curv) : printLevel(V,c.curv);
     }

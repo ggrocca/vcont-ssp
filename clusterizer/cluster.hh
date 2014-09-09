@@ -14,7 +14,7 @@ class Cluster
 private:
   bool mark;
   bool markQuery;
-  Point center;
+  Point3 center;
   float radius;
   Cluster* father;
 public:
@@ -23,11 +23,11 @@ public:
   vector<Cluster*> children;
 
   Cluster();
-  Cluster(int vertex, Point); //costruttore che crea un cluster contenente solo vertex (con centro vertex e raggio nullo)
+  Cluster(int vertex, Point3); //costruttore che crea un cluster contenente solo vertex (con centro vertex e raggio nullo)
   Cluster(Cluster* cluster);	//costruttore che crea un cluster inserendo come figli il cluster passato come parametro e i suoi vicini
 
   //metodi getter e setter
-  Point getCenter();
+  Point3 getCenter();
   Cluster* getFather();
   bool getMark();
   bool getMarkQuery();
@@ -36,7 +36,7 @@ public:
   vector<Cluster*>* getChildren();
   vector<int>* getVertices();
   void setFather(Cluster* father);
-  void setCenter(Point center);
+  void setCenter(Point3 center);
   //  void setCenter(Eigen::Vector3d center);
   void setRadius(float radius);
   void setMark(bool mark);

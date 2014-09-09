@@ -422,10 +422,10 @@ void TopologyIndex::miniball(Level* levelNN)
       //TODO: qui devo estrarre i punti, ciclare, metterli in un array e chiamare miniball */
       vector<int>* vert = (*cluster)->getVertices();
       //Point P[vert->size()];
-      Point *P = new Point[vert->size()];
+      Point3 *P = new Point3[vert->size()];
 
       for (int i=0; i<vert->size(); i++)
-	P[i]=Point(V.row((*vert)[i])[0],V.row((*vert)[i])[1],V.row((*vert)[i])[2]);
+	P[i]=Point3(V.row((*vert)[i])[0],V.row((*vert)[i])[1],V.row((*vert)[i])[2]);
       
       miniBall ms = MinSphere(P,vert->size());
       (*cluster)->setCenter(ms.center);
@@ -451,7 +451,7 @@ void TopologyIndex::fusion(Level* levelNN)
 	  for (vector<Cluster*>::iterator child = (cluster)->getChildren()->begin(); child != (cluster)->getChildren()->end(); ++child)
             {
 	      //centro miniball del figlio:
-	      Point center_f=(*child)->getCenter();
+	      Point3 center_f=(*child)->getCenter();
 	      //Cerco il vicino migliore
 	      float min_distance=FLT_MAX;
 	      Cluster* candidate_neighbor=NULL;
@@ -468,10 +468,10 @@ void TopologyIndex::fusion(Level* levelNN)
 
 	      vector<int>* vert = candidate_neighbor->getVertices();
 	      //Point P[vert->size()];
-	      Point *P = new Point[vert->size()];
+	      Point3 *P = new Point3[vert->size()];
 	      
 	      for (int i=0; i<vert->size(); i++)
-		P[i]=Point(V.row((*vert)[i])[0],V.row((*vert)[i])[1],V.row((*vert)[i])[2]);
+		P[i]=Point3(V.row((*vert)[i])[0],V.row((*vert)[i])[1],V.row((*vert)[i])[2]);
       
 	      miniBall ms = MinSphere(P,vert->size());
 
@@ -585,7 +585,7 @@ void TopologyIndex::auxQuery(Cluster* cluster, vector<vector<int>*>* candidates,
   //e propago la ricerca ai suoi vicini
   //TODO  pick to Vector - Point to Eigen
   Eigen::Vector3d punto = Eigen::Vector3d(V.row(pick));
-  Point p = eigenToPoint(punto);
+  Point3 p = eigenToPoint(punto);
   if ((cluster->getCenter() - p).length() < (cluster->getRadius() + sphereRadius))
     {
       cluster->setMarkQuery(true);
@@ -600,13 +600,13 @@ vector<int> TopologyIndex::filterCandidates(vector<vector<int>*>* candidates, in
 {
   vector<int> result;
   Eigen::Vector3d punto = Eigen::Vector3d(V.row(pick));
-  Point p = eigenToPoint(punto);
+  Point3 p = eigenToPoint(punto);
   for (vector<vector<int>*>::iterator candidates_vector = candidates->begin(); candidates_vector < candidates->end(); ++candidates_vector)
     for (vector<int>::iterator candidate = (*candidates_vector)->begin(); candidate < (*candidates_vector)->end(); ++candidate)
       {
 	//TODO candidate to my vec
 	Eigen::Vector3d punto2 = Eigen::Vector3d(V.row(*candidate));
-	Point p2 = eigenToPoint(punto2);
+	Point3 p2 = eigenToPoint(punto2);
 	float distance = (p - p2).length();
 	if (distance <= sphereRadius/* && distance != 0*/) result.push_back(*candidate);
       }
