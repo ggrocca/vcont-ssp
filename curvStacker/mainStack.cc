@@ -3,14 +3,16 @@
 #include "pngtomesh.hh"
 #include "curvStacker.hh"
 
+
 using namespace std;
 
 void print_help ()
 {
     fprintf (stdout, "Usage: curvStacker "
-	     "{-i infile | -m infile} {-d outfile | -s outfile}\n"
+	     "{-i infile | -m infile | -D n mesh1 ... meshN} {-d outfile | -s outfile}\n"
 	     "-i pngFile : path to input png image\n"
 	     "-m meshFile : path to input mesh file\n"
+	     "-D n mesh1 ... meshN : use a scalespace of N smoothed meshes as input (the meshes must be named name_0.off ... name_n-1.off\n"
 	     "-s sspFile : path to output ssp file\n"
 	     "-d demFile : path to output dem file.\n"
 	     "[-c mapfile] : write map of curvature signs\n"
@@ -23,9 +25,9 @@ void print_help ()
 	     "[-G width height] : assume input mesh is a complete grid of given dim.\n"
 	     "[-C cellSize] : grid cells have cellSize size.\n"
 	     "[-Z curvMultFactor] : multiply curvature values by this value.\n"
-	     "[-L LowestRandomizedValue] : background has this value, randomized"
-	     "[-t topological index search]"
-	     "[-L LowestRandomizedValue] : background has this value, randomized."
+	     "[-L LowestRandomizedValue] : background has this value, randomized\n"
+	     "[-t topological index search]\n"
+	     "[-L LowestRandomizedValue] : background has this value, randomized.\n"
 	     "[-t] : disable topology Index.\n"
 	     "\n"
 	     );
@@ -49,6 +51,8 @@ double curvMultFactor = 0.0;
 string * mapFile = NULL;
 int cellSize = 25;
 double lowestRandomValue = 0.0;
+vector<string> meshNames;
+int meshNumb = 0;
 
 void app_init(int argc, char *argv[])
 {
@@ -123,6 +127,13 @@ void app_init(int argc, char *argv[])
 	      mapFile = new string(*++argv);
 	      argc--;
 	      break;
+	    case 'D':
+	      meshNumb=atoi(*++argv);
+	      meshNames.reserve(meshNumb);
+	      --argc;
+	      for (int i=0; i<meshNumb; i++, argc--)
+		meshNames.push_back(string(*++argv));
+	      break;
 	    case 'h':
 	      print_help();
 	      exit(0);
@@ -138,7 +149,7 @@ void app_init(int argc, char *argv[])
 	(sspFile != NULL && demFile != NULL))
 	goto die;
      
-    if ((meshFile == NULL && pngFile == NULL) ||
+    if ((meshFile == NULL && pngFile == NULL && meshNumb == 0) ||
 	(meshFile != NULL && pngFile != NULL))
 	goto die;
 
@@ -168,6 +179,8 @@ int main(int argc, char* argv[])
   if (lowestRandomValue != 0.0)
       s.lowestRandomValue = lowestRandomValue;
   s.do_topoindex = do_topoindex;
+
+  
   
   if (demFile)
   {
@@ -183,6 +196,8 @@ int main(int argc, char* argv[])
 	  s.executeOnPNG(*pngFile, *sspFile);
       if (meshFile)
 	  s.executeOnMesh(*meshFile, *sspFile);
+      if (meshNumb>0)
+	s.executeOnMultipleMeshes(meshNames, *sspFile);
   }
   
 }

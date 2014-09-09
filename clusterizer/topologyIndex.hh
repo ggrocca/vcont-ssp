@@ -58,14 +58,14 @@ private:
   double averageEdge;
 
   /* Funzioni ausiliarie per la conversione di tipo */
-  Eigen::Vector3d pointToEigen(Point p)
+  Eigen::Vector3d pointToEigen(Point3 p)
   {
     return Eigen::Vector3d(p.x,p.y,p.z);
   }
 
-  Point eigenToPoint(Eigen::Vector3d p)
+  Point3 eigenToPoint(Eigen::Vector3d p)
   {
-    return Point(p[0],p[1],p[2]);
+    return Point3(p[0],p[1],p[2]);
   }
 
   //metodi per inserire/accedere ai livelli della gerarchia

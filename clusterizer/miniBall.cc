@@ -4,9 +4,9 @@
 
 
 
-miniBall MinSphere( Point P[], unsigned int p )
+miniBall MinSphere( Point3 P[], unsigned int p )
 {
-  Point **L = new Point*[p];
+  Point3 **L = new Point3*[p];
 
   for(unsigned int i = 0; i < p; i++)
     L[i] = &P[i];
@@ -18,7 +18,7 @@ miniBall MinSphere( Point P[], unsigned int p )
   return MB;
 }
 
-miniBall RecurseMin( Point *P[], unsigned int p, unsigned int b )
+miniBall RecurseMin( Point3 *P[], unsigned int p, unsigned int b )
 {
 
   miniBall MB;
@@ -47,7 +47,7 @@ miniBall RecurseMin( Point *P[], unsigned int p, unsigned int b )
       {
 	for(unsigned int j = i; j > 0; j--)
 	  {
-	    Point *T = P[j];
+	    Point3 *T = P[j];
 	    P[j] = P[j - 1];
 	    P[j - 1] = T;
 	  }
@@ -66,7 +66,7 @@ float det( float m11, float m12, float m13, float m21, float m22, float m23, flo
     m31 * (m12 * m23 - m22 * m13);
 }
 
-miniBall::miniBall( const Point &O )
+miniBall::miniBall( const Point3 &O )
 {
   radius = 0+radiusEpsilon;
   center = O;
@@ -77,7 +77,7 @@ miniBall::miniBall()
   radius = -1;
 }
 
-miniBall::miniBall( const Point &O, const Point &A )
+miniBall::miniBall( const Point3 &O, const Point3 &A )
 {
   vector3 a = A - O;
 
@@ -87,7 +87,7 @@ miniBall::miniBall( const Point &O, const Point &A )
   center = O + o;
 }
 
-miniBall::miniBall( const Point &O, const Point &A, const Point &B )
+miniBall::miniBall( const Point3 &O, const Point3 &A, const Point3 &B )
 {
 
   vector3 a = A - O;
@@ -101,7 +101,7 @@ miniBall::miniBall( const Point &O, const Point &A, const Point &B )
   center = O + o;
 }
 
-miniBall::miniBall( const Point &O, const Point &A, const Point &B, const Point &C )
+miniBall::miniBall( const Point3 &O, const Point3 &A, const Point3 &B, const Point3 &C )
 {
 
   vector3 a = A - O;
@@ -118,7 +118,7 @@ miniBall::miniBall( const Point &O, const Point &A, const Point &B, const Point 
   center = O + o;
 }
 
-float miniBall::d2( const Point &P ) const
+float miniBall::d2( const Point3 &P ) const
 {
   vector3 dif=P-center;
   return DotProduct(dif,dif)-radius*radius;       
