@@ -11,6 +11,7 @@ of sampling */
 #include <igl/read.h>
 #include <float.h>
 #include "../common/scalespace.hh"
+#include <sstream>
 
 curvStacker::curvStacker(double base_rad, double max_rad, double step, bool expStep, int skipFactor, string* mapFile)
 {
@@ -226,20 +227,37 @@ void curvStacker::executeOnMultipleMeshes(vector<string> meshNames, string outFi
 {
   for (int i=0; i<meshNames.size(); i++)
     {
-      cout << "QUI ESTRAGGO IL TIME APPENA SO IN CHE FORMATO GIGI SALVA\n";
-      cout << "IN REALTÀ SE SALVA DA O A N-1 NON MI SERVE\n";
-      int time=i;
-      int radius=ceil((double)(ScaleSpace::time2window(i))/(double)2);
+      std::stringstream ss;
+      
+      unsigned first = meshNames[i].find('-');
+      unsigned last = meshNames[i].find('.');
+      string strNew = meshNames[i].substr (first+1,last-first-1);
+      int time= atoi(strNew.c_str());
+      int radius=ceil((double)(ScaleSpace::time2window(time))/(double)2);
+      
+      ss << time;
+      string trueOut = outFile;
+      trueOut.append(ss.str());
       CurvatureCalculator c;
       Eigen::MatrixXd V;
       Eigen::MatrixXi F;
       cerr << "Reading mesh " << meshNames[i] << endl;
       igl::read(meshNames[i],V,F);
       initializeScaleSpace(V);
-      printHeader(outFile);
+      printHeader(trueOut);
       cerr << "Mesh read with " << V.rows() << " vertices "  << endl;
       c.zeroDetCheck=false;
       c.init(V,F);
+
+      if (grid && (V.rows() != grid_width * grid_height))
+	{
+	  fprintf (stderr, "Number of vertices [%zu] and given grid [%d,%d]->[%d]"
+		   " do not coincide. Abort.\n",
+		   V.rows(), grid_width, grid_height, grid_width * grid_height);
+	  exit (-5);
+	}
+
+
       cerr << "Starting computing radius " << radius << endl;
       c.sphereRadius=radius;
       c.computeCurvature(do_topoindex);

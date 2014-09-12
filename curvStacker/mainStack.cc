@@ -184,10 +184,13 @@ int main(int argc, char* argv[])
   
   if (demFile)
   {
-      if (pngFile)
-	  s.executeOnPNG(*pngFile, *demFile);
-      if (meshFile)
-	  s.executeOnMesh(*meshFile, *demFile);
+    if (meshNumb>0)
+      s.executeOnMultipleMeshes(meshNames, *demFile);
+    else if (pngFile)
+      s.executeOnPNG(*pngFile, *demFile);
+    else if (meshFile)
+      s.executeOnMesh(*meshFile, *demFile);
+      
   }
 
   if (sspFile)
@@ -196,8 +199,7 @@ int main(int argc, char* argv[])
 	  s.executeOnPNG(*pngFile, *sspFile);
       if (meshFile)
 	  s.executeOnMesh(*meshFile, *sspFile);
-      if (meshNumb>0)
-	s.executeOnMultipleMeshes(meshNames, *sspFile);
+      
   }
   
 }

@@ -63,7 +63,8 @@ class ScaleSpace {
 public:
 
     int levels;
-
+  
+    ScaleSpace () {};
     ScaleSpace (Dem& base, int levels, ScaleSpaceOpts opts);
     ScaleSpace (const char* filename, ScaleSpaceOpts opts);
     ~ScaleSpace ();
