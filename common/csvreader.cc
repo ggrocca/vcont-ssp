@@ -4,6 +4,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+bool is_sametype (CriticalType ct, SwissType st)
+{
+    if (ct == MAX && st == PEAK)
+	return true;
+    if (ct == MIN && st == PIT)
+	return true;
+    if ((ct == SA2 || ct == SA3) && st == SADDLE)
+	return true;
+    if ((ct == SA2 || ct == SA3 || ct == MAX || ct == MIN) && st == ALL)
+	return true;
+    
+    return false;
+}
+
+
 SwissType string2swiss (std::string s)
 {
     static const char* other_s = "OTHER";

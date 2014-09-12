@@ -58,10 +58,13 @@ unset yrange
 
 
 
-load pwd.'YlGnBu.plt'
+load pwd.'/YlGnBu-saturated.plt'
 
 set terminal pdfcairo size 20cm,20cm
 set colorbox vert user origin screen .88,.66 size .025,.2
+set xtics 0.1
+set ytics 0.1
+set grid
 
 
 ##### ROC
@@ -69,23 +72,84 @@ set xlabel "fpr"
 set ylabel "tpr"
 
 set output "terrain-ROC.pdf"
-set key autotitle columnheader
+  set key autotitle columnheader
   plot [0:1][0:1] "stats-roc-terrain.dat" using "fpr":"tpr" title "ROC", \
        x lt 3 lc 3
 
-set style fill transparent solid 0.8 noborder
+#set style fill transparent solid 1.0 border rgb "black"
+set style fill transparent solid 1.0 noborder
 set output "terrain-ROC-life.pdf"
 set key autotitle columnheader
-  plot [0:1][0:1] '<sort -g -k3 stats-roc-terrain.dat' using "fpr":"tpr":"life" \
+set cbrange [*:*]
+  plot [0:1][0:1] '<sort -g -k3 stats-roc-terrain.dat' using \
+       "fpr":"tpr":(0.005):"life" \
        title "ROC" w circles lc palette
 set style fill empty
 
-set style fill transparent solid 0.8 noborder
+set style fill transparent solid 1.0 noborder
 set output "terrain-ROC-strength.pdf"
 set key autotitle columnheader
-  plot [0:1][0:1] '<sort -g -k4 stats-roc-terrain.dat' using "fpr":"tpr":"strength" \
+set cbrange [*:*]
+  plot [0:1][0:1] '<sort -g -k4 stats-roc-terrain.dat' using \
+       "fpr":"tpr":(0.005):"strength" \
        title "ROC" w circles lc palette
 set style fill empty
+
+
+##### ROC PEAK
+set xlabel "fpr"
+set ylabel "tpr"
+
+set output "terrain-peaks-ROC.pdf"
+  set key autotitle columnheader
+  plot [0:1][0:1] "stats-roc-terrain-max.dat" using "fpr":"tpr" title "ROC-peak", \
+       x lt 3 lc 3
+
+#set style fill transparent solid 1.0 border rgb "black"
+set style fill transparent solid 1.0 noborder
+set output "terrain-peaks-ROC-life.pdf"
+set key autotitle columnheader
+  plot [0:1][0:1] '<sort -g -k3 stats-roc-terrain-max.dat' using \
+       "fpr":"tpr":(0.005):"life" \
+       title "ROC-peak" w circles lc palette
+set style fill empty
+
+set style fill transparent solid 1.0 noborder
+set output "terrain-peaks-ROC-strength.pdf"
+set key autotitle columnheader
+  plot [0:1][0:1] '<sort -g -k4 stats-roc-terrain-max.dat' using \
+       "fpr":"tpr":(0.005):"strength" \
+       title "ROC-peak" w circles lc palette
+set style fill empty
+
+
+##### ROC SADDLE
+set xlabel "fpr"
+set ylabel "tpr"
+
+set output "terrain-saddles-ROC.pdf"
+  set key autotitle columnheader
+  plot [0:1][0:1] "stats-roc-terrain-sad.dat" using "fpr":"tpr" title "ROC-saddle", \
+       x lt 3 lc 3
+
+#set style fill transparent solid 1.0 border rgb "black"
+set style fill transparent solid 1.0 noborder
+set output "terrain-saddles-ROC-life.pdf"
+set key autotitle columnheader
+  plot [0:1][0:1] '<sort -g -k3 stats-roc-terrain-sad.dat' using \
+       "fpr":"tpr":(0.005):"life" \
+       title "ROC-saddle" w circles lc palette
+set style fill empty
+
+set style fill transparent solid 1.0 noborder
+set output "terrain-saddles-ROC-strength.pdf"
+set key autotitle columnheader
+  plot [0:1][0:1] '<sort -g -k4 stats-roc-terrain-sad.dat' using \
+       "fpr":"tpr":(0.005):"strength" \
+       title "ROC-saddle" w circles lc palette
+set style fill empty
+
+
 
 
 ##### PR
@@ -97,21 +161,87 @@ set key autotitle columnheader
   plot [0:1][0:1] "stats-roc-terrain.dat" using "tpr":"ppv" title "PR", \
         1-x lt 3 lc 3
 
-set style fill transparent solid 0.8 noborder
+set style fill transparent solid 1.0 noborder
 set output "terrain-PR-life.pdf"
 set key autotitle columnheader
-  plot [0:1][0:1] '<sort -g -k3 stats-roc-terrain.dat' using "tpr":"ppv":"life" \
+  plot [0:1][0:1] '<sort -g -k3 stats-roc-terrain.dat' using \
+       "tpr":"ppv":(0.005):"life" \
        title "PR" w circles lc palette
 set style fill empty
 
-set style fill transparent solid 0.8 noborder
+set style fill transparent solid 1.0 noborder
 set output "terrain-PR-strength.pdf"
 set key autotitle columnheader
-  plot [0:1][0:1] '<sort -g -k4 stats-roc-terrain.dat' using "tpr":"ppv":"strength" \
+  plot [0:1][0:1] '<sort -g -k4 stats-roc-terrain.dat' using \
+       "tpr":"ppv":(0.005):"strength" \
        title "PR" w circles lc palette
 set style fill empty
 
   
+
+##### PR-peak
+set xlabel "tpr"
+set ylabel "ppv"
+
+set output "terrain-peaks-PR.pdf"
+set key autotitle columnheader
+  plot [0:1][0:1] "stats-roc-terrain-max.dat" using "tpr":"ppv" title "PR-peak", \
+        1-x lt 3 lc 3
+
+set style fill transparent solid 1.0 noborder
+set output "terrain-peaks-PR-life.pdf"
+set key autotitle columnheader
+  plot [0:1][0:1] '<sort -g -k3 stats-roc-terrain-max.dat' using \
+       "tpr":"ppv":(0.005):"life" \
+       title "PR-peak" w circles lc palette
+set style fill empty
+
+set style fill transparent solid 1.0 noborder
+set output "terrain-peaks-PR-strength.pdf"
+set key autotitle columnheader
+  plot [0:1][0:1] '<sort -g -k4 stats-roc-terrain-max.dat' using \
+       "tpr":"ppv":(0.005):"strength" \
+       title "PR-peak" w circles lc palette
+set style fill empty
+
+##### PR-saddle
+set xlabel "tpr"
+set ylabel "ppv"
+
+set output "terrain-saddles-PR.pdf"
+set key autotitle columnheader
+  plot [0:1][0:1] "stats-roc-terrain-sad.dat" using "tpr":"ppv" title "PR-saddle", \
+        1-x lt 3 lc 3
+
+set style fill transparent solid 1.0 noborder
+set output "terrain-saddles-PR-life.pdf"
+set key autotitle columnheader
+  plot [0:1][0:1] '<sort -g -k3 stats-roc-terrain-sad.dat' using \
+       "tpr":"ppv":(0.005):"life" \
+       title "PR-saddle" w circles lc palette
+set style fill empty
+
+set style fill transparent solid 1.0 noborder
+set output "terrain-saddles-PR-strength.pdf"
+set key autotitle columnheader
+  plot [0:1][0:1] '<sort -g -k4 stats-roc-terrain-sad.dat' using \
+       "tpr":"ppv":(0.005):"strength" \
+       title "PR-saddle" w circles lc palette
+set style fill empty
+
+
+
+
+load pwd.'/YlGnBu.plt'
+unset xtics
+unset ytics
+set xtics auto
+set ytics auto
+unset grid
+
+
+set cbrange [*:*]
+
 ##### heat maps of indices
 set xlabel "life"
 set ylabel "strength"
@@ -154,6 +284,68 @@ splot "stats-roc-terrain.dat" \
      using "life":"strength":"f1" \
      title "f1"
 
+set output "terrain-peaks-f1.pdf"
+set key autotitle columnheader
+set pm3d map
+splot "stats-roc-terrain-max.dat" \
+     using "life":"strength":"f1" \
+     title "f1"
+
+set output "terrain-saddles-f1.pdf"
+set key autotitle columnheader
+set pm3d map
+splot "stats-roc-terrain-sad.dat" \
+     using "life":"strength":"f1" \
+     title "f1"
+
+
+# dups
+set output "terrain-duplicates.pdf"
+set key autotitle columnheader
+set pm3d map
+splot "stats-roc-terrain.dat" \
+     using "life":"strength":"duplicates" \
+     title "duplicates"
+
+set output "terrain-peaks-duplicates.pdf"
+set key autotitle columnheader
+set pm3d map
+splot "stats-roc-terrain-max.dat" \
+     using "life":"strength":"duplicates" \
+     title "duplicates"
+
+set output "terrain-saddles-duplicates.pdf"
+set key autotitle columnheader
+set pm3d map
+splot "stats-roc-terrain-sad.dat" \
+     using "life":"strength":"duplicates" \
+     title "duplicates"
+#
+
+# maxcandidates
+set output "terrain-maxcandidates.pdf"
+set key autotitle columnheader
+set pm3d map
+splot "stats-roc-terrain.dat" \
+     using "life":"strength":"maxcandidates" \
+     title "maxcandidates"
+
+set output "terrain-peaks-maxcandidates.pdf"
+set key autotitle columnheader
+set pm3d map
+splot "stats-roc-terrain-max.dat" \
+     using "life":"strength":"maxcandidates" \
+     title "maxcandidates"
+
+set output "terrain-saddles-maxcandidates.pdf"
+set key autotitle columnheader
+set pm3d map
+splot "stats-roc-terrain-sad.dat" \
+     using "life":"strength":"maxcandidates" \
+     title "maxcandidates"
+#
+
+
 set output "terrain-f2.pdf"
 set key autotitle columnheader
 set pm3d map
@@ -167,6 +359,21 @@ set pm3d map
 splot "stats-roc-terrain.dat" \
      using "life":"strength":"f05" \
      title "f05"
+
+set output "terrain-peaks-f05.pdf"
+set key autotitle columnheader
+set pm3d map
+splot "stats-roc-terrain-max.dat" \
+     using "life":"strength":"f05" \
+     title "f05"
+
+set output "terrain-saddles-f05.pdf"
+set key autotitle columnheader
+set pm3d map
+splot "stats-roc-terrain-sad.dat" \
+     using "life":"strength":"f05" \
+     title "f05"
+
 
 set output "terrain-ppv.pdf"
 set key autotitle columnheader

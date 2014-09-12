@@ -1,5 +1,6 @@
 #include "demreader.hh"
 #include "csvreader.hh"
+#include "track.hh"
 
 #include <vector>
 #include <algorithm>
@@ -14,7 +15,8 @@ int window = 2;
 char *input_swiss_file = 0;
 char *asc_file = 0;
 char *output_swiss_file = "swissclassifier_output.csv";
-
+char *track_file = 0;
+double strength_threshold = 2.0;
 
 void print_help (FILE* f)
 {
@@ -22,6 +24,8 @@ void print_help (FILE* f)
 	     // "[-s scalespacefile.ssp]\n"
 	     "-i inputname : csv input file\n"
 	     "-a asc file : for georegistration\n"
+	     "[-t trk file] : activate optional refining step using tracking\n"
+	     "[-S strength_threshold] : strength threshold for refining step\n"
 	     "[-o outputname] : csv output file\n"
 	     "[-W WINDOW] : pixel window for fit classification. default 2 (5x5)\n"
 	     "\n"
@@ -46,6 +50,11 @@ void app_init(int argc, char *argv[])
                 argc--;
                 break;
 
+            case 't':
+                track_file = (*++argv);
+                argc--;
+                break;
+
 	    case 'o':
                 output_swiss_file = (*++argv);
                 argc--;
@@ -53,6 +62,11 @@ void app_init(int argc, char *argv[])
 
             case 'W':
                 window = atoi (*++argv);
+                argc--;
+                break;
+
+            case 'S':
+                strength_threshold = atof (*++argv);
                 argc--;
                 break;
 
@@ -277,6 +291,8 @@ void fill_window_coords (Coord s, std::vector<Coord>& nb, int window)
 	}
 }
 
+void print_swiss (std::vector<SwissSpotHeight> points);
+
 int main (int argc, char *argv[])
 {
     app_init (argc, argv);
@@ -316,8 +332,8 @@ int main (int argc, char *argv[])
 	    // fai la quadrica, fatti dare il tipo, salvalo
 	    Quadric quadpol = Quadric::fit (VV);
 	    
-	    fprintf (stderr, "point %d ", i);
-	    quadpol.print ();
+	    // fprintf (stderr, "point %d ", i);
+	    // quadpol.print ();
 	    // fprintf (stderr, "\n", quadpol.a(), quadpol.b(), quadpol.c(), quadpol.d(),
 	    // 	     quadpol.e(), quadpol.f());
 	    
@@ -325,6 +341,89 @@ int main (int argc, char *argv[])
 	    swiss_class.push_back (swiss[i]);
 	}
     }
+
+    print_swiss (swiss_class);
     
+    int deleted_not_found = 0;
+    int deleted_below_threshold = 0;
+
+    if (track_file == NULL)
+	goto write_and_forget;
+
+    Track *track;
+    TrackOrdering *track_order;
+    track_reader (track_file, &track, &track_order);
+    
+    for (int i = 0; i < swiss_class.size(); i++)
+    {
+	SwissType st = swiss_class[i].t;
+	if (st == OTHER)
+	    continue;
+	
+	// get all pixel coords in window
+	Coord c = point2coord (swiss_class[i].p);
+	std::vector<Coord> nbc;
+	fill_window_coords (c, nbc, window);
+
+	// for every pixel in window search tracking to see if it's there
+	// keep the candidate pixel with most strength
+	double s_max = -DBL_MAX;
+	for (int j = 0; j < nbc.size(); j++)
+	    for (int k = 0; k < track->lines.size(); k++)
+	    {
+		if (nbc[j] != track->lines[k].entries[0].c)
+		    continue;
+
+		if (!is_sametype (track->get_type (k), st))
+		    continue;
+		
+		double s = track->lines[k].strength;
+		if (s > s_max)
+		    s_max = s;
+	    }
+
+	if (s_max == -DBL_MAX)
+	{
+	    deleted_not_found++;
+	    swiss_class[i].t = OTHER;
+	}
+	else if (s_max < strength_threshold)
+	{	
+	    deleted_below_threshold++;
+	    swiss_class[i].t = OTHER;
+	}
+    }    
+
+    printf ("Refining step using tracking. "
+	    "Declassified, not found: %d. Declassified, below threshold: %d.\n"
+	    "New classification...\n", deleted_not_found, deleted_below_threshold);
+    print_swiss (swiss_class);
+    
+ write_and_forget:
     csvio.save (output_swiss_file, swiss_class, true);
+}
+
+
+void print_swiss (std::vector<SwissSpotHeight> points)
+{
+    int other_num, peak_num, pit_num, saddle_num;
+    other_num = peak_num = pit_num = saddle_num = 0;
+    
+    for (int i = 0; i < points.size(); i++)
+	if (points[i].t == OTHER)
+	    other_num++;
+	else if (points[i].t == PEAK)
+	    peak_num++;
+	else if (points[i].t == PIT)
+	    pit_num++;
+	else if (points[i].t == SADDLE)
+	    saddle_num++;
+	else
+	    fprintf (stderr, "WARNING: wrong type in selection, point %d, type %d",
+		     i, points[i].t);
+
+    printf ("Swiss points total: %zu. Peaks: %d, Pits %d, Saddles %d. "
+	    "Not classified (OTHER) %d\n",
+	    points.size(), peak_num, pit_num, saddle_num, other_num);
+    
 }
