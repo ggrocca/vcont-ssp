@@ -32,3 +32,5 @@ util/swissclassifier/swissclassifier
 
 */run*.txt
 */*/run*.txt
+
+util/dems2ssp/dems2ssp
