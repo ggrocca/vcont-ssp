@@ -12,7 +12,7 @@ void print_help ()
 	     "{-i infile | -m infile | -D n mesh1 ... meshN} {-d outfile | -s outfile}\n"
 	     "-i pngFile : path to input png image\n"
 	     "-m meshFile : path to input mesh file\n"
-	     "-D n mesh1 ... meshN : use a scalespace of N smoothed meshes as input (the meshes must be named name_0.off ... name_n-1.off\n"
+	     "-D n mesh1 ... meshN : use a scalespace of N smoothed meshes as input (the meshes must be named name-0.off ... name-n-1.off\n"
 	     "-s sspFile : path to output ssp file\n"
 	     "-d demFile : path to output dem file.\n"
 	     "[-c mapfile] : write map of curvature signs\n"
