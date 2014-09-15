@@ -223,8 +223,16 @@ void curvStacker::setGrid (int w, int h, int c)
     cout << "setGrid(): grid["<<grid_width<<","<<grid_height<<"]"<<endl;    
 }
 
-void curvStacker::executeOnMultipleMeshes(vector<string> meshNames, string outFile)
+void curvStacker::executeOnMultipleMeshes(vector<string> meshNames, string outFile, bool separateDems)
 {
+  
+  
+  if (!separateDems)
+    {
+      printHeader(outFile);
+      n_levels=meshNames.size();
+    }
+  else n_levels=1;
   for (int i=0; i<meshNames.size(); i++)
     {
       std::stringstream ss;
@@ -244,7 +252,8 @@ void curvStacker::executeOnMultipleMeshes(vector<string> meshNames, string outFi
       cerr << "Reading mesh " << meshNames[i] << endl;
       igl::read(meshNames[i],V,F);
       initializeScaleSpace(V);
-      printHeader(trueOut);
+      if (separateDems)
+	printHeader(trueOut);
       cerr << "Mesh read with " << V.rows() << " vertices "  << endl;
       c.zeroDetCheck=false;
       c.init(V,F);
@@ -263,8 +272,11 @@ void curvStacker::executeOnMultipleMeshes(vector<string> meshNames, string outFi
       c.computeCurvature(do_topoindex);
       cerr << "Computed radius " << radius << endl;
       grid? printLevelGrid (V,c.curv) : printLevel(V,c.curv);
-      fclose(fp);
+      if (separateDems)
+	fclose(fp);
     }
+  if (!separateDems)
+    fclose(fp);
 }
 
 void curvStacker::executeOnMesh(string meshFile,string outFile)

@@ -15,6 +15,7 @@ void print_help ()
 	     "-D n mesh1 ... meshN : use a scalespace of N smoothed meshes as input (the meshes must be named name-0.off ... name-n-1.off\n"
 	     "-s sspFile : path to output ssp file\n"
 	     "-d demFile : path to output dem file.\n"
+	     "[-U] (Only if launched with -D option): print a single .ssp file instead of multiple .dem files\n"
 	     "[-c mapfile] : write map of curvature signs\n"
 	     "[-R radius] : radius to compute (dem output)"
 	     "[-B baseRad] : base radius to compute (ssp output)\n"
@@ -26,8 +27,6 @@ void print_help ()
 	     "[-C cellSize] : grid cells have cellSize size.\n"
 	     "[-Z curvMultFactor] : multiply curvature values by this value.\n"
 	     "[-L LowestRandomizedValue] : background has this value, randomized\n"
-	     "[-t topological index search]\n"
-	     "[-L LowestRandomizedValue] : background has this value, randomized.\n"
 	     "[-t] : disable topology Index.\n"
 	     "\n"
 	     );
@@ -38,7 +37,7 @@ double radius = 8.0;
 double maxV = 256.0;
 double step = 2.0;
 bool expStep = false;
-bool do_topoindex = false;
+bool do_topoindex = true;
 unsigned int skip = 2;
 string * meshFile = NULL;
 string * pngFile = NULL;
@@ -53,6 +52,7 @@ int cellSize = 25;
 double lowestRandomValue = 0.0;
 vector<string> meshNames;
 int meshNumb = 0;
+bool separateDems = true;
 
 void app_init(int argc, char *argv[])
 {
@@ -121,7 +121,7 @@ void app_init(int argc, char *argv[])
 	      expStep=true;
 	      break;
 	    case 't':
-	      do_topoindex=true;
+	      do_topoindex=false;
 	      break;
 	    case 'c':
 	      mapFile = new string(*++argv);
@@ -133,6 +133,9 @@ void app_init(int argc, char *argv[])
 	      --argc;
 	      for (int i=0; i<meshNumb; i++, argc--)
 		meshNames.push_back(string(*++argv));
+	      break;
+	    case 'U':
+	      separateDems=false;
 	      break;
 	    case 'h':
 	      print_help();
@@ -185,7 +188,9 @@ int main(int argc, char* argv[])
   if (demFile)
   {
     if (meshNumb>0)
-      s.executeOnMultipleMeshes(meshNames, *demFile);
+      {
+	s.executeOnMultipleMeshes(meshNames, *demFile, separateDems);
+      }
     else if (pngFile)
       s.executeOnPNG(*pngFile, *demFile);
     else if (meshFile)
