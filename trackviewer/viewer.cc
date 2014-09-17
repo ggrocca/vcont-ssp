@@ -492,8 +492,7 @@ int main (int argc, char *argv[])
 		&(td.spot_scale), "min=0.001 max=100.00 step=0.001");
      TwAddVarRW(cBar, "scale by life", TW_TYPE_BOOLCPP, &(td.scale_by_life),"");
      TwAddVarRW(cBar, "scale by strenght", TW_TYPE_BOOLCPP, &(td.scale_by_size),"");
-     TwAddVarRW(cBar, "spot size", TW_TYPE_DOUBLE,
-		&(td.spot_scale), "min=0.001 max=100.00 step=0.001");
+     
 
      TwAddSeparator (cBar, 0, 0);
      TwAddVarRW(cBar, "^ draw maxima", TW_TYPE_BOOLCPP, &(td.draw_maxima),"");
