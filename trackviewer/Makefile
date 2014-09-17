@@ -34,7 +34,7 @@ USERNAME := $(shell whoami)
 
 ## executable name
 # TARGET = exe
-TARGET = trackviewer
+TARGET = spotfilter
 
 ## Directory where build junk goes. Comment this line out or leave
 ## empty if you want to build in the working directory.
@@ -52,10 +52,6 @@ VPATH = ../common ../scaletracker
 # BASELIBS_DIR = ../../external/libs/dir
 BASELIBS_DIR = ../..
 ifeq ($(USERNAME),deggio)
-BASELIBS_DIR = ../../Libraries
-endif
-
-ifeq ($(USERNAME),nikolas)
 BASELIBS_DIR = ../../Libraries
 endif
 
@@ -81,7 +77,7 @@ OBJ_EXT = oo
 ## conflict.
 # CPPSOURCES = file1.cc file2.cc
 # CSOURCES = file1.c file2.c
-CPPSOURCES = viewer.cc camera.cc trackdisplay.cc track.cc demreader.cc scalespace.cc dem.cc flipper.cc trackstats.cc
+CPPSOURCES = viewer.cc camera.cc trackdisplay.cc track.cc demreader.cc scalespace.cc dem.cc flipper.cc trackstats.cc csvreader.cc
 CSOURCES =
 
 ## add directives -D__FILENAME_EXISTS for every file "filename.h" added here.
@@ -171,7 +167,7 @@ override LDFLAGS += -lm -lpthread -L/usr/X11R6/lib -lm -lpthread -lX11
 override LDFLAGS += -Dcimg_use_png -lpng -lz -ltiff -lm -lAntTweakBar
 override STATIC_LDFLAGS += -L/opt/local/lib
 override STATIC_LDFLAGS += -Dcimg_use_png /opt/local/lib/libpng.a /opt/local/lib/libz.a /opt/local/lib/libtiff.a /opt/local/lib/libjpeg.a /opt/local/lib/liblzma.a -lm
-override STATIC_LDFLAGS += -lm ../../Magistrale/AntTweakBar/lib/libAntTweakBar.a -framework AppKit
+override STATIC_LDFLAGS += -lm ${BASELIBS_DIR}/AntTweakBar/lib/libAntTweakBar.a -framework AppKit
 GENERIC = false
 endif
 
@@ -187,7 +183,7 @@ override INCLUDES += -I${BASELIBS_DIR}/AntTweakBar/include/
 override LDFLAGS += -lpng -lz -lm -L${BASELIBS_DIR}/AntTweakBar/lib -lAntTweakBar
 override LDFLAGS += -lglut -lGLU -lX11 -lGL
 override STATIC_LDFLAGS += -static -static-libgcc -static-libstdc++
-override STATIC_LDFLAGS += -lpng -lz -lm -L../../Magistrale/AntTweakBar/lib -lAntTweakBar
+override STATIC_LDFLAGS += -lpng -lz -lm -L${BASELIBS_DIR}/AntTweakBar/lib -lAntTweakBar
 override STATIC_LDFLAGS += -lglut -lGLU -lX11 -lGL
 override INCLUDES += 
 endif

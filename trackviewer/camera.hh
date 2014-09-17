@@ -12,7 +12,7 @@
 #include <GL/glut.h>
 #endif
 
-#include <grid.hh>
+#include "grid.hh"
 
 class Camera {
 public:
