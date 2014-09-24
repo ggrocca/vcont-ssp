@@ -23,6 +23,7 @@ void print_help ()
 	     "[-S stepRad] : step to increase radius (ssp output)\n"
 	     "[-F skipFactor] : skip factor in png2mesh conversion\n"
 	     "[-e] : increase radius exponentially (ssp output)\n"
+	     "[-O n] (n=1,2) : speed up the computation (1 = a bit, 2 = more), the algorithm will be less stable for ill-disposed matrices\n"
 	     "[-G width height] : assume input mesh is a complete grid of given dim.\n"
 	     "[-C cellSize] : grid cells have cellSize size.\n"
 	     "[-Z curvMultFactor] : multiply curvature values by this value.\n"
@@ -53,6 +54,8 @@ double lowestRandomValue = 0.0;
 vector<string> meshNames;
 int meshNumb = 0;
 bool separateDems = true;
+int fastComputation=0;
+
 
 void app_init(int argc, char *argv[])
 {
@@ -141,6 +144,15 @@ void app_init(int argc, char *argv[])
 	      print_help();
 	      exit(0);
 	      break;
+	    case'O':
+	      fastComputation=atoi(*++argv);
+	      argc--;
+	      if (fastComputation!=1 && fastComputation!=2)
+		{
+		  print_help();
+		  exit(-1);
+		}
+	      break;
 	    default:
 	      print_help();
 	      exit(-1);
@@ -173,7 +185,7 @@ int main(int argc, char* argv[])
   now_max = demFile? radius : maxV;
   now_step = demFile? 1 : step;
   now_exp = demFile? 0 : expStep;
-  curvStacker s(now_base, now_max, now_step, now_exp ,skip, mapFile);
+  curvStacker s(now_base, now_max, now_step, now_exp ,skip, mapFile, fastComputation);
 
   if (grid)
       s.setGrid (grid_width, grid_height, cellSize);

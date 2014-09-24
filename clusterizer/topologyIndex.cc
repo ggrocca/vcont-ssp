@@ -583,8 +583,7 @@ void TopologyIndex::auxQuery(Cluster* cluster, vector<vector<int>*>* candidates,
   //visito il cluster
   //inserendo fra i candidati tutti i suoi vertici
   //e propago la ricerca ai suoi vicini
-  //TODO  pick to Vector - Point to Eigen
-  Eigen::Vector3d punto = Eigen::Vector3d(V.row(pick));
+    Eigen::Vector3d punto = Eigen::Vector3d(V.row(pick));
   Point3 p = eigenToPoint(punto);
   if ((cluster->getCenter() - p).length() < (cluster->getRadius() + sphereRadius))
     {
@@ -593,23 +592,45 @@ void TopologyIndex::auxQuery(Cluster* cluster, vector<vector<int>*>* candidates,
       for (vector<Cluster*>::iterator neighbor = cluster->getNeighborhood()->begin(); neighbor < cluster->getNeighborhood()->end(); ++neighbor)
 	auxQuery(*neighbor, candidates, pick, sphereRadius);
     }
+ 
 }
+
+class mycomparison
+{
+public:
+  mycomparison(){};
+  bool operator() (const std::pair<int,double>& lhs, const std::pair<int,double>&rhs) const
+  {
+       return (lhs.second<rhs.second);
+  }
+};
+
 
 //funzione che filtra i candidati eliminando quelli esterni alla sfera di ricerca
 vector<int> TopologyIndex::filterCandidates(vector<vector<int>*>* candidates, int pick, float sphereRadius)
 {
   vector<int> result;
+  std::priority_queue<std::pair<int,double>, vector<std::pair<int,double> >,  mycomparison> others;
   Eigen::Vector3d punto = Eigen::Vector3d(V.row(pick));
   Point3 p = eigenToPoint(punto);
   for (vector<vector<int>*>::iterator candidates_vector = candidates->begin(); candidates_vector < candidates->end(); ++candidates_vector)
     for (vector<int>::iterator candidate = (*candidates_vector)->begin(); candidate < (*candidates_vector)->end(); ++candidate)
       {
-	//TODO candidate to my vec
 	Eigen::Vector3d punto2 = Eigen::Vector3d(V.row(*candidate));
 	Point3 p2 = eigenToPoint(punto2);
 	float distance = (p - p2).length();
-	if (distance <= sphereRadius/* && distance != 0*/) result.push_back(*candidate);
+	if (distance <= sphereRadius/* && distance != 0*/)
+	  result.push_back(*candidate);
+	else
+	  others.push(std::pair<int,double>(*candidate,distance));
       }
+  
+  while (result.size()<6 && !others.empty())
+    {
+      std::pair<int,double> p = others.top();
+      others.pop();
+      result.push_back(p.first);
+    }
   return result;
 }
 

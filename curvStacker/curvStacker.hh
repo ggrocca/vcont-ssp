@@ -25,8 +25,9 @@ class curvStacker
   int grid_width, grid_height, grid_cell_size;  
   bool grid;
   string * mapFile;
+  int fast_computation;
  public:
-  curvStacker(double,double,double,bool,int,string*);
+  curvStacker(double,double,double,bool,int,string*,int);
   void executeOnMesh(string,string);
   void executeOnPNG(string,string);
   void executeOnMultipleMeshes(vector<string>,string, bool);

@@ -13,7 +13,7 @@ of sampling */
 #include "../common/scalespace.hh"
 #include <sstream>
 
-curvStacker::curvStacker(double base_rad, double max_rad, double step, bool expStep, int skipFactor, string* mapFile)
+curvStacker::curvStacker(double base_rad, double max_rad, double step, bool expStep, int skipFactor, string* mapFile, int fast)
 {
   srand((unsigned)time(NULL));
   isExpStep=expStep;
@@ -31,6 +31,7 @@ curvStacker::curvStacker(double base_rad, double max_rad, double step, bool expS
   curvMultFactor = 10e3;
   grid = false;
   do_topoindex = false;
+  fast_computation=fast;
 }
 
 
@@ -269,7 +270,7 @@ void curvStacker::executeOnMultipleMeshes(vector<string> meshNames, string outFi
 
       cerr << "Starting computing radius " << radius << endl;
       c.sphereRadius=radius;
-      c.computeCurvature(do_topoindex);
+      c.computeCurvature(do_topoindex, fast_computation);
       cerr << "Computed radius " << radius << endl;
       grid? printLevelGrid (V,c.curv) : printLevel(V,c.curv);
       if (separateDems)
@@ -299,15 +300,15 @@ void curvStacker::executeOnMesh(string meshFile,string outFile)
     }
   
   printHeader(outFile);
-  cerr << "Mesh read with " << V.rows() << " vertices "  << endl;
   c.zeroDetCheck=false;
+  cerr << "Mesh read with " << V.rows() << " vertices "  << endl << endl;
   c.init(V,F);
   cout << "expStep: " << isExpStep << " step: " << step << endl;
   for (double r=base_radius; r<=max_radius; isExpStep?r*=step:r+=step)
     {
       cerr << "Starting computing radius " << r << endl;
       c.sphereRadius=r;
-      c.computeCurvature(do_topoindex);
+      c.computeCurvature(do_topoindex,fast_computation);
       cerr << "Computed radius " << r << endl;
       grid? printLevelGrid (V,c.curv) : printLevel(V,c.curv);
     }
