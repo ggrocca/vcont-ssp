@@ -109,13 +109,9 @@ override TRACE_FLAGS += -DDEBUGTRACE
 override RELEASE_FLAGS += -O3 -DNDEBUG
 override INCLUDES +=  -I../common/ -I../clusterizer
 
-ifneq (,$(filter $(USERNAME),deggio nikolas))
-override INCLUDES +=  -I../igl_LOCAL/libigl/include -I${BASELIBS_DIR}/Eigen -I../common/ -I../clusterizer
-endif
 
-ifeq ($(USERNAME),gg)
-override INCLUDES +=  -I${BASELIBS_DIR}/igl_LOCAL/libigl/include -I${BASELIBS_DIR}/Eigen/ -I../common/ -I../clusterizer
-endif
+override INCLUDES +=  -I../igl_LOCAL/libigl/include -I${BASELIBS_DIR}/Eigen -I../common/ -I../clusterizer
+
 
 override DEFINES += 
 override LDFLAGS += 
