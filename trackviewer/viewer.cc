@@ -435,7 +435,7 @@ int main (int argc, char *argv[])
 
     // td.multiply = 1.0;
     td.multiply = mult_factor;
-    // TwAddVarRW(cBar, "mult factor", TW_TYPE_DOUBLE, &td.multiply, "min=1.0 "max=256.0" step=1.0");
+    TwAddVarRW(cBar, "mult factor", TW_TYPE_DOUBLE, &td.multiply, "min=1.0 step=1.0");
 
     TwAddSeparator (cBar, 0, 0);
     // TwAddSeparator (cBar, 0, 0);
@@ -492,7 +492,10 @@ int main (int argc, char *argv[])
 		&(td.spot_scale), "min=0.001 max=100.00 step=0.001");
      TwAddVarRW(cBar, "scale by life", TW_TYPE_BOOLCPP, &(td.scale_by_life),"");
      TwAddVarRW(cBar, "scale by strenght", TW_TYPE_BOOLCPP, &(td.scale_by_size),"");
-     
+     TwAddVarRW(cBar, "life importance", TW_TYPE_DOUBLE,
+		&(td.life_imp), "min=0.001 max=1.00 step=0.001");
+     TwAddVarRW(cBar, "strength importance", TW_TYPE_DOUBLE,
+		&(td.strength_imp), "min=0.001 max=1.00 step=0.001");
 
      TwAddSeparator (cBar, 0, 0);
      TwAddVarRW(cBar, "^ draw maxima", TW_TYPE_BOOLCPP, &(td.draw_maxima),"");

@@ -64,7 +64,8 @@ public:
   int sellae_draw_num;
   bool scale_by_life;
   bool scale_by_size;
-
+  double life_imp;
+  double strength_imp;
 
     // bool draw_time_labels;
     bool draw_terrain;

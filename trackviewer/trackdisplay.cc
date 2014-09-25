@@ -55,6 +55,8 @@ TrackDisplay::TrackDisplay()
     draw_sellae=false;
     scale_by_life=true;
     scale_by_size=false;
+    life_imp=0.01;
+    strength_imp=0.01;
 
     draw_elixir = false;
     elixir_mult = 1.0;
@@ -707,7 +709,9 @@ void TrackDisplay::draw (int dem_idx)
 		int idx = spots_add[i];
 		double scale=0.0;
 		if (scale_by_life)
-		  scale=0.1*track->lifetime_elixir(idx);
+		  scale+=life_imp*track->lifetime_elixir(idx);
+		if (scale_by_size)
+		  scale+=strength_imp*track->lines[spots_add[i]].strength;
 		__draw_critical_elixir (track->lines[idx].entries[0].c,
 					track->original_type (idx),
 					track->lifetime_elixir (idx),
