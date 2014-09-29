@@ -274,8 +274,7 @@ bool Dem::has_plateaus ()
 		c.round_trip_6 (&nc);
 		if (is_equal (c, nc))
 		{
-		    tprintsp (SCOPE_PLATEUS, "----> PLATEAUS:",
-			      "[%d,%d]==[%d,%d]. Values: %le,%le --- -DBL_MAX=%le\n",
+		    printf ( "----> PLATEAUS: [%d,%d]==[%d,%d]. Values: %le,%le --- -DBL_MAX=%le\n",
 			      c.x, c.y, nc.x, nc.y, (*this)(c), (*this)(nc), -DBL_MAX);
 		    return true;
 		}

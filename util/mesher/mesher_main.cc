@@ -13,7 +13,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
-
+#include <set>
 
 char *imagefile = 0;
 char *sspname = 0;
@@ -185,12 +185,16 @@ void mesher (Dem* dem, const char* offname)
 {
     std::vector< std::vector<int> > vs;
     std::vector< std::vector<int> > fs;
+    std::set<int> zeroVert;
+
+    std::vector< std::vector<int> > newvs;
+    std::vector< std::vector<int> > newfs;
 
     // int k = 0;
     for (int i = 0; i < dem->width; i++)
 	for (int j = 0; j < dem->height; j++)
 	{
-	    // vertices
+	  // vertices
 	    std::vector<int> vertex;
 	    vertex.push_back (i * cell_size);
 	    vertex.push_back (j * cell_size);
@@ -222,17 +226,72 @@ void mesher (Dem* dem, const char* offname)
 	    }
 	}
 
+
+
+    int thresh=10;
+    int totVert=0;
+    for (int i=0; i<vs.size(); i++)
+      {
+	//TODO: call depending on parameter, thres as variable
+	if (vs[i][2]<thresh)
+	  zeroVert.insert(i);
+	else
+	  {
+	    totVert++;
+	    newvs.push_back(vs[i]);
+	  }
+      }
+
+    int* realIndex=(int*)calloc(vs.size(),sizeof(int));
+
+    int k=0;
+    for (int i=0; i<vs.size(); i++)
+      {
+	if (zeroVert.count(i)!=0)
+	  continue;
+	realIndex[i]=k++;
+      }
+
+    for (int i=0; i<fs.size(); i++)
+      {
+	if (zeroVert.count(fs[i][0])!=0 || zeroVert.count(fs[i][1])!=0 || zeroVert.count(fs[i][2])!=0 )
+	  continue;
+	std::vector<int> vv;
+	vv.push_back(realIndex[fs[i][0]]);
+	vv.push_back(realIndex[fs[i][1]]);
+	vv.push_back(realIndex[fs[i][2]]);
+	newfs.push_back(vv);
+      }
+    
     FILE *f = fopen (offname, "w");
     if (f == NULL)
 	eprintx (2, "Could not open file `%s'. %s\n", offname, strerror (errno));
     
-    fprintf (f, "OFF\n%zu %zu 0\n", vs.size(), fs.size());
 
-    for (unsigned i = 0; i < vs.size(); i++)
-	fprintf (f, "%d %d %d\n", vs[i][0], vs[i][1], vs[i][2]);
+    fprintf (f, "OFF\n%zu %zu 0\n", newvs.size(), newfs.size());
 
-    for (unsigned i = 0; i < fs.size(); i++)
-	fprintf (f, "3 %d %d %d\n", fs[i][0], fs[i][1], fs[i][2]);
+    for (unsigned i = 0; i < newvs.size(); i++)
+	fprintf (f, "%d %d %d\n", newvs[i][0], newvs[i][1], newvs[i][2]);
+
+    for (unsigned i = 0; i < newfs.size(); i++)
+	fprintf (f, "3 %d %d %d\n", newfs[i][0], newfs[i][1], newfs[i][2]);
+
+    fclose(f);
+    #include <unistd.h>
+    char un[64] = "\0";
+    getlogin_r (un, 64);
+    std::string username_curr (un);
+    std::string username_gg ("gg");
+    std::string meshlabserver_path ((username_gg == username_curr)?
+				    "/Applications/meshlab.app/Contents/MacOS/meshlabserver":
+				    "meshlabserver");
+    // std::cout << username_curr <<":"<< username_gg<<":"<<meshlabserver_path<<std::endl;
+
+
+    std::string removescript ((username_gg == username_curr)? "removegg.mlx" : "remove.mlx");
+  
+    std::string cmd = meshlabserver_path+" -i "+offname+" -o "+offname+" -s "+removescript;
+    system(cmd.c_str());
 }
 
 
