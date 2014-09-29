@@ -270,7 +270,7 @@ void curvStacker::executeOnMultipleMeshes(vector<string> meshNames, string outFi
 
       cerr << "Starting computing radius " << radius << endl;
       c.sphereRadius=radius;
-      if (r<16)
+      if (radius<16)
 	c.computeCurvature(false,fast_computation);
       else
 	c.computeCurvature(do_topoindex,fast_computation);
