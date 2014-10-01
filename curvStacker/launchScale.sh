@@ -49,7 +49,7 @@ do
     fi
 
     echo "./curvStacker -D $n_m ${meshes[@]:0+$((i*a)):$a} -d ${!argsN} -C 25 -G 703 697 -O 2 &"
-    ./curvStacker -D $n_m ${meshes[@]:0+$((i*a)):$a} -d ${!argsN} -C 25 -G 703 697 -t &
+    ./curvStacker -D $n_m ${meshes[@]:0+$((i*a)):$a} -d ${!argsN} -C 1 -O 2 -L -20000 -t &
  done
 
 

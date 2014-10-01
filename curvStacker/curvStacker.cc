@@ -270,7 +270,10 @@ void curvStacker::executeOnMultipleMeshes(vector<string> meshNames, string outFi
 
       cerr << "Starting computing radius " << radius << endl;
       c.sphereRadius=radius;
-      c.computeCurvature(do_topoindex, fast_computation);
+      if (radius<16)
+	c.computeCurvature(false,fast_computation);
+      else
+	c.computeCurvature(do_topoindex,fast_computation);
       cerr << "Computed radius " << radius << endl;
       grid? printLevelGrid (V,c.curv) : printLevel(V,c.curv);
       if (separateDems)
@@ -308,7 +311,10 @@ void curvStacker::executeOnMesh(string meshFile,string outFile)
     {
       cerr << "Starting computing radius " << r << endl;
       c.sphereRadius=r;
-      c.computeCurvature(do_topoindex,fast_computation);
+      if (r<16)
+	c.computeCurvature(false,fast_computation);
+      else
+	c.computeCurvature(do_topoindex,fast_computation);
       cerr << "Computed radius " << r << endl;
       grid? printLevelGrid (V,c.curv) : printLevel(V,c.curv);
     }
