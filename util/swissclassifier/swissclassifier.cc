@@ -135,16 +135,19 @@ public:
     
     double dxy(double x, double y)
     {
-	return b();
+	(void) x, (void) y;
+ 	return b();
     }
     
     double dxx(double x, double y)
     {
+	(void) x, (void) y;
 	return 2.0*a();
     }
     
     double dyy(double x, double y)
     {
+	(void) x, (void) y;
 	return 2.0*c();
     }
     
@@ -182,7 +185,8 @@ public:
 	return Quadric (sol(0),sol(1),sol(2),sol(3),sol(4),sol(5));
     }
 
-    bool isZeroInWindow (double w, Point* zero)
+    // bool isZeroInWindow (double w, Point* zero)
+    bool isZeroInWindow (double w)
     {
 	// solve this
 	// 2a  b | x = | -d
@@ -201,8 +205,8 @@ public:
 	xx = AA.fullPivHouseholderQr ().solve (bb);
 
 	// if x,y is inside (-w,-w)(w,w) return true
-	zero->x = xx(0);
-	zero->y = xx(1);
+	// zero->x = xx(0);
+	// zero->y = xx(1);
 	return
 	    xx(0) > -w &&
 	    xx(0) <  w &&
@@ -210,7 +214,8 @@ public:
 	    xx(1) <  w;
     }
 
-    SwissType studyHessian (Point zero)
+    // ClassifiedType studyHessian (Point zero)
+    ClassifiedType studyHessian ()
     {
 	// TBD
 	// study sign of determinant of 
@@ -233,11 +238,13 @@ public:
 	eprintx (-1,"%s\n","Impossible combination.");
     }
     
-    SwissType getSwissType (double w)
+    ClassifiedType getClassifiedType (double w)
     {
-	Point z;
-	if (isZeroInWindow (w, &z))
-	    return studyHessian (z);
+	// Point z;
+	// if (isZeroInWindow (w, &z))
+	//     return studyHessian (z);
+	if (isZeroInWindow (w))
+	    return studyHessian ();
 	else
 	    return OTHER;
     }
@@ -312,7 +319,7 @@ int main (int argc, char *argv[])
     
     // classification
     // per ogni punto svizzero che giace su un pixel distante almeno W dai bordi
-    for (int i = 0; i < swiss.size(); i++)
+    for (unsigned i = 0; i < swiss.size(); i++)
     {
 	Coord c = point2coord (swiss[i].p);
 	if (c.is_inside (width, height, window))
@@ -322,7 +329,7 @@ int main (int argc, char *argv[])
 	    std::vector<Eigen::Vector3d> VV;
 	    fill_window_coords (c, nbc, window);
 	    VV.resize (nbc.size());
-	    for (int j = 0; j < nbc.size(); j++)
+	    for (unsigned j = 0; j < nbc.size(); j++)
 	    {
 		VV[j][0] = nbw[j].x;
 		VV[j][1] = nbw[j].y;
@@ -336,8 +343,10 @@ int main (int argc, char *argv[])
 	    // quadpol.print ();
 	    // fprintf (stderr, "\n", quadpol.a(), quadpol.b(), quadpol.c(), quadpol.d(),
 	    // 	     quadpol.e(), quadpol.f());
-	    
-	    swiss[i].t = quadpol.getSwissType (window);
+
+	    swiss[i].ct = quadpol.getClassifiedType (window);
+	    swiss[i].z = ascr.get_pixel (c.x, c.y);
+	    db_add (swiss[i].dbt, DB_CLASSIFICATION);
 	    swiss_class.push_back (swiss[i]);
 	}
     }
@@ -354,9 +363,9 @@ int main (int argc, char *argv[])
     TrackOrdering *track_order;
     track_reader (track_file, &track, &track_order);
     
-    for (int i = 0; i < swiss_class.size(); i++)
+    for (unsigned i = 0; i < swiss_class.size(); i++)
     {
-	SwissType st = swiss_class[i].t;
+	ClassifiedType st = swiss_class[i].ct;
 	if (st == OTHER)
 	    continue;
 	
@@ -368,8 +377,8 @@ int main (int argc, char *argv[])
 	// for every pixel in window search tracking to see if it's there
 	// keep the candidate pixel with most strength
 	double s_max = -DBL_MAX;
-	for (int j = 0; j < nbc.size(); j++)
-	    for (int k = 0; k < track->lines.size(); k++)
+	for (unsigned j = 0; j < nbc.size(); j++)
+	    for (unsigned k = 0; k < track->lines.size(); k++)
 	    {
 		if (nbc[j] != track->lines[k].entries[0].c)
 		    continue;
@@ -385,12 +394,12 @@ int main (int argc, char *argv[])
 	if (s_max == -DBL_MAX)
 	{
 	    deleted_not_found++;
-	    swiss_class[i].t = OTHER;
+	    swiss_class[i].ct = OTHER;
 	}
 	else if (s_max < strength_threshold)
 	{	
 	    deleted_below_threshold++;
-	    swiss_class[i].t = OTHER;
+	    swiss_class[i].ct = OTHER;
 	}
     }    
 
@@ -400,7 +409,7 @@ int main (int argc, char *argv[])
     print_swiss (swiss_class);
     
  write_and_forget:
-    csvio.save (output_swiss_file, swiss_class, true);
+    csvio.save (output_swiss_file, swiss_class);
 }
 
 
@@ -409,21 +418,20 @@ void print_swiss (std::vector<SwissSpotHeight> points)
     int other_num, peak_num, pit_num, saddle_num;
     other_num = peak_num = pit_num = saddle_num = 0;
     
-    for (int i = 0; i < points.size(); i++)
-	if (points[i].t == OTHER)
+    for (unsigned i = 0; i < points.size(); i++)
+	if (points[i].ct == OTHER)
 	    other_num++;
-	else if (points[i].t == PEAK)
+	else if (points[i].ct == PEAK)
 	    peak_num++;
-	else if (points[i].t == PIT)
+	else if (points[i].ct == PIT)
 	    pit_num++;
-	else if (points[i].t == SADDLE)
+	else if (points[i].ct == SADDLE)
 	    saddle_num++;
 	else
 	    fprintf (stderr, "WARNING: wrong type in selection, point %d, type %d",
-		     i, points[i].t);
+		     i, points[i].ct);
 
     printf ("Swiss points total: %zu. Peaks: %d, Pits %d, Saddles %d. "
 	    "Not classified (OTHER) %d\n",
 	    points.size(), peak_num, pit_num, saddle_num, other_num);
-    
 }

@@ -49,7 +49,7 @@ bool do_final_query = false;
 void print_help (FILE* f)
 {
     fprintf (f, "Usage: scaletracker\n"
-	     "-n numlevel : number of levels\n"
+	     "[-n numlevel] : number of levels\n"
 	     "[-i imagefile] : supported inputs formats hgt, png, bmp\n"
 	     "[-d demfile] : load dem in double raw format\n"
 	     "[-r scalespace.ssp] : read scalespace in binary format\n"
@@ -234,6 +234,13 @@ void app_init(int argc, char *argv[])
 	goto die;
     }
 
+    if ((imagefile != NULL || demfile != NULL) && numlevel < 2)
+    {
+	fprintf (stderr, "Number of levels `%d' is not valid. "
+		 "Positive integer greater than 1 required.\n", numlevel);
+	goto die;	
+    }
+    
     if (filter_algo < 0 || filter_algo > 2)
     {
 	fprintf (stderr, "Unrecognized filter algorithm.\n");

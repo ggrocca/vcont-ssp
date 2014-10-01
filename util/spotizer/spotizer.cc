@@ -436,12 +436,12 @@ int main (int argc, char *argv[])
 void query_track (Track* track, double life, double strength,
 		  std::vector <TrackSpot>& spots,
 		  std::vector <Point>& points,
-		  SwissType st = ALL);
+		  ClassifiedType st = ALL);
 
 char* roc_header = "x y life strength tpr fpr tnr fnr ppv npv "
 		  "f1 f2 f05 informedness markedness mcc tp fp fn tn "
 		  "duplicates maxcandidates";
-enum {
+enum roc_types_t {
     TPR_NUM=0, FPR_NUM, TNR_NUM, FNR_NUM,
     PPV_NUM, NPV_NUM,
     F1_NUM, F2_NUM, F05_NUM,
@@ -506,7 +506,7 @@ void write_roc_stats (FILE* f, int i, int j, bool last, double life, double stre
 
 void query_and_save (std::string prepend, double life, double strength,
 		     std::vector <SwissSpotHeight>& sw, std::vector<Point>& swps,
-		     SwissType st = ALL);
+		     ClassifiedType st = ALL);
 
 void main_query ()
 {
@@ -532,7 +532,7 @@ void main_query ()
 	std::string kt_output;
 	std::vector<Point> kt_swps;
 	std::vector <SwissSpotHeight> kt_sw;
-	SwissType kt_st;
+	ClassifiedType kt_st;
 	std::string kt_name;
 
 	switch (kt)
@@ -694,7 +694,7 @@ void main_query ()
 
 void query_and_save (std::string prepend, double life, double strength,
 		     std::vector<SwissSpotHeight>& sw, std::vector<Point>& swps,
-		     SwissType st)
+		     ClassifiedType st)
 {
     
     std::vector <TrackSpot> query_t;
@@ -1213,7 +1213,7 @@ void classify_swiss (std::vector <SwissSpotHeight> s,
 void query_track (Track* track, double life, double strength,
 		  std::vector <TrackSpot>& spots,
 		  std::vector <Point>& points,
-		  SwissType st)
+		  ClassifiedType st)
 {
     spots.clear ();
     points.clear ();

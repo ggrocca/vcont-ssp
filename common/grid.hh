@@ -157,7 +157,7 @@ public:
 
 typedef Pair<double> Point;
 
-static double point_distance (Point a, Point b)
+inline double point_distance (Point a, Point b)
 {
     return sqrt (((a.x - b.x) * (a.x - b.x)) + ((a.y - b.y) * (a.y - b.y)));
 }
@@ -336,7 +336,7 @@ public:
 };
 
 
-static Coord point2coord (Point p)
+inline Coord point2coord (Point p)
 {
     return Coord (floor (p.x), floor (p.y));
 }

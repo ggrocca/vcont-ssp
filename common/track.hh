@@ -153,6 +153,7 @@ public:
     CriticalType original_type (int i);
     
     double lifetime_elixir (int i);
+    double strength (int i);
 
 private:
     int __get_min_border_distance (int i);

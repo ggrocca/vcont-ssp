@@ -50,12 +50,11 @@ VPATH = ../clusterizer
 ## convenience when defining INCLUDES and LDFLAGS. Define as many as
 ## such variables as you need.
 # BASELIBS_DIR = ../../external/libs/dir
-ifeq ($(USERNAME),deggio)
+
+ifneq (,$(filter $(USERNAME),deggio nikolas))
 BASELIBS_DIR = ../../Libraries
 endif
-ifeq ($(USERNAME),nikolas)
-BASELIBS_DIR = ../../Libraries
-endif
+
 ifeq ($(USERNAME),gg)
 BASELIBS_DIR = ../../libs
 endif
