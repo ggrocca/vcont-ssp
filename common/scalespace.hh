@@ -77,6 +77,7 @@ public:
     void point_print_interpolated (int scope, int level, double t, Coord c);
     void write_critical (char* filename);
     void write_scalespace (char* filename);
+    void write_plateaus (char* filename);
 
     std::vector<Dem*> dem;
     std::vector< std::vector<CriticalPoint> > critical;

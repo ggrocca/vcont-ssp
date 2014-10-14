@@ -7,6 +7,7 @@
 #include "../common/demreader.hh"
 #include "../common/scalespace.hh"
 #include "flipper.hh"
+#include "../common/csvreader.hh"
 
 #include "imagewriter.hh"
 // #include "tracking.hh"
@@ -21,8 +22,10 @@ char *demfile = 0;
 char *out_name = 0;
 char *tracking_name = 0;
 char *critical_name = 0;
+char *critical_csv_name = 0;
 char *scalespace_write_name = 0;
 char *scalespace_read_name = 0;
+char *plateau_name = 0;
 char *tiffnames = 0;
 char *statfile = 0;
 int numlevel = 0;
@@ -164,13 +167,19 @@ void app_init(int argc, char *argv[])
 #define _FNLEN 512
 		static char _tracking_str[_FNLEN] = {'\0'};
 		static char _critical_str[_FNLEN] = {'\0'};
+		static char _critical_csv_str[_FNLEN] = {'\0'};
 		static char _scalespace_str[_FNLEN] = {'\0'};
+		static char _plateau_str[_FNLEN] = {'\0'};
 		snprintf (_tracking_str, _FNLEN, "%s%s" ,out_name, ".trk");
 		snprintf (_critical_str, _FNLEN, "%s%s" ,out_name, ".crt");
+		snprintf (_critical_csv_str, _FNLEN, "%s%s" ,out_name, ".crt.csv");
 		snprintf (_scalespace_str, _FNLEN, "%s%s" ,out_name, ".ssp");
+		snprintf (_plateau_str, _FNLEN, "%s%s" ,out_name, ".ssp");
 		tracking_name = &(_tracking_str[0]);
 		critical_name = &(_critical_str[0]);
+		critical_csv_name = &(_critical_csv_str[0]);
 		scalespace_write_name = &(_scalespace_str[0]);
+		plateau_name = &(_plateau_str[0]);
 #undef _FNLEN
 		argc--;
                 break;
@@ -263,13 +272,24 @@ int main (int argc, char *argv[])
     
     Dem* idem = NULL;
     DEMReader* dr = NULL;
+    bool asc_image = false;
+    DEMSelector::Format fmt;
+    CSVReader csvio;
 
     if (imagefile != NULL)
     {
-	dr = DEMSelector::get (imagefile);
+	dr = DEMSelector::get (imagefile, &fmt);
 	dr->print_info ();
 	idem = new Dem (dr);
 	delete dr;
+
+	if (fmt == DEMSelector::ASC)
+	{
+	    ASCReader* ascr = new ASCReader (imagefile);
+	    csvio = CSVReader (*ascr);
+	    delete ascr;
+	}
+	    
     }
 
     if (demfile != NULL)
@@ -379,10 +399,21 @@ int main (int argc, char *argv[])
     }
     
     if (check_plateaus)
+    {
+	int level_with_flats = -1;
 	for (int i = 0; i < ssp->levels; i++)
 	    if (ssp->dem[i]->has_plateaus())
-		eprintx (2, "Dem at level %d has flat areas. Aborting.\n", i);
+	    {
+		level_with_flats = i;
+		break;
+	    }
 
+	ssp->write_plateaus (plateau_name);
+	
+	eprintx (2, "Scalespace has flat areas, starting at level %d. Aborting.\n",
+		 level_with_flats);
+    }
+    
     if (stage == 3)
 	exit (0);
 
@@ -411,6 +442,9 @@ int main (int argc, char *argv[])
 
     if (critical_name)
 	ssp->write_critical (critical_name);
+    
+    if (critical_csv_name)
+	csvio.save (critical_csv_name, ssp);
 
     if (scalespace_write_name)
 	ssp->write_scalespace (scalespace_write_name);

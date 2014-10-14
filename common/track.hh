@@ -139,6 +139,8 @@ public:
     bool is_getting_born (int i, unsigned j);
     double travel (int i);
 
+    Coord coord (int i);
+    Point point (int i);
     Point final_point (int i);
     Point start_point (int i);
     double lifetime (int i);
@@ -158,6 +160,27 @@ public:
 private:
     int __get_min_border_distance (int i);
 };
+
+
+class TrackMap {
+    //Track& track;
+    Grid<int> grid;
+    
+public:
+    
+    TrackMap (Track& track) : grid (track.width, track.height, -1)
+    {
+	for (int i = 0; i < track.lines.size(); i++)
+	    if (track.is_original (i))
+		grid (track.coord (i)) = i;
+    }
+
+    int operator() (Coord c)
+    {
+	return grid (c); // -1 if nothing's here
+    }
+};
+
 
 class TrackEntryPointer
 {
@@ -244,9 +267,10 @@ private:
     void update_positions (bool forward);
 };
 
-
 void track_writer (const char *filename, Track* track, TrackOrdering* order);
 void track_reader (const char *filename, Track** track, TrackOrdering** order);
+
+
 
 static inline const char* flip_event2string (FlippingEventType type)
 {

@@ -34,7 +34,7 @@ USERNAME := $(shell whoami)
 
 ## executable name
 # TARGET = exe
-TARGET = swissclassifier
+TARGET = track2csv
 
 ## Directory where build junk goes. Comment this line out or leave
 ## empty if you want to build in the working directory.
@@ -75,7 +75,7 @@ OBJ_EXT = oo
 # CPPSOURCES = file1.cc file2.cc
 # CSOURCES = file1.c file2.c
 CPPSOURCES = csvreader.cc demreader.cc dem.cc track.cc flipper.cc trackstats.cc scalespace.cc
-CPPSOURCES += swissclassifier.cc
+CPPSOURCES += track2csv.cc
 
 ## add directives -D__FILENAME_EXISTS for every file "filename.h" added here.
 ## purpose: untracked files with custom build configurations.
@@ -97,7 +97,7 @@ CUSTOM_HEADERS = custom_header.h
 # override STATIC_LDFLAGS +=
 # override FRAMEWORKS +=
 override FLAGS += 
-override DEBUG_FLAGS += -Wall -Wextra -Wno-unused-local-typedefs -g -femit-class-debug-always
+override DEBUG_FLAGS += -Wall -Wextra -Wno-unused-local-typedefs -g
 override TRACE_FLAGS += -DDEBUGTRACE
 override RELEASE_FLAGS += -O2 -DNDEBUG
 override INCLUDES += -I../../common/ -I${BASELIBS_DIR}/Eigen/ -I../common/

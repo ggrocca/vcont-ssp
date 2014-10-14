@@ -45,6 +45,8 @@ public:
     // void read_dem (char *file);
     void read_ssp (char *file);
     void read_track (char *file);
+    void read_asc (char* file);
+    void set_boundaries ();
     void query (double t);
     void getbb (double* cx, double* cy, double* diam);
     void getbb (Point* a, Point* b);
@@ -58,6 +60,7 @@ public:
     bool draw_terrain;
     double clip_black;
     double clip_white;
+    int width, height;
     double multiply;
 
     bool draw_track;
@@ -149,12 +152,12 @@ public:
 
     // std::vector<DEMReader*> dems;
     ScaleSpace* ssp;
+    ASCReader* asc;
     Track* track;
     std::vector<TrackRenderingEntry> vquery;
     TrackOrdering *track_order;
     vector<int> spots_current;
-
-
+    
     // swisstopo additional points load/save/show
     bool draw_csv;
     bool swpts_active;
@@ -163,7 +166,6 @@ public:
     double swpts_cellsize;
     std::vector<SwissSpotHeight> swpts_ground_truth;
     
-    void swpts_load_asc (char* filename);
     void swpts_draw ();
     void swpts_load_csv (char* filename);
     void swpts_save_csv (char* filename);

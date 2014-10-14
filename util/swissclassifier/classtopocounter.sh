@@ -1,7 +1,11 @@
 #!/bin/bash
 
+if [ $# -eq 1 ]; then
+    DIR="$1"
+else
+    DIR=../../../datasets/dhm25
+fi
 
-DIR=../../../datasets/dhm25
 N=name_pkt-classified.csv
 H=hoehenkote-classified.csv
 M=morph_kleinform-classified.csv
@@ -140,7 +144,7 @@ echo -e "$H600 \n\t all=$H600_ALL \n\t other=$H600_OTHER \
      \n\t peak=$H600_PEAK \n\t pit=$H600_PIT \n\t saddle=$H600_SADDLE \n"
 
 
-echo -e "\n\n  DATABASE: $H \n"
+echo -e "\n\n  DATABASE: $M \n"
 
 M100=MORPH_DOLINE_100
 M200=MORPH_ERRATIC_200

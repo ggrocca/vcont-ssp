@@ -73,8 +73,9 @@ OBJ_EXT = oo
 ## conflict.
 # CPPSOURCES = file1.cc file2.cc
 # CSOURCES = file1.c file2.c
-CPPSOURCES = 	dem.cc demreader.cc gaussian.cc scalespace.cc track.cc \
-		flipper.cc imagewriter.cc trackstats.cc scaletracker_main.cc
+CPPSOURCES = dem.cc demreader.cc gaussian.cc scalespace.cc track.cc 
+CPPSOURCES += flipper.cc imagewriter.cc trackstats.cc csvreader.cc
+CPPSOURCES += scaletracker_main.cc
 CSOURCES = rastertiff.c
 
 ## add directives -D__FILENAME_EXISTS for every file "filename.h" added here.

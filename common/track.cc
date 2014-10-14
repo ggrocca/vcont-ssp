@@ -357,6 +357,16 @@ Point Track::final_point (int i)
 //     return p;
 // }
 
+Coord Track::coord (int i)
+{
+    return lines[i].entries[0].c;
+}
+
+Point Track::point (int i)
+{
+    return start_point (i);
+}
+
 Point Track::start_point (int i)
 {
     Point p;

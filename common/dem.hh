@@ -131,6 +131,7 @@ public:
 
     bool is_equal (Coord a, Coord b);                // given points have equal value
     bool has_plateaus ();            // this dem has adjacent points with equal value
+    void identify_plateaus (std::vector < std::vector <Coord> >& plateaus_list);
 
     RelationType point_relation (Coord a, Coord b);  // relation between adyacent a,b
     CriticalType point_type (Coord c);                       // classify point, coord
@@ -143,7 +144,13 @@ public:
 
     Averhood averhood (CriticalPoint cp, int kernel, Averhood prev);
     void averhood_max (CriticalPoint cp, int kernel,
-			    double* strength, int* kernel_max);
+		       double* strength, int* kernel_max);
+
+private:
+
+    bool _recursive_label (Grid<int>* idplats, Coord c, int label,
+			   std::vector <Coord>& label_list);
+
 };
 
 #endif // _DEM_HH

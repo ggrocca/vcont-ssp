@@ -258,6 +258,59 @@ bool Dem::is_equal (Coord a, Coord b)
     return true;
 }
 
+bool Dem::_recursive_label (Grid<int>* idplats, Coord c, int label,
+		       std::vector <Coord>& label_list)
+{
+    if ((*idplats)(c) != -1)
+	return false;
+    
+    bool found_plats = false;
+
+    Coord nc;
+    for (int k = 0; k < 6; k++)
+    {
+	c.round_trip_6 (&nc);
+
+	if (is_equal (c, nc))
+	{
+	    if (found_plats = false)
+	    {
+		found_plats = true;
+		label_list.push_back (c);
+		(*idplats)(c) = label;
+	    }
+	    
+	    _recursive_label (idplats, nc, label, label_list);
+	}
+    }
+
+    return found_plats;
+}
+
+void Dem::identify_plateaus (std::vector < std::vector <Coord> >& plateaus_list)
+{
+    int label = 0;
+    plateaus_list.clear ();
+    plateaus_list.push_back (std::vector <Coord> (0));
+    Grid<int>* idplats = new Grid<int> (width, height, -1);
+
+    for (int i = 0; i < width; i++)
+	for (int j = 0; j < height; j++)
+	{
+	    Coord c = Coord (i,j);
+	    
+	    if (is_clip (c))
+	    	continue;
+
+	    if (_recursive_label (idplats, c, label, plateaus_list[label]))
+	    {
+		label++;
+		plateaus_list.push_back (std::vector <Coord> (0));
+	    }
+	}
+}
+
+
 bool Dem::has_plateaus ()
 {
     for (int i = 0; i < width; i++)

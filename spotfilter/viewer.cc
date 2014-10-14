@@ -303,7 +303,7 @@ void app_init(int argc, char *argv[])
         }
     }
 
-    if (ssp_file == NULL || trk_file == NULL)
+    if ((ssp_file == NULL && asc_file == NULL) || trk_file == NULL)
     {
 	fprintf (stderr, "Error: no scalespace or tracking input given.\n\n");
 	goto die;
@@ -345,15 +345,18 @@ int main (int argc, char *argv[])
 
     // int dem_num;
     // read_dems (argv[2], dem_num = atoi (argv[3]));
-    td.read_ssp (ssp_file);
+    if (ssp_file != NULL)
+	td.read_ssp (ssp_file);
     // int dem_num = td.ssp->levels;
 
     if (asc_file != NULL)
     {
-	td.swpts_load_asc (asc_file);
+	td.read_asc (asc_file);
 	if (csv_in_file != NULL)
 	    td.swpts_load_csv (csv_in_file);
     }
+
+    td.set_boundaries ();
     
     // m.bb();
     // m.initL();

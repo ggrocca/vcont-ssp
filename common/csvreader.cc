@@ -322,10 +322,18 @@ ClassifiedType critical2classified (CriticalType c)
     return OTHER;
 }
 
+CSVReader::CSVReader () :
+    width (0), height (0), cellsize (0),
+    xllcorner (0), yllcorner (0) {}
+
+CSVReader::CSVReader (ASCReader& ascr) :
+    width (ascr.width), height (ascr.height), cellsize (ascr.cellsize),
+    xllcorner (ascr.xllcorner), yllcorner (ascr.yllcorner) {}
+
 CSVReader::CSVReader (int width, int height,
 		      double cellsize, double xllcorner, double yllcorner) :
-    width (width), height (height), 
-    cellsize (cellsize), xllcorner (xllcorner), yllcorner (yllcorner) {}
+    width (width), height (height), cellsize (cellsize),
+    xllcorner (xllcorner), yllcorner (yllcorner) {}
 
 void CSVReader::asc2img (Point a, Point* i)
 {
@@ -338,6 +346,21 @@ void CSVReader::img2asc (Point i, Point* a)
     a->x = (i.x * cellsize) + xllcorner;
     a->y = (i.y * cellsize) + yllcorner;
 }
+
+Point CSVReader::asc2img (Point a)
+{
+    Point i;
+    asc2img (a, &i);
+    return i;
+}
+
+Point CSVReader::img2asc (Point i)
+{
+    Point a;
+    img2asc (i, &a);
+    return a;
+}
+
 
 void CSVReader::load (const char* filename, std::vector<SwissSpotHeight>& points)
 {
@@ -535,7 +558,33 @@ void CSVReader::save (const char* filename, std::vector<int>& spots,
 
     save (filename, vsh);
 }    
-    
+
+void CSVReader::save (const char* filename, ScaleSpace* ssp)
+{
+    FILE* fp = fopen (filename, "w");
+	
+    if (fp == NULL)
+	eprint ("Could not write file %s\n", filename);	
+	
+    fprintf (fp, "X,Y,IMG_X,IMG_Y,TYPE, LEVEL,IDX\n");
+    for (int i = 0; i < ssp->levels; i++)
+	for (unsigned j = 0; j < ssp->critical[i].size(); j++)
+	{
+	    Coord c = ssp->critical[i][j].c;
+	    Point pi = coord2point (c);
+	    Point pa = img2asc (pi);
+	    fprintf (fp, "%lf,%lf,%d,%d,%s,%d,%d\n", 
+		     pa.x, pa.y, c.x, c.y,
+		     (classified2string
+		      (critical2classified
+		       (ssp->critical[i][j].t))).c_str (), i, j
+		     );
+	}
+	
+    fclose (fp);
+}
+
+
     // FILE *fp = fopen (filename, "w");
     // if (fp == NULL)
     // 	eprintx (2, "Could not open file `%s'. %s\n", filename, strerror (errno));

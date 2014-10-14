@@ -369,6 +369,38 @@ void ScaleSpace::write_scalespace (char* filename)
     fclose (fp);
 }
 
+void ScaleSpace::write_plateaus (char* filename)
+{
+    FILE* fp = fopen (filename, "w");
+    if (fp == NULL)
+	eprintx (2, "Could not open file `%s'. %s\n", filename, strerror (errno));
+
+    fprintf (fp, "#levels: %zu\n\n\n", levels);
+
+    std::vector < std::vector <Coord> > plateaus_list;
+    for (int i = 0; i < levels; i++)
+    {
+	dem[i]->identify_plateaus (plateaus_list);
+
+	fprintf (fp, "  #plateaus: %zu\n\n", plateaus_list.size());
+	for (int j = 0; j < plateaus_list.size(); j++)
+	{
+	    fprintf (fp, "    #flatpixels: %zu\n", plateaus_list[j].size());
+	    for (int k = 0; k < plateaus_list[j].size(); k++)
+		fprintf (fp, "        %d %d\n",
+			 plateaus_list[j][k].x,
+			 plateaus_list[j][k].y);
+	}
+    }
+    // {
+    // 	int length = dem[i]->data.size();
+    // 	fwrite (&length, sizeof (int), 1, fp);
+    // 	fwrite (&(dem[i]->data[0]), sizeof (double), dem[i]->data.size(), fp);
+    // }
+
+    fclose (fp);
+}
+
 ScaleSpace::~ScaleSpace()
 {
     for (int i = 0; i < levels; i++)
@@ -453,6 +485,7 @@ void ScaleSpace::point_print_interpolated (int scope, int level, double t, Coord
 	             sw,      s,     se);
     oprints (scope, "%s", "--------\n");    
 }
+
 
 void ScaleSpace::write_critical (char* filename)
 {

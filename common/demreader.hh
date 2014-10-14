@@ -100,13 +100,17 @@ public:
     typedef enum {PNG=0, BMP, TIF, HGT, ASC} Format;
     static const char* fmts[];
 
-    static DEMReader* get (const char* filename)
+    static DEMReader* get (const char* filename, Format* fmt = NULL)
     {
 	char *ext = get_ext ((char*)filename);
 	int fmtnum = 0;
 	for (const char** p = fmts; **p != '\0'; p++, fmtnum++)
 	    if (!strcmp (*p, ext))
-		return get (filename, static_cast<Format>(fmtnum));
+	    {
+		if (fmt != NULL)
+		    *fmt = static_cast<Format>(fmtnum);
+		return get (filename, *fmt);
+	    }
 	eprint ("File `%s': format `%s' not supported.\n", filename, ext);
 	return 0;
     }

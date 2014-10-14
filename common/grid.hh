@@ -229,6 +229,15 @@ public:
 	return idx;
     }
 
+    // void above_3 (vector<Coord>& ac)
+    // {
+    // 	ac.clear ();
+
+    // 	ac.push_back (Coord (x, y+1));
+    // 	ac.push_back (Coord (x+1, y+1));
+    // 	ac.push_back (Coord (x+1, y));
+    // }
+    
     // returns next coord around current one in a 6-connected fashion.
     // clockwise trip starting south east (-1,-1).
     void round_trip_6 (Coord* const c)
@@ -341,6 +350,12 @@ inline Coord point2coord (Point p)
     return Coord (floor (p.x), floor (p.y));
 }
 
+inline Point coord2point (Coord c)
+{
+    return Point ((double) c.x, (double) c.y);
+}
+
+
 template <class T> class Grid
 {
 public:
@@ -353,10 +368,7 @@ public:
     std::vector<T> data;
 
     Grid () : bogus (std::numeric_limits<T>::min()),
-	      width (0), height (0), data ()
-    {
-	
-    }
+	      width (0), height (0), data () {}
 
     Grid (int width, int height) : bogus (std::numeric_limits<T>::min()),
 				   width (width), height (height), data ()

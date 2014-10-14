@@ -95,12 +95,28 @@ TrackDisplay::TrackDisplay()
 //     dems.push_back(DEMSelector::get (file));
 // }
 
+void TrackDisplay::set_boundaries ()
+{
+    if (ssp)
+    {
+	clip_white = ssp->dem[0]->max;
+	clip_black = ssp->dem[0]->min;
+	width = ssp->dem[0]->width;
+	height = ssp->dem[0]->height;
+    }
+
+    if (asc)
+    {
+	clip_white = asc->max;
+	clip_black = asc->min;	
+	width = asc->width;
+	height = asc->height;
+    }
+}
+
 void TrackDisplay::read_ssp (char *file)
 {
     ssp = new ScaleSpace (file, ScaleSpaceOpts());
-
-    clip_white = ssp->dem[0]->max;
-    clip_black = ssp->dem[0]->min;
 }
 
 void TrackDisplay::read_track (char *file)
@@ -124,9 +140,9 @@ void TrackDisplay::getbb (double* cx, double* cy, double* diam)
     // *cx = dems[0]->width / 2.0;
     // *cy = dems[0]->height / 2.0;
     // *diam = dems[0]->width * 1.2;
-    *cx = ssp->dem[0]->width / 2.0;
-    *cy = ssp->dem[0]->height / 2.0;
-    *diam = ssp->dem[0]->width * 1.2;    
+    *cx = width / 2.0;
+    *cy = height / 2.0;
+    *diam = width * 1.2;    
 }
 
 void TrackDisplay::getbb (Point* a, Point* b)
@@ -135,8 +151,8 @@ void TrackDisplay::getbb (Point* a, Point* b)
     // b->x = (double) dems[0]->width;
     // b->y = (double) dems[0]->height;
     *a = Point (0.0, 0.0);
-    b->x = (double) ssp->dem[0]->width;
-    b->y = (double) ssp->dem[0]->height;
+    b->x = (double) width;
+    b->y = (double) height;
 }
 
 void __draw_quad ()
@@ -575,39 +591,84 @@ void TrackDisplay::draw (int dem_idx)
 	// glEnd();
 
 
-	glBegin (GL_TRIANGLES);
-	int level = dem_idx;
+	glEnable(GL_FLAT);
+	if (asc)
+	{
+	    glBegin (GL_QUADS);
+	    for (int i = 0; i < asc->width; i++)
+		for (int j = 0; j < asc->height; j++)
+		{
+		    double min = clip_black;
+		    double max = clip_white;
+		    double mul = multiply;
 
-	for (int i = 0; i < ssp->dem[level]->width - 1; i++)
-	    for (int j = 0; j < ssp->dem[level]->height - 1; j++)
-	    {
-		double min = clip_black;
-		double max = clip_white;
-		double mul = multiply;
+		    double vij = asc->get_pixel (i, j);
+		    vij = __clip (vij, min, max, mul);
+ 
+		    glColor3f (vij, vij, vij);
+		    glVertex2f (i, j+1);
+		    glVertex2f (i+1, j+1);
+		    glVertex2f (i+1, j);
+		    glVertex2f (i, j);
+		}
+	}
+	else
+	{
+	    glBegin (GL_QUADS);
+	    int level = dem_idx;
 
-		double vij = (*ssp->dem[level]) (i, j);
-		double vipj = (*ssp->dem[level]) (i+1, j);
-		double vijp = (*ssp->dem[level]) (i, j+1);
-		double vipjp = (*ssp->dem[level]) (i+1, j+1);
-		vij = __clip (vij, min, max, mul);
-		vipj = __clip (vipj, min, max, mul);
-		vijp = __clip (vijp, min, max, mul);
-		vipjp = __clip (vipjp, min, max, mul);
+	    for (int i = 0; i < ssp->dem[level]->width; i++)
+		for (int j = 0; j < ssp->dem[level]->height; j++)
+		{
+		    double min = clip_black;
+		    double max = clip_white;
+		    double mul = multiply;
 
-		glColor3f (vij, vij, vij);
-		glVertex2f (i, j);
-		glColor3f (vipj, vipj, vipj);
-		glVertex2f (i+1, j);
-		glColor3f (vipjp, vipjp, vipjp);
-		glVertex2f (i+1, j+1);
+		    double vij = (*ssp->dem[level]) (i, j);
+		    vij = __clip (vij, min, max, mul);
+ 
+		    glColor3f (vij, vij, vij);
+		    glVertex2f (i, j+1);
+		    glVertex2f (i+1, j+1);
+		    glVertex2f (i+1, j);
+		    glVertex2f (i, j);
+		}
 
-		glColor3f (vij, vij, vij);
-		glVertex2f (i, j);
-		glColor3f (vijp, vijp, vijp);
-		glVertex2f (i, j+1);
-		glColor3f (vipjp, vipjp, vipjp);
-		glVertex2f (i+1, j+1);
-	    }
+	    // glBegin (GL_TRIANGLES);
+	    // int level = dem_idx;
+
+	    // for (int i = 0; i < ssp->dem[level]->width - 1; i++)
+	    // 	for (int j = 0; j < ssp->dem[level]->height - 1; j++)
+	    // 	{
+	    // 	    double min = clip_black;
+	    // 	    double max = clip_white;
+	    // 	    double mul = multiply;
+
+	    // 	    double vij = (*ssp->dem[level]) (i, j);
+	    // 	    double vipj = (*ssp->dem[level]) (i+1, j);
+	    // 	    double vijp = (*ssp->dem[level]) (i, j+1);
+	    // 	    double vipjp = (*ssp->dem[level]) (i+1, j+1);
+	    // 	    vij = __clip (vij, min, max, mul);
+	    // 	    vipj = __clip (vipj, min, max, mul);
+	    // 	    vijp = __clip (vijp, min, max, mul);
+	    // 	    vipjp = __clip (vipjp, min, max, mul);
+
+	    // 	    glColor3f (vij, vij, vij);
+	    // 	    glVertex2f (i, j);
+	    // 	    glColor3f (vipj, vipj, vipj);
+	    // 	    glVertex2f (i+1, j);
+	    // 	    glColor3f (vipjp, vipjp, vipjp);
+	    // 	    glVertex2f (i+1, j+1);
+
+	    // 	    glColor3f (vij, vij, vij);
+	    // 	    glVertex2f (i, j);
+	    // 	    glColor3f (vijp, vijp, vijp);
+	    // 	    glVertex2f (i, j+1);
+	    // 	    glColor3f (vipjp, vipjp, vipjp);
+	    // 	    glVertex2f (i+1, j+1);
+	    // 	}
+	}
+	
 	glEnd();
 
     }
@@ -958,19 +1019,22 @@ void TrackDisplay::draw_line_test (double d)
     //   exit (0);
 }
 
-void TrackDisplay::swpts_load_asc (char* filename)
+void TrackDisplay::read_asc (char* file)
 {
     swpts_active = true;
 
-    ASCReader ascr (filename);
+    asc = new ASCReader (file);
 
-    swpts_xllcorner = ascr.xllcorner;
-    swpts_yllcorner = ascr.yllcorner;
-    swpts_cellsize = ascr.cellsize;
+    swpts_xllcorner = asc->xllcorner;
+    swpts_yllcorner = asc->yllcorner;
+    swpts_cellsize = asc->cellsize;
 }
 
 void TrackDisplay::swpts_draw ()
 {
+    if (!swpts_display)
+	return;
+
     // static bool check = true;
     
     for (unsigned i = 0; i < swpts_ground_truth.size(); i++)
@@ -1005,7 +1069,7 @@ void TrackDisplay::swpts_draw ()
 
 void TrackDisplay::swpts_load_csv (char* filename)
 {
-    CSVReader csvio (ssp->dem[0]->width, ssp->dem[0]->height,
+    CSVReader csvio (width, height,
 		     swpts_cellsize, swpts_xllcorner, swpts_yllcorner);
     csvio.load (filename, swpts_ground_truth);
     
@@ -1016,6 +1080,9 @@ void TrackDisplay::swpts_load_csv (char* filename)
 
 void TrackDisplay::swpts_save_csv (char* filename)
 {
+    if (!swpts_active)
+	return;
+
     char cwd[2048] = "\0";
     
     // printf ("cwd: %s\n", cwd);
@@ -1042,7 +1109,7 @@ void TrackDisplay::swpts_save_csv (char* filename)
 
     // printf ("final: %s\n", cwd);
 
-    CSVReader csvio (ssp->dem[0]->width, ssp->dem[0]->height,
+    CSVReader csvio (width, height,
 		     swpts_cellsize, swpts_xllcorner, swpts_yllcorner);
     csvio.save (cwd, spots_current, track, ssp);
 }

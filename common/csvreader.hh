@@ -4,6 +4,7 @@
 #include "grid.hh"
 #include "track.hh"
 #include "scaletypes.hh"
+#include "demreader.hh"
 
 enum ClassifiedType {OTHER=0, PEAK, PIT, SADDLE, HUMAN, ALL};
 enum SwisstopoType {
@@ -113,10 +114,18 @@ public:
 	life = ts.life;
 	strength = ts.strength;
     }
+
+    void print ()
+    {
+	printf ("Point(%lf,%lf,%lf). CLASS=%s - SWISS=%s\n", p.x, p.y, z,
+		(classified2string (ct)).c_str (), (swisstopo2string (st)).c_str ());
+    }
 };
 
 class CSVReader {
 public:
+    CSVReader ();
+    CSVReader (ASCReader& ascr);
     CSVReader (int width, int height,
 	       double cellsize, double xllcorner, double yllcorner);
     
@@ -129,11 +138,15 @@ public:
     // 	       bool save_types);
     void save (const char* filename, std::vector<int>& spots,
 		     Track* track, ScaleSpace* ssp);
-
-private:
+    void save (const char* filename, ScaleSpace* ssp);
+    
     void asc2img (Point a, Point* i);
     void img2asc (Point i, Point* a);
 
+    Point asc2img (Point a);
+    Point img2asc (Point i);
+
+private:
     int width, height;
     double cellsize;
     double xllcorner, yllcorner;
