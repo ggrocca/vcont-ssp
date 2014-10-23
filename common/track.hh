@@ -170,7 +170,7 @@ public:
     
     TrackMap (Track& track) : grid (track.width, track.height, -1)
     {
-	for (int i = 0; i < track.lines.size(); i++)
+	for (unsigned i = 0; i < track.lines.size(); i++)
 	    if (track.is_original (i))
 		grid (track.coord (i)) = i;
     }

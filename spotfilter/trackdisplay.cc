@@ -119,6 +119,52 @@ void TrackDisplay::read_ssp (char *file)
     ssp = new ScaleSpace (file, ScaleSpaceOpts());
 }
 
+void TrackDisplay::read_plt (char *file)
+{
+    FILE* fp = fopen (file, "r");
+    if (fp == NULL)
+	eprintx (2, "Could not open file `%s'. %s\n", file, strerror (errno));
+
+    int levels;
+    int plats;
+    int maxpixels;
+    int minpixels;
+    fscanf (fp, "#levels: %d\n", &levels);
+
+    for (int i = 0; i < levels; i++)
+    {
+	plateaus.push_back (std::vector < std::vector <Coord> > (0));
+
+	maxpixels = 0;
+	minpixels = INT_MAX;
+
+	fscanf (fp, "#plateaus: %d\n", &plats);
+	for (int j = 0; j < plats; j++)
+	{
+	    plateaus[i].push_back (std::vector <Coord> (0));
+
+	    int pixels;
+	    fscanf (fp, "#flatpixels: %d e\n", &pixels);
+	    for (int k = 0; k < pixels; k++)
+	    {
+		plateaus[i][j].push_back (Coord (0.0, 0.0));
+		fscanf (fp, " %d %d\n",
+			 &plateaus[i][j][k].x,
+			 &plateaus[i][j][k].y);
+	    }
+
+	    if (maxpixels < pixels)
+		maxpixels = pixels;
+	    if (minpixels > pixels)
+		minpixels = pixels;
+	}
+	
+	printf ("level: %d, read %d flat areas. maxsize: %d, minsize: %d\n",
+		i, plats, maxpixels, minpixels);
+    }
+    
+    fclose (fp);    
+}
 void TrackDisplay::read_track (char *file)
 {
     track_reader (file, &track, &track_order);
@@ -547,9 +593,30 @@ static double __clip (double v, double min, double max, double mul)
     return (v - min) / (max - min);
 }
 
-
-void TrackDisplay::draw (int dem_idx)
+static inline double __random_value (double fmin, double fmax, unsigned* seedp)
 {
+    double f = ((double) rand_r (seedp)) / RAND_MAX;
+    return fmin + f * (fmax - fmin);
+}
+
+void TrackDisplay::draw (int dem_idx, Point llc, Point hrc)
+{
+    int level = dem_idx;
+    double enlarge_box = 10.0;
+    llc.x += -enlarge_box;
+    llc.y += -enlarge_box;
+    hrc.x += enlarge_box;
+    hrc.y += enlarge_box;
+
+    double width = asc? asc->width: ssp->dem[level]->width;
+    double height = asc? asc->height: ssp->dem[level]->height;
+    
+    Coord bllc, bhrc;
+    bllc.x = llc.x < 0 ? 0 : floor (llc.x);
+    bllc.y = llc.y < 0 ? 0 : floor (llc.y);
+    bhrc.x = hrc.x > width-1 ? width-1 : floor (hrc.x);
+    bhrc.y = hrc.y > height-1 ? height-1 : floor (hrc.y);
+    
     glMatrixMode (GL_PROJECTION);
     glPushMatrix ();
     glMatrixMode (GL_MODELVIEW);
@@ -590,49 +657,68 @@ void TrackDisplay::draw (int dem_idx)
 	//     }
 	// glEnd();
 
-
 	glEnable(GL_FLAT);
-	if (asc)
-	{
-	    glBegin (GL_QUADS);
-	    for (int i = 0; i < asc->width; i++)
-		for (int j = 0; j < asc->height; j++)
-		{
-		    double min = clip_black;
-		    double max = clip_white;
-		    double mul = multiply;
+	glBegin (GL_QUADS);
+	for (unsigned i = bllc.x; i < bhrc.x; i++)
+	    for (unsigned j = bllc.y; j < bhrc.y; j++)
+	    {
+		double min = clip_black;
+		double max = clip_white;
+		double mul = multiply;
 
-		    double vij = asc->get_pixel (i, j);
-		    vij = __clip (vij, min, max, mul);
+		double vij = asc? asc->get_pixel (i, j) : (*ssp->dem[level]) (i, j);
+		vij = __clip (vij, min, max, mul);
  
-		    glColor3f (vij, vij, vij);
-		    glVertex2f (i, j+1);
-		    glVertex2f (i+1, j+1);
-		    glVertex2f (i+1, j);
-		    glVertex2f (i, j);
-		}
-	}
-	else
-	{
-	    glBegin (GL_QUADS);
-	    int level = dem_idx;
+		glColor3f (vij, vij, vij);
+		glVertex2f (i, j+1);
+		glVertex2f (i+1, j+1);
+		glVertex2f (i+1, j);
+		glVertex2f (i, j);
+	    }
+	glEnd();
+    }
 
-	    for (int i = 0; i < ssp->dem[level]->width; i++)
-		for (int j = 0; j < ssp->dem[level]->height; j++)
-		{
-		    double min = clip_black;
-		    double max = clip_white;
-		    double mul = multiply;
+	// if (asc)
+	// {
+	//     glBegin (GL_QUADS);
+	//     for (unsigned i = 0; i < asc->width; i++)
+	// 	for (unsigned j = 0; j < asc->height; j++)
+	// 	{
+	// 	    double min = clip_black;
+	// 	    double max = clip_white;
+	// 	    double mul = multiply;
 
-		    double vij = (*ssp->dem[level]) (i, j);
-		    vij = __clip (vij, min, max, mul);
+	// 	    double vij = asc->get_pixel (i, j);
+	// 	    vij = __clip (vij, min, max, mul);
  
-		    glColor3f (vij, vij, vij);
-		    glVertex2f (i, j+1);
-		    glVertex2f (i+1, j+1);
-		    glVertex2f (i+1, j);
-		    glVertex2f (i, j);
-		}
+	// 	    glColor3f (vij, vij, vij);
+	// 	    glVertex2f (i, j+1);
+	// 	    glVertex2f (i+1, j+1);
+	// 	    glVertex2f (i+1, j);
+	// 	    glVertex2f (i, j);
+	// 	}
+	// }
+	// else
+	// {
+	//     glBegin (GL_QUADS);
+
+	//     for (int i = 0; i < ssp->dem[level]->width; i++)
+	// 	for (int j = 0; j < ssp->dem[level]->height; j++)
+	// 	{
+	// 	    double min = clip_black;
+	// 	    double max = clip_white;
+	// 	    double mul = multiply;
+
+	// 	    double vij = (*ssp->dem[level]) (i, j);
+	// 	    vij = __clip (vij, min, max, mul);
+ 
+	// 	    glColor3f (vij, vij, vij);
+	// 	    glVertex2f (i, j+1);
+	// 	    glVertex2f (i+1, j+1);
+	// 	    glVertex2f (i+1, j);
+	// 	    glVertex2f (i, j);
+	// 	}
+	// }
 
 	    // glBegin (GL_TRIANGLES);
 	    // int level = dem_idx;
@@ -667,12 +753,47 @@ void TrackDisplay::draw (int dem_idx)
 	    // 	    glColor3f (vipjp, vipjp, vipjp);
 	    // 	    glVertex2f (i+1, j+1);
 	    // 	}
+
+    if (draw_plateaus)
+    {
+	int i = dem_idx;
+	//srand(0);
+	static unsigned seedp;
+	static int pivot;
+	seedp = pivot = 0;
+	
+	glBegin (GL_QUADS);
+	for (unsigned j = 0; j < plateaus[i].size(); j++)
+	{
+	    // get random color
+	    float rc[3];
+	    for (int r = 0; r < 3; r++)
+		rc[r] = r == pivot?
+		    __random_value (0.8, 1.0, &seedp) :
+		    __random_value (0.4, 0.8, &seedp) ;
+
+	    pivot++;
+	    pivot %= 3;
+		    
+	    for (unsigned k = 0; k < plateaus[i][j].size(); k++)
+	    {
+		glColor3f (rc[0], rc[1], rc[2]);
+		Coord c = plateaus[i][j][k];
+
+		if (c.is_inside (bllc, bhrc))
+		{
+		    glVertex2f (c.x,   c.y+1);
+		    glVertex2f (c.x+1, c.y+1);
+		    glVertex2f (c.x+1, c.y);
+		    glVertex2f (c.x,   c.y);
+		}
+	    }
 	}
 	
 	glEnd();
-
     }
 
+    // GG WARN old mode to be deleted?
     if (draw_track)
     {
 	for (unsigned i = 0; i < track->lines.size(); i++)
@@ -689,6 +810,7 @@ void TrackDisplay::draw (int dem_idx)
 	}
     }
 
+    // GG WARN old mode to be deleted?
     if (draw_query)
     {
 	for (unsigned i = 0; i < vquery.size(); i++)
@@ -697,6 +819,7 @@ void TrackDisplay::draw (int dem_idx)
     }
 
 
+    // GG WARN old mode to be deleted?
     if (draw_elixir)
     {
 	for (unsigned i = 0; i < track->lines.size(); i++)
@@ -710,6 +833,7 @@ void TrackDisplay::draw (int dem_idx)
 	}
     }
 
+    // GG WARN old mode to be deleted?
     if (draw_importance)
     {
 	for (unsigned i = 0; i < track->lines.size(); i++)
@@ -722,6 +846,79 @@ void TrackDisplay::draw (int dem_idx)
 	}
     }
 
+    if (draw_inspector)
+    {
+	inspector_maxima_total = inspector_maxima_rendered =
+	    inspector_minima_total = inspector_minima_rendered =
+	    inspector_sellae_total = inspector_sellae_rendered = 0;
+	
+	for (unsigned i = 0; i < track->lines.size(); i++)
+	{
+	    if (!track->is_original (i))
+		continue;
+
+	    if (!track->lines[i].entries[0].c.is_inside (bllc, bhrc))
+		continue;
+
+	    if (track->original_type (i) == MAX)
+		inspector_maxima_total++;
+	    if (track->original_type (i) == MIN)
+		inspector_minima_total++;
+	    if (track->original_type (i) == SA2 || track->original_type (i) == SA3)
+		inspector_sellae_total++;
+		
+	    if ((track->original_type (i) == MAX && !inspector_maxima)
+		||
+		(track->original_type (i) == MIN && !inspector_minima)
+		||
+		((track->original_type (i) == SA2 || track->original_type (i) == SA3)
+		 && !inspector_sellae)
+		)
+		continue;
+		
+	    if (track->original_type (i) == MAX &&
+		(track->lines[i].strength < maxima_strength_cut ||
+		 track->lifetime_elixir (i) < maxima_life_cut))
+		continue;
+
+	    if (track->original_type (i) == MIN &&
+		(track->lines[i].strength < minima_strength_cut ||
+		 track->lifetime_elixir (i) < minima_life_cut))
+		continue;
+
+	    if ((track->original_type (i) == SA2 || track->original_type (i) == SA3)
+	    	&&
+	    	(track->lines[i].strength < sellae_strength_cut
+		 ||
+		 track->lifetime_elixir (i) < sellae_life_cut))
+	    	continue;
+
+	    double vvv, mmm;		
+	    if (elixir_mult > 0.0)
+	    {
+		vvv = track->lifetime_elixir (i);
+		mmm = elixir_mult;
+	    }
+	    else if (importance_mult > 0.0)
+	    {
+		vvv = track->lines[i].strength;
+		mmm = importance_mult;
+	    }	
+	    else
+		vvv = mmm = 0.0;
+
+	    if (track->original_type (i) == MAX)
+		inspector_maxima_rendered++;
+	    if (track->original_type (i) == MIN)
+		inspector_minima_rendered++;
+	    if (track->original_type (i) == SA2 || track->original_type (i) == SA3)
+		inspector_sellae_rendered++;
+		
+	    __draw_critical_elixir (track->lines[i].entries[0].c,
+				    track->original_type (i),
+				    vvv, spot_scale, mmm);
+	}
+    }    
     
     if (draw_spots)
     {

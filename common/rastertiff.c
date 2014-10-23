@@ -57,6 +57,7 @@ void raster8_print (raster8_t raster, uint32 w, uint32 h)
 #ifdef VERBOSE
 	printf ("<%d: %d-%d-%d>%c", i, r, g, b, ((i+1) % (w-1))? ' ' : '\n');
 #else
+	(void) g; (void) b;
 	printf ("%3d%c", r, ((i+1) % w)? ' ' : '\n');
 #endif
     }
@@ -598,6 +599,7 @@ void raster16_print8 (raster16_t raster, uint32 w, uint32 h)
 	printf ("<%d: %d-%d-%d>%c", i, r, g, b,
 		((i+1) % (w-1))? ' ' : '\n');
 #else
+	(void) g; (void) b;
 	printf ("%5d%c", r, ((i+1) % w)? ' ' : '\n');
 #endif
     }    

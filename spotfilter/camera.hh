@@ -34,6 +34,9 @@ public:
     void key_up (unsigned char upkey, int px, int py);
     void special (int key, int px, int py);
 
+    Point wllc ();
+    Point whrc ();
+    
     int width, height;
     double aspect;
 
@@ -47,6 +50,10 @@ public:
     bool zooming_out, zooming_in, panning;
     
 private:
+    double _ortho_left ();
+    double _ortho_right ();
+    double _ortho_bottom ();
+    double _ortho_top ();
 
     double move_x, move_y;
 };

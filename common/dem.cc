@@ -258,29 +258,78 @@ bool Dem::is_equal (Coord a, Coord b)
     return true;
 }
 
-bool Dem::_recursive_label (Grid<int>* idplats, Coord c, int label,
-		       std::vector <Coord>& label_list)
+bool Dem::_iterative_label (Grid<int>* idplats, Coord c, unsigned label,
+			    std::vector < std::vector <Coord> >& plateaus_list)
 {
     if ((*idplats)(c) != -1)
 	return false;
-    
-    bool found_plats = false;
 
-    Coord nc;
+    bool found_plats = false;
+    std::vector <Coord>* vnc = new std::vector <Coord>(0);
+    c.append_6 (*vnc);
+
+    for (unsigned i = 0; i < vnc->size(); i++)
+    {
+	Coord nc = (*vnc)[i];
+
+	if (is_equal (c, nc) && (*idplats)(nc) == -1)
+	{
+	    if (plateaus_list.size() == label)
+	    {
+		found_plats = true;
+		plateaus_list.push_back (std::vector <Coord> (0));
+		plateaus_list[label].push_back (c);
+		(*idplats)(c) = label;
+	    }
+	    // else if (plateaus_list.size() != label+1)
+	    // 	eprintx (-24, "label(%d) and size(%zu) mismatch.\n",
+	    // 		 label, plateaus_list.size());
+	    
+	    plateaus_list[label].push_back (nc);
+	    (*idplats)(nc) = label;
+	    nc.append_6 (*vnc);
+	}
+	// else
+	// {
+	//    vnc->erase(vnc->begin() + i);
+	//    i--;
+	// }
+    }
+
+    delete vnc;
+    return found_plats;
+}
+
+bool Dem::_recursive_label (Grid<int>* idplats, Coord c, unsigned label,
+			    std::vector < std::vector <Coord> >& plateaus_list)
+{
+    if ((*idplats)(c) != -1)
+	return false;
+
+    bool found_plats = false;
+    std::vector <Coord> ac;
+    c.neigh_6 (ac);
     for (int k = 0; k < 6; k++)
     {
-	c.round_trip_6 (&nc);
+	//c.round_trip_6 (&nc);
+	Coord nc = ac[k];
 
 	if (is_equal (c, nc))
 	{
-	    if (found_plats = false)
+	    if (plateaus_list.size() == label)
+		plateaus_list.push_back (std::vector <Coord> (0));
+	    else if (plateaus_list.size() != label+1)
+		eprintx (-24, "label(%d) and size(%zu) mismatch.\n",
+			 label, plateaus_list.size());
+		
+	    if (found_plats == false)
 	    {
 		found_plats = true;
-		label_list.push_back (c);
+		plateaus_list[label].push_back (c);
 		(*idplats)(c) = label;
 	    }
 	    
-	    _recursive_label (idplats, nc, label, label_list);
+	    _recursive_label (idplats, nc, label, plateaus_list);
 	}
     }
 
@@ -289,9 +338,8 @@ bool Dem::_recursive_label (Grid<int>* idplats, Coord c, int label,
 
 void Dem::identify_plateaus (std::vector < std::vector <Coord> >& plateaus_list)
 {
-    int label = 0;
+    unsigned label = 0;
     plateaus_list.clear ();
-    plateaus_list.push_back (std::vector <Coord> (0));
     Grid<int>* idplats = new Grid<int> (width, height, -1);
 
     for (int i = 0; i < width; i++)
@@ -301,13 +349,18 @@ void Dem::identify_plateaus (std::vector < std::vector <Coord> >& plateaus_list)
 	    
 	    if (is_clip (c))
 	    	continue;
-
-	    if (_recursive_label (idplats, c, label, plateaus_list[label]))
+	    
+	    if (_iterative_label (idplats, c, label, plateaus_list))
 	    {
 		label++;
-		plateaus_list.push_back (std::vector <Coord> (0));
+
+		if (plateaus_list[label-1].size () <= 1)
+		    eprintx (-1, "at c(%d,%d), label %d, size %zu\n",
+			     i, j, label-1, plateaus_list[label-1].size ());
 	    }
 	}
+    
+    delete idplats;
 }
 
 
@@ -425,9 +478,23 @@ void Dem::point_print (Coord c)
 
 void Dem::point_print (int scope, Coord c)
 {
-    int x = c.x;
-    int y = c.y;
+    point_print (scope, c.x, c.y);
+    // int x = c.x;
+    // int y = c.y;
 
+    // oprints (scope, "--POINT %d %d  -----\n", x,y);
+    // oprints (scope, "  % 6.8lf % 6.8lf % 6.8lf\n"
+    // 	     "  % 6.8lf % 6.8lf % 6.8lf\n"
+    // 	     "  % 6.8lf % 6.8lf % 6.8lf\n",
+    // 	     _pdm((*this)(x-1, y+1)), _pdm((*this)(x  , y+1)), _pdm((*this)(x+1, y+1)),
+    // 	     _pdm((*this)(x-1, y  )), _pdm((*this)(x  , y  )), _pdm((*this)(x+1, y  )),
+    // 	     _pdm((*this)(x-1, y-1)), _pdm((*this)(x  , y-1)), _pdm((*this)(x+1, y-1))
+    // 	     );
+    // oprints (scope, "%s", "--------\n");
+}
+
+void Dem::point_print (int scope, int x, int y)
+{
     oprints (scope, "--POINT %d %d  -----\n", x,y);
     oprints (scope, "  % 6.8lf % 6.8lf % 6.8lf\n"
 	     "  % 6.8lf % 6.8lf % 6.8lf\n"
@@ -438,6 +505,7 @@ void Dem::point_print (int scope, Coord c)
 	     );
     oprints (scope, "%s", "--------\n");
 }
+
 
 void Dem::point_print (Coord c, CriticalType type)
 {

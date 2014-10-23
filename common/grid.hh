@@ -2,6 +2,7 @@
 #define _GRID_HH
 
 #include <vector>
+#include <list>
 #include <climits>
 #include <limits>
 #include <iostream>
@@ -87,6 +88,12 @@ public:
 	return x >= window && x < w-window && y >= window && y < h-window;
     }
     
+    bool is_inside (const Pair<T> llc, const Pair<T> hrc)
+    {
+	return x >= llc.x && x < hrc.x && y >= llc.y && y < hrc.y;
+    }
+    
+
     bool is_outside (const T w, const T h)
     {
 	return !is_inside (w, h);
@@ -229,14 +236,29 @@ public:
 	return idx;
     }
 
-    // void above_3 (vector<Coord>& ac)
-    // {
-    // 	ac.clear ();
+    void neigh_6 (std::vector<Coord>& ac)
+    {
+    	ac.clear ();
 
-    // 	ac.push_back (Coord (x, y+1));
-    // 	ac.push_back (Coord (x+1, y+1));
-    // 	ac.push_back (Coord (x+1, y));
-    // }
+    	ac.push_back (Coord (x, y+1));
+    	ac.push_back (Coord (x+1, y+1));
+    	ac.push_back (Coord (x+1, y));
+	
+    	ac.push_back (Coord (x, y-1));
+    	ac.push_back (Coord (x-1, y-1));
+    	ac.push_back (Coord (x-1, y));
+    }
+    
+    void append_6 (std::vector<Coord>& lc)
+    {
+    	lc.push_back (Coord (x, y+1));
+    	lc.push_back (Coord (x+1, y+1));
+    	lc.push_back (Coord (x+1, y));
+	
+    	lc.push_back (Coord (x, y-1));
+    	lc.push_back (Coord (x-1, y-1));
+    	lc.push_back (Coord (x-1, y));
+    }
     
     // returns next coord around current one in a 6-connected fashion.
     // clockwise trip starting south east (-1,-1).

@@ -375,18 +375,18 @@ void ScaleSpace::write_plateaus (char* filename)
     if (fp == NULL)
 	eprintx (2, "Could not open file `%s'. %s\n", filename, strerror (errno));
 
-    fprintf (fp, "#levels: %zu\n\n\n", levels);
+    fprintf (fp, "#levels: %zu\n", levels);
 
     std::vector < std::vector <Coord> > plateaus_list;
     for (int i = 0; i < levels; i++)
     {
 	dem[i]->identify_plateaus (plateaus_list);
 
-	fprintf (fp, "  #plateaus: %zu\n\n", plateaus_list.size());
-	for (int j = 0; j < plateaus_list.size(); j++)
+	fprintf (fp, "\n\n\n  #plateaus: %zu\n\n", plateaus_list.size());
+	for (unsigned j = 0; j < plateaus_list.size(); j++)
 	{
-	    fprintf (fp, "    #flatpixels: %zu\n", plateaus_list[j].size());
-	    for (int k = 0; k < plateaus_list[j].size(); k++)
+	    fprintf (fp, "    #flatpixels: %zu e\n", plateaus_list[j].size());
+	    for (unsigned k = 0; k < plateaus_list[j].size(); k++)
 		fprintf (fp, "        %d %d\n",
 			 plateaus_list[j][k].x,
 			 plateaus_list[j][k].y);

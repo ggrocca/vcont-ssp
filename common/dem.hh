@@ -141,16 +141,17 @@ public:
     void point_print (int scope, Coord c);         // print p. & n.  with debug scope
     void point_print (Coord c, CriticalType type);             // print p., n. & type
     void point_print (int scope, Coord c, CriticalType type);                  // ...
-
+    void point_print (int scope, int x, int y);
+    
     Averhood averhood (CriticalPoint cp, int kernel, Averhood prev);
     void averhood_max (CriticalPoint cp, int kernel,
 		       double* strength, int* kernel_max);
 
 private:
-
-    bool _recursive_label (Grid<int>* idplats, Coord c, int label,
-			   std::vector <Coord>& label_list);
-
+    bool _recursive_label (Grid<int>* idplats, Coord c, unsigned label,
+			    std::vector < std::vector <Coord> >& plateaus_list);
+    bool _iterative_label (Grid<int>* idplats, Coord c, unsigned label,
+			   std::vector < std::vector <Coord> >& plateaus_list);
 };
 
 #endif // _DEM_HH

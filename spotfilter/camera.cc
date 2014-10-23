@@ -74,17 +74,34 @@ void Camera::reshape (int w, int h)
     glutPostRedisplay();
 }
 
+double Camera::_ortho_left ()
+{
+    return (virtual_center.x - ( virtual_width / 2.0)) * aspect;
+}
+double Camera::_ortho_right ()
+{
+    return (virtual_center.x + ( virtual_width / 2.0)) * aspect;
+}
+double Camera::_ortho_bottom ()
+{
+    return virtual_center.y - ( virtual_height / 2.0);
+}
+double Camera::_ortho_top ()
+{
+    return virtual_center.y + ( virtual_height / 2.0);
+}
 
 void Camera::display_begin (void)
 {
     glMatrixMode (GL_PROJECTION);
     glLoadIdentity ();
 
-    glOrtho ((virtual_center.x - ( virtual_width / 2.0)) * aspect,
-	     (virtual_center.x + ( virtual_width / 2.0)) * aspect,
-	      virtual_center.y - ( virtual_height / 2.0),
-	      virtual_center.y + ( virtual_height / 2.0),
-	      -1, 1);
+    glOrtho (_ortho_left (), _ortho_right (), _ortho_bottom (), _ortho_top (), -1, 1);
+    // glOrtho ((virtual_center.x - ( virtual_width / 2.0)) * aspect,
+    // 	     (virtual_center.x + ( virtual_width / 2.0)) * aspect,
+    // 	      virtual_center.y - ( virtual_height / 2.0),
+    // 	      virtual_center.y + ( virtual_height / 2.0),
+    // 	      -1, 1);
 
     glMatrixMode (GL_MODELVIEW);
     glLoadIdentity ();
@@ -210,6 +227,10 @@ void Camera::key(unsigned char inkey, int mx, int my)
 	goto post;
 
     case 'w':
+	printf ("c.x=%lf c.y=%lf w=%lf h=%lf\n",
+		virtual_center.x, virtual_center.y, virtual_width, virtual_height);
+	printf ("left=%lf, right=%lf, bottom=%lf, top=%lf\n",
+		_ortho_left (), _ortho_right (), _ortho_bottom (), _ortho_top ());
 	goto post;
      }
 
@@ -219,6 +240,15 @@ void Camera::key(unsigned char inkey, int mx, int my)
     glutPostRedisplay();
 }
 
+Point Camera::wllc ()
+{
+    return Point (_ortho_left (), _ortho_bottom ());
+}
+
+Point Camera::whrc ()
+{
+    return Point (_ortho_right (), _ortho_top ());
+}
 
 void Camera::special(int key, int mx, int my)
 {

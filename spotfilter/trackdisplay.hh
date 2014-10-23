@@ -44,13 +44,14 @@ public:
     
     // void read_dem (char *file);
     void read_ssp (char *file);
+    void read_plt (char *file);
     void read_track (char *file);
     void read_asc (char* file);
     void set_boundaries ();
     void query (double t);
     void getbb (double* cx, double* cy, double* diam);
     void getbb (Point* a, Point* b);
-    void draw (int dem_idx);
+    void draw (int dem_idx, Point llc, Point hrc);
     void draw_line_test (double d);
 
     // additional csv points
@@ -58,6 +59,7 @@ public:
     
     // bool draw_time_labels;
     bool draw_terrain;
+    bool draw_plateaus;
     double clip_black;
     double clip_white;
     int width, height;
@@ -87,6 +89,13 @@ public:
 // #define VF_DRAW_MODE_NUM 3
 //     typedef enum {FLAT, POINTS, WIRE} draw_mode_t;
 
+    bool draw_inspector;
+    bool inspector_maxima, inspector_minima, inspector_sellae;
+    int inspector_maxima_total, inspector_minima_total, inspector_sellae_total,
+	inspector_maxima_rendered, inspector_minima_rendered, inspector_sellae_rendered;
+    double maxima_life_cut, minima_life_cut, sellae_life_cut;
+    double maxima_strength_cut, minima_strength_cut, sellae_strength_cut;
+    
     bool draw_elixir;
     bool normal_lives;
     double elixir_mult;
@@ -157,6 +166,7 @@ public:
     std::vector<TrackRenderingEntry> vquery;
     TrackOrdering *track_order;
     vector<int> spots_current;
+    std::vector < std::vector < std::vector <Coord> > > plateaus;
     
     // swisstopo additional points load/save/show
     bool draw_csv;

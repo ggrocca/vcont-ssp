@@ -174,7 +174,7 @@ void app_init(int argc, char *argv[])
 		snprintf (_critical_str, _FNLEN, "%s%s" ,out_name, ".crt");
 		snprintf (_critical_csv_str, _FNLEN, "%s%s" ,out_name, ".crt.csv");
 		snprintf (_scalespace_str, _FNLEN, "%s%s" ,out_name, ".ssp");
-		snprintf (_plateau_str, _FNLEN, "%s%s" ,out_name, ".ssp");
+		snprintf (_plateau_str, _FNLEN, "%s%s" ,out_name, ".plt");
 		tracking_name = &(_tracking_str[0]);
 		critical_name = &(_critical_str[0]);
 		critical_csv_name = &(_critical_csv_str[0]);
@@ -272,7 +272,6 @@ int main (int argc, char *argv[])
     
     Dem* idem = NULL;
     DEMReader* dr = NULL;
-    bool asc_image = false;
     DEMSelector::Format fmt;
     CSVReader csvio;
 
@@ -397,6 +396,9 @@ int main (int argc, char *argv[])
 	    tprintp ("###$$$", "Finished writing tiff %d!\n", i);
 	}
     }
+
+    if (scalespace_write_name)
+	ssp->write_scalespace (scalespace_write_name);
     
     if (check_plateaus)
     {
@@ -408,10 +410,13 @@ int main (int argc, char *argv[])
 		break;
 	    }
 
-	ssp->write_plateaus (plateau_name);
-	
-	eprintx (2, "Scalespace has flat areas, starting at level %d. Aborting.\n",
-		 level_with_flats);
+	if (level_with_flats != -1)
+	{
+	    ssp->write_plateaus (plateau_name);	    
+	    eprintx (2, "Scalespace has flat areas, starting at level %d."
+		     " Critical points extraction and tracking aborted.\n",
+		     level_with_flats);
+	}
     }
     
     if (stage == 3)
@@ -445,9 +450,6 @@ int main (int argc, char *argv[])
     
     if (critical_csv_name)
 	csvio.save (critical_csv_name, ssp);
-
-    if (scalespace_write_name)
-	ssp->write_scalespace (scalespace_write_name);
 
     if (stage == 4)
 	exit (0);
