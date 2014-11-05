@@ -172,8 +172,8 @@ public:
     bool draw_csv;
     bool swpts_active;
     bool swpts_display;
-    double swpts_xllcorner, swpts_yllcorner;
-    double swpts_cellsize;
+    // double swpts_xllcorner, swpts_yllcorner;
+    // double swpts_cellsize;
     std::vector<SwissSpotHeight> swpts_ground_truth;
     
     void swpts_draw ();

@@ -9,7 +9,7 @@ static const char* csv_header_topo_height = "X,Y,QUELLE_FC,GRUND_AEND,ART_AENDER
 static const char* csv_header_topo_morph = "X,Y,QUELLE_FC,GRUND_AEND,ART_AENDER,ART_AEND_1,DATUM_AEND,INKREMENTA,KARTOGRAF,HINWEIS_AE,BORDER_STA,SICHTBARKE,OBJEKTART,NAME,BESCHRIFTE,BLOCKTYP,AUSRICHTUN,RID1";
 static const char* csv_header_topo_named = "X,Y,QUELLE_FC,GRUND_AEND,ART_AENDER,ART_AEND_1,DATUM_AEND,INKREMENTA,KARTOGRAF,HINWEIS_AE,BORDER_STA,SICHTBARKE,OBJEKTART,NAME,BESCHRIFTE,SG,HOEHE,RID1";
 static const char* csv_header_topo_shop = "X,Y,OBJECTID,OBJECTVAL,OBJECTORIG,YEAROFCHAN";
-static const char* csv_header_scalespace = "X,Y,LIFE,STRENGTH,CLASSIFICATION,SWISSTOPO,DATABASE";
+static const char* csv_header_scalespace = "X,Y,Z,LIFE,STRENGTH,CLASSIFICATION,SWISSTOPO,DATABASE";
 
 static const char* other_s = "OTHER";
 static const char* peak_s = "PEAK";
@@ -383,6 +383,7 @@ void CSVReader::load (const char* filename, std::vector<SwissSpotHeight>& points
 
     DatabaseType dbt = header2databasetype (header);
 
+    int points_read = 0;
     // for every line
     while (true)
     {
@@ -474,10 +475,15 @@ void CSVReader::load (const char* filename, std::vector<SwissSpotHeight>& points
 	// sh.oid = id;
 	if (sh.p.is_inside ((double) width, (double) height, cut))
 	    points.push_back (sh);
+	// else
+	//     printf ("[%d], p(%lf,%lf) dim[%d,%d]\n", points_read, sh.p.x, sh.p.y, width, height);
+	
+	points_read++;
     }
 
  outta_loop:
-    // printf ("read %d points from file %s\n", points.size (), filename);
+    tprints (SCOPE_CSVREADER, "loaded %zu/%d points from file %s\n",
+	   points.size (), points_read, filename);
     fclose (fp);
 }
 

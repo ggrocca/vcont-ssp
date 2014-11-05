@@ -148,8 +148,8 @@ public:
 		       double* strength, int* kernel_max);
 
 private:
-    bool _recursive_label (Grid<int>* idplats, Coord c, unsigned label,
-			    std::vector < std::vector <Coord> >& plateaus_list);
+    // bool _recursive_label (Grid<int>* idplats, Coord c, unsigned label,
+    // 			    std::vector < std::vector <Coord> >& plateaus_list);
     bool _iterative_label (Grid<int>* idplats, Coord c, unsigned label,
 			   std::vector < std::vector <Coord> >& plateaus_list);
 };

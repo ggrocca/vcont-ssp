@@ -32,6 +32,22 @@ enum SwisstopoType {
 #define db_test(d, s) (((d) & (s)) == (s))
 typedef unsigned int DatabaseType;
 
+inline bool is_peak (SwisstopoType st)
+{
+    return
+	st == NAMED_ALPINE_SUMMIT_100 || st == NAMED_MAIN_SUMMIT_200 ||
+	st == NAMED_SUMMIT_300 || st == NAMED_MAIN_HILL_400 || st == NAMED_HILL_500;
+}
+
+inline bool is_saddle (SwisstopoType st)
+{
+    return st == NAMED_PASS_700;
+}
+
+inline bool is_pit (SwisstopoType st)
+{
+    return st == MORPH_DOLINE_100 || st == MORPH_SINK_400;
+}
 
 
 /*
@@ -115,6 +131,20 @@ public:
 	strength = ts.strength;
     }
 
+    ClassifiedType type ()
+    {
+	if (is_peak (st))
+	    return PEAK;
+	else if (is_saddle (st))
+	    return SADDLE;
+	else if (is_pit (st))
+	    return PIT;
+	else
+	    return ct;
+	// GG-WARN should return HUMAN for types that we know we don't want to use.
+	// but is spotizer up to the task?
+    }
+    
     void print ()
     {
 	printf ("Point(%lf,%lf,%lf). CLASS=%s - SWISS=%s\n", p.x, p.y, z,

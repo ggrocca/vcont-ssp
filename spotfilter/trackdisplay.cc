@@ -1222,9 +1222,9 @@ void TrackDisplay::read_asc (char* file)
 
     asc = new ASCReader (file);
 
-    swpts_xllcorner = asc->xllcorner;
-    swpts_yllcorner = asc->yllcorner;
-    swpts_cellsize = asc->cellsize;
+    // swpts_xllcorner = asc->xllcorner;
+    // swpts_yllcorner = asc->yllcorner;
+    // swpts_cellsize = asc->cellsize;
 }
 
 void TrackDisplay::swpts_draw ()
@@ -1266,8 +1266,8 @@ void TrackDisplay::swpts_draw ()
 
 void TrackDisplay::swpts_load_csv (char* filename)
 {
-    CSVReader csvio (width, height,
-		     swpts_cellsize, swpts_xllcorner, swpts_yllcorner);
+    CSVReader csvio (asc->width, asc->height, asc->cellsize,
+		     asc->xllcorner, asc->yllcorner);
     csvio.load (filename, swpts_ground_truth);
     
     swpts_display  = true;
@@ -1306,7 +1306,7 @@ void TrackDisplay::swpts_save_csv (char* filename)
 
     // printf ("final: %s\n", cwd);
 
-    CSVReader csvio (width, height,
-		     swpts_cellsize, swpts_xllcorner, swpts_yllcorner);
+    CSVReader csvio (asc->width, asc->height,
+		     asc->cellsize, asc->xllcorner, asc->yllcorner);
     csvio.save (cwd, spots_current, track, ssp);
 }

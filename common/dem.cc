@@ -300,41 +300,41 @@ bool Dem::_iterative_label (Grid<int>* idplats, Coord c, unsigned label,
     return found_plats;
 }
 
-bool Dem::_recursive_label (Grid<int>* idplats, Coord c, unsigned label,
-			    std::vector < std::vector <Coord> >& plateaus_list)
-{
-    if ((*idplats)(c) != -1)
-	return false;
+// bool Dem::_recursive_label (Grid<int>* idplats, Coord c, unsigned label,
+// 			    std::vector < std::vector <Coord> >& plateaus_list)
+// {
+//     if ((*idplats)(c) != -1)
+// 	return false;
 
-    bool found_plats = false;
-    std::vector <Coord> ac;
-    c.neigh_6 (ac);
-    for (int k = 0; k < 6; k++)
-    {
-	//c.round_trip_6 (&nc);
-	Coord nc = ac[k];
+//     bool found_plats = false;
+//     std::vector <Coord> ac;
+//     c.neigh_6 (ac);
+//     for (int k = 0; k < 6; k++)
+//     {
+// 	//c.round_trip_6 (&nc);
+// 	Coord nc = ac[k];
 
-	if (is_equal (c, nc))
-	{
-	    if (plateaus_list.size() == label)
-		plateaus_list.push_back (std::vector <Coord> (0));
-	    else if (plateaus_list.size() != label+1)
-		eprintx (-24, "label(%d) and size(%zu) mismatch.\n",
-			 label, plateaus_list.size());
+// 	if (is_equal (c, nc))
+// 	{
+// 	    if (plateaus_list.size() == label)
+// 		plateaus_list.push_back (std::vector <Coord> (0));
+// 	    else if (plateaus_list.size() != label+1)
+// 		eprintx (-24, "label(%d) and size(%zu) mismatch.\n",
+// 			 label, plateaus_list.size());
 		
-	    if (found_plats == false)
-	    {
-		found_plats = true;
-		plateaus_list[label].push_back (c);
-		(*idplats)(c) = label;
-	    }
+// 	    if (found_plats == false)
+// 	    {
+// 		found_plats = true;
+// 		plateaus_list[label].push_back (c);
+// 		(*idplats)(c) = label;
+// 	    }
 	    
-	    _recursive_label (idplats, nc, label, plateaus_list);
-	}
-    }
+// 	    _recursive_label (idplats, nc, label, plateaus_list);
+// 	}
+//     }
 
-    return found_plats;
-}
+//     return found_plats;
+// }
 
 void Dem::identify_plateaus (std::vector < std::vector <Coord> >& plateaus_list)
 {

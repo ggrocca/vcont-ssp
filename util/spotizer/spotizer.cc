@@ -1,37 +1,3 @@
-/*
-load csv and tracking
-
-vector <vector<int>> csv_points; // tanti quanti i csv.
- vettore contenuto contiene dei trackref -> indice su track_points per ogni csv
-
-class csvref { int csvidx; double dist } // csv_ref -> indice sui csv_points
-vector <vector <csvcomp>> track2csvs_relations; // tanti quanti  i track points
-
-for every point in tracking see how distant it is from every other
-point in csv in a radius R or window W. If it is less than R,
-memorize: csv point; distance. (push back in a vector memorized at the
-tracking point index)
-
-at the end scan tracking and order by distance all secondary vectors.
-
-------------
-
-a questo punto conosciamo, per ogni punto di tracking: il candidato
-tra i csv piu' vicino, se esiste, e la vita/forza del tracking point.
-
-numero di punti senza candidato
-
-nuvola di punti sulle distanze; // ordinata per distanze
-nuvola di punti sulla vita; // ordinata per vita
-nuvola di punti sulla forza // ordinata per forza
-nuvola di punti sulla vita ordinata per distanza
-
--------
-
-caricare curvatura e tracking e confrontare anche loro?
-
-*/
-
 #include "track.hh"
 #include "demreader.hh"
 #include "csvreader.hh"
@@ -59,42 +25,6 @@ double cut_borders = 0.0;
 
 bool do_output = false;
 std::string oname;
-
-// std::string path_gt_c_tp;
-// std::string path_gt_t_tp;
-// std::string path_gt_fn;
-// std::string path_c_fp;
-// std::string path_t_fp;
-
-// // std::string path_roc_c_s;
-// // std::string path_roc_c_l;
-// // std::string path_roc_t_s;
-// // std::string path_roc_t_l;
-// std::string path_roc_c;
-// std::string path_roc_t;
-// std::string path_roc_c_max;
-// std::string path_roc_t_max;
-// std::string path_roc_c_min;
-// std::string path_roc_t_min;
-// std::string path_roc_c_sad;
-// std::string path_roc_t_sad;
-	
-// std::string path_sort_c_fp_s;
-// std::string path_sort_c_fp_l;
-// std::string path_sort_c_tp_s;
-// std::string path_sort_c_tp_l;
-// std::string path_sort_t_fp_s;
-// std::string path_sort_t_fp_l;
-// std::string path_sort_t_tp_s;
-// std::string path_sort_t_tp_l;
-
-// std::string path_sort_c_s;
-// std::string path_sort_c_l;
-// std::string path_sort_t_s;
-// std::string path_sort_t_l;
-
-// std::string path_sort_t_ls;
-// std::string path_sort_c_ls;
 
     //     csv saves:
     // TP: mycoords + swcoords (points that match swiss and are important)
@@ -124,86 +54,6 @@ std::string pits = "pits";
 std::string saddles = "saddles";
 std::string all = "all";
 
-// void create_output_names ()
-// {
-//     // path_gt_c_tp = "-groundswiss-curvature-truepositive.csv";
-//     // path_gt_t_tp = "-groundswiss-terrain-truepositive.csv";
-//     // path_gt_fn = "-groundswiss-falsenegative.csv";
-//     // path_c_fp = "-groundcurvature-falsepositive.csv";
-//     // path_t_fp = "-groundterrain-falsepositive.csv";
-
-/////////////////////////////////////////////////
-    
-//     // path_roc_c_all = "-roc-curvature-all.dat";
-//     // path_roc_t_all = "-roc-terrain-all.dat";
-//     // path_roc_c_max = "-roc-curvature-max.dat";
-//     // path_roc_t_max = "-roc-terrain-max.dat";
-//     // path_roc_c_min = "-roc-curvature-min.dat";
-//     // path_roc_t_min = "-roc-terrain-min.dat";
-//     // path_roc_c_sad = "-roc-curvature-sad.dat";
-//     // path_roc_t_sad = "-roc-terrain-sad.dat";
-
-/////////////////////////////////////////////////
-
-//     // path_sort_c_fp_s  = "-sort-curvature-falsepositive-strength.dat";
-//     // path_sort_c_fp_l  = "-sort-curvature-falsepositive-life.dat";
-//     // path_sort_c_tp_s = "-sort-curvature-truepositive-strength.dat";
-//     // path_sort_c_tp_l = "-sort-curvature-truepositive-life.dat";
-//     // path_sort_t_fp_s = "-sort-terrain-falsepositive-strength.dat";
-//     // path_sort_t_fp_l = "-sort-terrain-falsepositive-life.dat";
-//     // path_sort_t_tp_s = "-sort-terrain-truepositive-strength.dat";
-//     // path_sort_t_tp_l = "-sort-terrain-truepositive-life.dat";
-
-//     // path_sort_c_s = "-sort-curvature-strength.dat";
-//     // path_sort_c_l = "-sort-curvature-life.dat";
-//     // path_sort_t_s = "-sort-terrain-strength.dat";
-//     // path_sort_t_l = "-sort-terrain-life.dat";
-//     // // path_sort_c_l = "-sort-curvature.dat";
-//     // // path_sort_t_s = "-sort-terrain.dat";
-
-//     // path_sort_t_ls = "-sort-terrain-lifestrength.dat";
-//     // path_sort_c_ls = "-sort-curvature-lifestrength.dat";
-    
-/////////////////////////////////////////////////
-    
-//     // path_gt_c_tp = output_name + path_gt_c_tp; 
-//     // path_gt_t_tp = output_name + path_gt_t_tp;
-//     // path_gt_fn = output_name + path_gt_fn;
-//     // path_c_fp = output_name + path_c_fp;
-//     // path_t_fp = output_name + path_t_fp;
-
-//     // // path_roc_c_s = output_name + path_roc_c_s;
-//     // // path_roc_c_l = output_name + path_roc_c_l;
-//     // // path_roc_t_s = output_name + path_roc_t_s;
-//     // // path_roc_t_l = output_name + path_roc_t_l;
-
-    
-//     // path_roc_c = output_name + path_roc_c;
-//     // path_roc_t = output_name + path_roc_t;
-//     // path_roc_c_max = output_name + path_roc_c_max;
-//     // path_roc_t_max = output_name + path_roc_t_max;
-//     // path_roc_c_min = output_name + path_roc_c_min;
-//     // path_roc_t_min = output_name + path_roc_t_min;
-//     // path_roc_c_sad = output_name + path_roc_c_sad;
-//     // path_roc_t_sad = output_name + path_roc_t_sad;
-	
-//     // path_sort_c_fp_s = output_name + path_sort_c_fp_s;
-//     // path_sort_c_fp_l = output_name + path_sort_c_fp_l;
-//     // path_sort_c_tp_s = output_name + path_sort_c_tp_s;
-//     // path_sort_c_tp_l = output_name + path_sort_c_tp_l;
-//     // path_sort_t_fp_s = output_name + path_sort_t_fp_s;
-//     // path_sort_t_fp_l = output_name + path_sort_t_fp_l;
-//     // path_sort_t_tp_s = output_name + path_sort_t_tp_s;
-//     // path_sort_t_tp_l = output_name + path_sort_t_tp_l;
-
-//     // path_sort_c_s = output_name + path_sort_c_s;
-//     // path_sort_c_l = output_name + path_sort_c_l;
-//     // path_sort_t_s = output_name + path_sort_t_s;
-//     // path_sort_t_l = output_name + path_sort_t_l;
-
-//     // path_sort_t_ls = output_name + path_sort_t_ls;
-//     // path_sort_c_ls = output_name + path_sort_c_ls;
-// }
 
 void print_help (FILE* f)
 {
@@ -232,16 +82,6 @@ void app_init(int argc, char *argv[])
         {
             switch( (*argv)[1] )
             {
-	    // case 'u':
-	    // 	do_normalize_border_points = false;
-            //     break;
-
-
-            // case 's':
-            //     ssp_file = (*++argv);
-            //     argc--;
-            //     break;
-
             case 't':
                 terrain_file = (*++argv);
                 argc--;
@@ -255,7 +95,6 @@ void app_init(int argc, char *argv[])
             case 'o':
                 oname = (*++argv);
 		do_output = true;
-		// create_output_names ();
                 argc--;
                 break;
 
@@ -681,13 +520,14 @@ void main_query ()
 		 best_query_pr_point.x, best_query_pr_point.y, 
 		 life_best_pr, strength_best_pr);
 
-	query_and_save (oname+"-"+kt_name, life_best_pr, strength_best_pr, kt_sw, kt_swps, kt_st);
+	fprintf (stdout, "saving f05 query\n");
+	query_and_save (oname+"-"+kt_name, life_best_f05, strength_best_f05, kt_sw, kt_swps, kt_st);
     }
     
     CSVReader csvio (width, height, cellsize, xllcorner, yllcorner);
     std::vector<SwissSpotHeight> other;
     for (int i = 0; i < swiss.size(); i++)
-	if (swiss[i].t == OTHER)
+	if (swiss[i].type () == OTHER)
 	    other.push_back (swiss[i]);
     csvio.save ((oname+"-"+path_swiss_out).c_str(), other);
 }
@@ -729,10 +569,10 @@ void query_and_save (std::string prepend, double life, double strength,
 	{
 	    swiss_tp.push_back (sw[query_t2s[i][0].idx]);
 	    swiss_marked[query_t2s[i][0].idx] = true;
-	    track_tp.push_back (SwissSpotHeight (query_t[i], 100000));
+	    track_tp.push_back (SwissSpotHeight (query_t[i]));
 	}
 	else
-	    track_fp.push_back (SwissSpotHeight(query_t[i], 100000));
+	    track_fp.push_back (SwissSpotHeight(query_t[i]));
     }
 
     for (unsigned i = 0; i < sw.size(); i++)
@@ -753,7 +593,7 @@ void query_and_save (std::string prepend, double life, double strength,
     for (unsigned i = 0; i < qzero_tz2s.size(); i++)
 	for (unsigned j = 0; j < swiss_fn.size(); j++)
 	    if (qzero_tz2s[i].size () > 0 && sw[qzero_tz2s[i][0].idx].p == swiss_fn[j].p)
-		track_fn.push_back (SwissSpotHeight (qzero_t[i], 500000));
+		track_fn.push_back (SwissSpotHeight (qzero_t[i]));
 		
     // track_out: points that are fp in 0,0 and are not in track_fp
     for (unsigned i = 0; i < qzero_tz2s.size(); i++)
@@ -763,7 +603,7 @@ void query_and_save (std::string prepend, double life, double strength,
 	    if (query_t2s[i].size () == 0 && qzero_tp[i] == track_fp[j].p)
 		found = true;
 	if (!found)
-	    track_out.push_back (SwissSpotHeight (qzero_t[i], 600000));	    
+	    track_out.push_back (SwissSpotHeight (qzero_t[i]));	    
     }
     
     // write
@@ -867,7 +707,7 @@ void main_old ()
 		    swiss_marked[terrain2swiss[i][0].idx] = true;
 		}
 		else
-		    t_fp.push_back (SwissSpotHeight(terrain_points[i], 100000 + i));
+		    t_fp.push_back (SwissSpotHeight(terrain_points[i]));
 		continue;
 	    }
 
@@ -894,7 +734,7 @@ void main_old ()
 		swiss_marked[terrain2swiss[i][0].idx] = true;
 	    }
 	    else
-		t_fp.push_back (SwissSpotHeight(terrain_points[i], 100000 + i));
+		t_fp.push_back (SwissSpotHeight(terrain_points[i]));
 	}
     }
     
@@ -908,7 +748,7 @@ void main_old ()
 		swiss_marked[curvature2swiss[i][0].idx] = true;
 	    }
 	    else if (!curvature_marked[i])
-		c_fp.push_back (SwissSpotHeight(curvature_points[i], 200000 + i));
+		c_fp.push_back (SwissSpotHeight(curvature_points[i]));
     }
 
     if (do_terrain2swiss || do_allthree)
@@ -1086,10 +926,19 @@ void confusion (std::vector <std::vector <Ref> >& f2s, std::vector<Point>& s,
     *tn_count = (width * height) - tp.size() - fp.size() - fn.size();
 }
 
-bool ref_comparison (const std::vector <Ref>& v1, const std::vector <Ref>& v2)
-{
-    return v1.size () < v2.size ();
-}
+// bool ref_comparison (const std::vector <Ref>& v1, const std::vector <Ref>& v2)
+// {
+//     return v1.size () < v2.size ();
+// }
+
+class IdxRef {
+public:
+    int idx;
+    std::vector <Ref>* refs;
+    IdxRef (int idx, std::vector <Ref>* refs) : idx (idx), refs (refs) {}
+    bool operator< (IdxRef rhs) { return refs->size () < rhs.refs->size (); }
+};
+    
 
 void fill_match (std::vector <Point>& f, std::vector <Point>& s,
 		 std::vector <std::vector <Ref> >& f2s,
@@ -1126,13 +975,14 @@ void fill_match (std::vector <Point>& f, std::vector <Point>& s,
 	std::sort (f2s[i].begin (), f2s[i].end ());
     }
 
-    std::sort (f2s.begin (), f2s.end (), ref_comparison);
+    //std::sort (f2s.begin (), f2s.end (), ref_comparison);
 
-    if (f2s[0].size() > f2s[f2s.size()-1].size())
-	eprintx (-2,"begin: %zu, end: %zu\n", f2s[0].size(), f2s[f2s.size()-1].size());
-
+    std::vector <IdxRef> f2s_idx;
+    for (unsigned i = 0; i < f.size(); i++)
+	f2s_idx.push_back (IdxRef (i, &f2s[i]));
+	
     if (maxcandidates)
-	*maxcandidates = f2s[f2s.size()-1].size();
+	*maxcandidates = f2s_idx[f2s_idx.size()-1].refs->size();
     // search for duplicates
     // (two points in f have found the same point in s, we keep the nearest)
 
@@ -1141,33 +991,37 @@ void fill_match (std::vector <Point>& f, std::vector <Point>& s,
     int dup = -1;
 
  duplicates_restart:
+
+    std::sort (f2s_idx.begin (), f2s_idx.end ());
+    if (f2s_idx[0].refs->size() > f2s_idx[f2s_idx.size()-1].refs->size())
+	eprintx (-2,"%s", "size ordering mismatch\n");
     
     i = j = 0;
     dup++;
     
     for (i = 0; i < f.size(); i++)
-	if (f2s[i].size() > 0)
+	if (f2s_idx[i].refs->size() > 0)
 	{
-	    search_idx = f2s[i][0].idx;
+	    search_idx = (*(f2s_idx[i].refs))[0].idx;
 	    for (j = i+1; j < f.size(); j++)
-		if (f2s[j].size() > 0 && f2s[j][0].idx == search_idx)
+		if (f2s_idx[j].refs->size() > 0 && (*(f2s_idx[j].refs))[0].idx == search_idx)
 		{
-		    if (f2s[j].size() == f2s[i].size())
-		    {   // same size, we keep the nerest one 
-			if (f2s[i][0].dist <= f2s[j][0].dist)
+		    if (f2s_idx[j].refs->size() == f2s_idx[i].refs->size())
+		    {   // same size, we keep the nearest one 
+			if ((*(f2s_idx[i].refs))[0].dist <= (*(f2s_idx[j].refs))[0].dist)
 			{
-			    f2s[j].erase (f2s[j].begin());
+			    f2s_idx[j].refs->erase (f2s_idx[j].refs->begin());
 			    goto duplicates_restart;
 			}
 			else
 			{
-			    f2s[i].erase (f2s[i].begin());
+			    f2s_idx[i].refs->erase (f2s_idx[i].refs->begin());
 			    goto duplicates_restart;
 			}
 		    }
-		    else if (f2s[j].size() > f2s[i].size())
+		    else if (f2s_idx[j].refs->size() > f2s_idx[i].refs->size())
 		    { // we delete j, because it has more matches
-			f2s[j].erase (f2s[j].begin());
+			f2s_idx[j].refs->erase (f2s_idx[j].refs->begin());
 			goto duplicates_restart;
 		    }
 		    else
@@ -1177,6 +1031,11 @@ void fill_match (std::vector <Point>& f, std::vector <Point>& s,
     
     if (duplicates != NULL)
 	*duplicates = dup;
+
+    // double check
+    for (unsigned i = 0; i < f.size(); i++)
+	if (f2s_idx[i].refs->size() != f2s[f2s_idx[i].idx].size())
+	    eprintx (-1, "%s", "much check very wrong.\n");
 }
 
 // void query_roc ()
@@ -1199,15 +1058,15 @@ void classify_swiss (std::vector <SwissSpotHeight> s,
     for (unsigned i = 0; i < s.size(); i++)
     {
 	sc.push_back (s[i]);
-	sc[i].t = OTHER;
+	sc[i].ct = OTHER;
     }
     
     for (unsigned i = 0; i < t.size(); i++)
 	if (t2s[i].size() > 0)
-	    sc[t2s[i][0].idx].t = critical2swiss (t[i].type);
+	    sc[t2s[i][0].idx].ct = critical2classified (t[i].type);
 
     CSVReader csvio (width, height, cellsize, xllcorner, yllcorner);
-    csvio.save (fn.c_str(), sc, true);
+    csvio.save (fn.c_str(), sc);
 }
 
 void query_track (Track* track, double life, double strength,
@@ -1268,16 +1127,16 @@ void load_all ()
 	    for (unsigned i = 0; i < swiss_copy.size (); i++)
 		// GG se anche curvatura e punti HUMAN check controllo
 	    {
-		if (swiss_copy[i].t == PEAK ||
-		    swiss_copy[i].t == PIT ||
-		    swiss_copy[i].t == SADDLE)
+		if (swiss_copy[i].type () == PEAK ||
+		    swiss_copy[i].type () == PIT ||
+		    swiss_copy[i].type () == SADDLE)
 		    swiss.push_back (swiss_copy[i]);
 		
-		if (swiss_copy[i].t == PEAK)
+		if (swiss_copy[i].type () == PEAK)
 		    swiss_peaks.push_back (swiss_copy[i]);
-		if (swiss_copy[i].t == PIT)
+		if (swiss_copy[i].type () == PIT)
 		    swiss_pits.push_back (swiss_copy[i]);
-		if (swiss_copy[i].t == SADDLE)
+		if (swiss_copy[i].type () == SADDLE)
 		    swiss_saddles.push_back (swiss_copy[i]);
 	    }
 	}
@@ -1325,7 +1184,7 @@ void load_all ()
 		terrain.push_back (TrackSpot (i, terrain_track->start_point (i),
 					      life_i, strength_i, cti));
 		terrain_points.push_back (terrain_track->start_point (i));
-		switch (critical2swiss (cti))
+		switch (critical2classified (cti))
 		{
 		case PEAK:
 		    terrain_peak_num++;
