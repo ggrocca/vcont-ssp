@@ -121,6 +121,24 @@ void Camera::mouse (int button, int state, int mx, int mmy)
     // flip mouse y axis so up is +y
     int my = height - mmy;
 
+    if (info_mode)
+    {
+	if (state == GLUT_UP)
+	{
+	    double model[16];
+	    double proj[16];
+	    int view[4];
+	    double ox, oy, oz;
+	    glGetDoublev (GL_MODELVIEW_MATRIX, model);
+	    glGetDoublev (GL_PROJECTION_MATRIX, proj);
+	    glGetIntegerv (GL_VIEWPORT, view);
+	    gluUnProject (mx, my, 0, model, proj, view, &ox, &oy, &oz);
+
+	    printf ("image coords: %lf, %lf\n", ox, oy);
+	}
+	return;
+    }
+    
     // convert mouse coords to (-1/2,-1/2)-(1/2, 1/2) box
     double x = ((double) mx / (double) width ) - 0.5;
     double y = ((double) my / (double) height ) - 0.5;
@@ -196,8 +214,13 @@ void Camera::key_up(unsigned char upkey, int mx, int my)
     case 'a':
 	zooming_in = false;
 	break;
+
     case 'z':
 	zooming_out = false;
+	break;
+
+    case 'i':
+	info_mode = false;
 	break;
     }
 
@@ -222,6 +245,10 @@ void Camera::key(unsigned char inkey, int mx, int my)
 	zooming_out = true;
 	goto post;
 
+    case 'i':
+	info_mode = true;
+	break;
+	
     case 'q':
 	reset ();
 	goto post;
@@ -231,7 +258,7 @@ void Camera::key(unsigned char inkey, int mx, int my)
 		virtual_center.x, virtual_center.y, virtual_width, virtual_height);
 	printf ("left=%lf, right=%lf, bottom=%lf, top=%lf\n",
 		_ortho_left (), _ortho_right (), _ortho_bottom (), _ortho_top ());
-	goto post;
+	break;
      }
 
     return;

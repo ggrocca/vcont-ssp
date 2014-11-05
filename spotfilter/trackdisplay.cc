@@ -87,6 +87,10 @@ TrackDisplay::TrackDisplay()
 
     swpts_display = false;
     swpts_active = false;
+
+    do_draw_border_cut = false;
+    border_cut  = 0.2;
+    do_draw_crop = false;
 };
 
 
@@ -112,6 +116,10 @@ void TrackDisplay::set_boundaries ()
 	width = asc->width;
 	height = asc->height;
     }
+
+    crop_llc.x = crop_llc.y = 0;
+    crop_hrc.x = width;
+    crop_hrc.y = height;
 }
 
 void TrackDisplay::read_ssp (char *file)
@@ -614,8 +622,11 @@ void TrackDisplay::draw (int dem_idx, Point llc, Point hrc)
     Coord bllc, bhrc;
     bllc.x = llc.x < 0 ? 0 : floor (llc.x);
     bllc.y = llc.y < 0 ? 0 : floor (llc.y);
-    bhrc.x = hrc.x > width-1 ? width-1 : floor (hrc.x);
-    bhrc.y = hrc.y > height-1 ? height-1 : floor (hrc.y);
+    bhrc.x = hrc.x > width ? width : floor (hrc.x);
+    bhrc.y = hrc.y > height ? height : floor (hrc.y);
+    // was there a reason for -1 or was it a bug?
+    // bhrc.x = hrc.x > width-1 ? width-1 : floor (hrc.x);
+    // bhrc.y = hrc.y > height-1 ? height-1 : floor (hrc.y);
     
     glMatrixMode (GL_PROJECTION);
     glPushMatrix ();
@@ -1183,6 +1194,57 @@ void TrackDisplay::draw (int dem_idx, Point llc, Point hrc)
 
     if (draw_csv)
 	swpts_draw ();
+
+    if (do_draw_border_cut)
+    {
+	glLineWidth (lines_width);
+
+	double w = width;
+	double h = height;
+	double wc = w * (border_cut / 2.0);
+	double hc = h * (border_cut / 2.0);
+
+	glEnable(GL_LINE_SMOOTH);
+	glBegin (GL_LINES);
+
+	glColor3f (0.0, 1.0, 1.0);
+    
+	glVertex2d (0+wc, 0+hc);
+	glVertex2d (0+wc, h-hc);
+
+	glVertex2d (0+wc, 0+hc);
+	glVertex2d (w-wc, 0+hc);
+
+	glVertex2d (w-wc, h-hc);
+	glVertex2d (0+wc, h-hc);
+
+	glVertex2d (w-wc, h-hc);
+	glVertex2d (w-wc, 0+hc);
+
+	glEnd();
+    }
+
+    if (do_draw_crop)
+    {
+	glLineWidth (lines_width);
+
+	glEnable(GL_LINE_SMOOTH);
+	glBegin (GL_LINES);
+
+	glColor3f (0.8, 1.0, 0.1);
+	glVertex2d (crop_llc.x, crop_llc.y);
+	glVertex2d (crop_llc.x, crop_hrc.y);
+	glVertex2d (crop_llc.x, crop_llc.y);
+	glVertex2d (crop_hrc.x, crop_llc.y);
+
+	glColor3f (1.0, 0.7, 0.0);    
+	glVertex2d (crop_hrc.x, crop_hrc.y);
+	glVertex2d (crop_llc.x, crop_hrc.y);
+	glVertex2d (crop_hrc.x, crop_hrc.y);
+	glVertex2d (crop_hrc.x, crop_llc.y);
+
+	glEnd();
+    }
     
     glMatrixMode (GL_PROJECTION);
     glPopMatrix ();

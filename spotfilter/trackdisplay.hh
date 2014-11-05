@@ -179,6 +179,11 @@ public:
     void swpts_draw ();
     void swpts_load_csv (char* filename);
     void swpts_save_csv (char* filename);
+
+    bool do_draw_border_cut;
+    bool do_draw_crop;
+    double border_cut;
+    Coord crop_llc, crop_hrc;
 };
 
 

@@ -56,6 +56,7 @@ private:
     double _ortho_top ();
 
     double move_x, move_y;
+    bool info_mode;
 };
 
 

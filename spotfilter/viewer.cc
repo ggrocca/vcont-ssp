@@ -654,6 +654,14 @@ void init_inspector_mode ()
     TwAddVarRW(cBar, "+strength cut micro", TW_TYPE_DOUBLE, &(td.sellae_strength_cut),
     	       "min=0.0 step=0.000001");
 
+    TwAddSeparator (cBar, 0, 0);
+    TwAddVarRW(cBar, "show border cut", TW_TYPE_BOOLCPP, &(td.do_draw_border_cut), "");
+    TwAddVarRW(cBar, "border cut", TW_TYPE_DOUBLE, &(td.border_cut), "max=1.0 min=0.0 step=0.01");
+    TwAddVarRW(cBar, "show crop", TW_TYPE_BOOLCPP, &(td.do_draw_crop), "");
+    TwAddVarRW(cBar, "crop llc.x", TW_TYPE_INT32, &(td.crop_llc.x), "");
+    TwAddVarRW(cBar, "crop llc.y", TW_TYPE_INT32, &(td.crop_llc.y), "");
+    TwAddVarRW(cBar, "crop hrc.x", TW_TYPE_INT32, &(td.crop_hrc.x), "");
+    TwAddVarRW(cBar, "crop hrc.y", TW_TYPE_INT32, &(td.crop_hrc.y), "");
 }
   
 
