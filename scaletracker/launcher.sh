@@ -45,3 +45,28 @@ if [ $DATASET == "crop_named_peaks" ]; then
     		  > ../../datasets/dhm25/crop_named_peaks_terr.out.txt 2> \
     		  ../../datasets/dhm25/crop_named_peaks_terr.err.txt
 fi
+
+if [ $ALL == "true" ]; then DATASET="aletsch_terr"; fi
+if [ $DATASET == "aletsch_terr" ]; then
+    echo "aletsch"
+    /usr/bin/time -f "%E real,%U user,%S sys" \
+    		  -o ../../datasets/aletsch/aletsch_terr.time.txt \
+    		  ./scaletracker \
+    		  -i ../../datasets/aletsch/aletsch.asc \
+    		  -o ../../datasets/aletsch/aletsch_terr \
+    		  -a -n 15 -p 0.01 0 \
+    		  > ../../datasets/aletsch/aletsch_terr.out.txt \
+    		  2> ../../datasets/aletsch/aletsch_terr.err.txt
+fi
+
+if [ $ALL == "true" ]; then DATASET="aletsch_curv_8"; fi
+if [ $DATASET == "aletsch_curv_8" ]; then
+    /usr/bin/time -f "%E real,%U user,%S sys" \
+    		  -o ../../datasets/aletsch/aletsch_curv.time.txt \
+		  ./scaletracker \
+		  -d ../../datasets/aletsch/aletsch_curv_8.dem \
+		  -o ../../datasets/aletsch/aletsch_curv_8 \
+		  -n 15 -a \
+		  > ../../datasets/aletsch/aletsch_curv_8.out.txt \
+		  2> ../../datasets/aletsch/aletsch_curv_8.err.txt    
+fi
