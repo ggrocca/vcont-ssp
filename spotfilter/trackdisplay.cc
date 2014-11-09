@@ -44,7 +44,7 @@ TrackDisplay::TrackDisplay()
     track_mult = 1.0;
     vquery = std::vector<TrackRenderingEntry>(0);
     draw_lines = false;
-    lines_width = 1.0;
+    lines_width = 2.0;
     lines_size_clip = 0;
     lines_life_clip = 0.0;
     lines_query = false;
@@ -91,6 +91,8 @@ TrackDisplay::TrackDisplay()
     do_draw_border_cut = false;
     border_cut  = 0.2;
     do_draw_crop = false;
+    do_draw_crop_cut = false;
+    crop_cut = 0.2;
 };
 
 
@@ -591,6 +593,28 @@ bool TrackDisplay::is_density (double val, int idx, vector<int>& spots_current)
 //     return (v - min) / (max - min);
 // }
 
+void __draw_box_lines (Coord a, Coord b, double ca[], double cb[], double lines_width)
+{
+    glLineWidth (lines_width);
+
+    glEnable(GL_LINE_SMOOTH);
+    glBegin (GL_LINES);
+
+    glColor3dv (ca);
+    glVertex2d (a.x, a.y);
+    glVertex2d (a.x, b.y);
+    glVertex2d (a.x, a.y);
+    glVertex2d (b.x, a.y);
+
+    glColor3dv (cb);    
+    glVertex2d (b.x, b.y);
+    glVertex2d (a.x, b.y);
+    glVertex2d (b.x, b.y);
+    glVertex2d (b.x, a.y);
+
+    glEnd();
+}
+    
 static double __clip (double v, double min, double max, double mul)
 {
     v *= mul;
@@ -1197,53 +1221,73 @@ void TrackDisplay::draw (int dem_idx, Point llc, Point hrc)
 
     if (do_draw_border_cut)
     {
-	glLineWidth (lines_width);
-
 	double w = width;
 	double h = height;
 	double wc = w * (border_cut / 2.0);
 	double hc = h * (border_cut / 2.0);
+	double color[3] = {0.0, 1.0, 1.0};
+	__draw_box_lines (Coord (0+wc, 0+hc), Coord (w-wc, h-hc),
+			  color, color, lines_width);
+	
+	// glLineWidth (lines_width);
 
-	glEnable(GL_LINE_SMOOTH);
-	glBegin (GL_LINES);
+	// glEnable(GL_LINE_SMOOTH);
+	// glBegin (GL_LINES);
 
-	glColor3f (0.0, 1.0, 1.0);
+	// glColor3f (0.0, 1.0, 1.0);
     
-	glVertex2d (0+wc, 0+hc);
-	glVertex2d (0+wc, h-hc);
+	// glVertex2d (0+wc, 0+hc);
+	// glVertex2d (0+wc, h-hc);
 
-	glVertex2d (0+wc, 0+hc);
-	glVertex2d (w-wc, 0+hc);
+	// glVertex2d (0+wc, 0+hc);
+	// glVertex2d (w-wc, 0+hc);
 
-	glVertex2d (w-wc, h-hc);
-	glVertex2d (0+wc, h-hc);
+	// glVertex2d (w-wc, h-hc);
+	// glVertex2d (0+wc, h-hc);
 
-	glVertex2d (w-wc, h-hc);
-	glVertex2d (w-wc, 0+hc);
+	// glVertex2d (w-wc, h-hc);
+	// glVertex2d (w-wc, 0+hc);
 
-	glEnd();
+	// glEnd();
     }
 
     if (do_draw_crop)
     {
-	glLineWidth (lines_width);
+	double ca[3] = {0.8, 1.0, 0.1};
+	double cb[3] = {1.0, 0.7, 0.0};
+	__draw_box_lines (crop_llc, crop_hrc, ca, cb, lines_width);
+	
+	// glLineWidth (lines_width);
 
-	glEnable(GL_LINE_SMOOTH);
-	glBegin (GL_LINES);
+	// glEnable(GL_LINE_SMOOTH);
+	// glBegin (GL_LINES);
 
-	glColor3f (0.8, 1.0, 0.1);
-	glVertex2d (crop_llc.x, crop_llc.y);
-	glVertex2d (crop_llc.x, crop_hrc.y);
-	glVertex2d (crop_llc.x, crop_llc.y);
-	glVertex2d (crop_hrc.x, crop_llc.y);
+	// glColor3f (0.8, 1.0, 0.1);
+	// glVertex2d (crop_llc.x, crop_llc.y);
+	// glVertex2d (crop_llc.x, crop_hrc.y);
+	// glVertex2d (crop_llc.x, crop_llc.y);
+	// glVertex2d (crop_hrc.x, crop_llc.y);
 
-	glColor3f (1.0, 0.7, 0.0);    
-	glVertex2d (crop_hrc.x, crop_hrc.y);
-	glVertex2d (crop_llc.x, crop_hrc.y);
-	glVertex2d (crop_hrc.x, crop_hrc.y);
-	glVertex2d (crop_hrc.x, crop_llc.y);
+	// glColor3f (1.0, 0.7, 0.0);    
+	// glVertex2d (crop_hrc.x, crop_hrc.y);
+	// glVertex2d (crop_llc.x, crop_hrc.y);
+	// glVertex2d (crop_hrc.x, crop_hrc.y);
+	// glVertex2d (crop_hrc.x, crop_llc.y);
 
-	glEnd();
+	// glEnd();
+    }
+
+    if (do_draw_crop_cut)
+    {
+	double w = crop_hrc.x - crop_llc.x;
+	double h = crop_hrc.y - crop_llc.y;
+	Coord e = Coord((w / (1.0 - crop_cut)) * crop_cut,
+			(h / (1.0 - crop_cut)) * crop_cut);
+	crop_cut_llc = crop_llc - e;
+	crop_cut_hrc = crop_hrc + e;
+	double ca[3] = {0.7, 0.6, 0.1};
+	double cb[3] = {0.9, 0.3, 0.0};
+	__draw_box_lines (crop_cut_llc, crop_cut_hrc, ca, cb, lines_width);
     }
     
     glMatrixMode (GL_PROJECTION);
@@ -1328,8 +1372,9 @@ void TrackDisplay::swpts_draw ()
 
 void TrackDisplay::swpts_load_csv (char* filename)
 {
-    CSVReader csvio (asc->width, asc->height, asc->cellsize,
-		     asc->xllcorner, asc->yllcorner);
+    // CSVReader csvio (asc->width, asc->height, asc->cellsize,
+    // 		     asc->xllcorner, asc->yllcorner);
+    CSVReader csvio (*asc);
     csvio.load (filename, swpts_ground_truth);
     
     swpts_display  = true;
@@ -1368,7 +1413,6 @@ void TrackDisplay::swpts_save_csv (char* filename)
 
     // printf ("final: %s\n", cwd);
 
-    CSVReader csvio (asc->width, asc->height,
-		     asc->cellsize, asc->xllcorner, asc->yllcorner);
+    CSVReader csvio (*asc);
     csvio.save (cwd, spots_current, track, ssp);
 }

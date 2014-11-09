@@ -48,6 +48,7 @@ public:
 
 class ASCReader : public DEMReader {
 public:
+    // GG TBD should substitute this with new ascheader class
     double xllcorner, yllcorner;
     double cellsize;
     double nodata_value;

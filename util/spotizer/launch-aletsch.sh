@@ -3,7 +3,7 @@
 if [ $# -ne "8" ]; then
     echo "Usage $0 DATASET[aletsch] MODE[basic] CURVSET CURVFACTOR DISTQUERY BORDERCUT PRUNE[y\|n] CSV[all|classified|refined]"
     echo "Usage $0 DATASET[aletsch] MODE[query] LIFE_STEPS STRENGTH_STEPS DISTQUERY BORDERCUT PRUNE[y|n] CSV[all|classified|refined]"
-    echo "Usage $0 DATASET[dhm25] SET[aargau-lucerne|lucerne] LIFE_STEPS STRENGTH_STEPS DISTQUERY BORDERCUT PRUNE[y|n] CSV[???]"
+    echo "Usage $0 DATASET[dhm25] SET[aargau-lucerne|lucerne|crop_named_peaks] LIFE_STEPS STRENGTH_STEPS DISTQUERY BORDERCUT PRUNE[y|n] CSV[???]"
     exit 1
 fi
 

@@ -9,6 +9,7 @@
 #include "demreader.hh"
 #include "scaletypes.hh"
 #include "gaussian.hh"
+#include "ascheader.hh"
 
 class Averhood {
 
@@ -120,6 +121,7 @@ public:
     Dem (FILE* fp);
     
     void write (FILE* fp);
+    void write (char* asc_name, ASCHeader asch);
 
     double& operator() (Coord c, AccessType a = ABYSS);    // read & write with coord
     double& operator() (int x, int y, AccessType a = ABYSS); // read & write with x,y

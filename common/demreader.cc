@@ -169,6 +169,7 @@ HGTReader::HGTReader(const char* filename)
 
     set_maxmin();
     // print_info (filename);
+    fclose (fp);
 }
 
 double HGTReader::get_pixel(unsigned int x, unsigned int y)
@@ -237,6 +238,7 @@ ASCReader::ASCReader(const char* filename)
 
     set_maxmin();
     // print_info (filename);
+    fclose (fp);
 }
 
 double ASCReader::get_pixel(unsigned int x, unsigned int y)

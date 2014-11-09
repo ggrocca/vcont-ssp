@@ -5,6 +5,7 @@
 #include "track.hh"
 #include "scaletypes.hh"
 #include "demreader.hh"
+#include "ascheader.hh"
 
 enum ClassifiedType {OTHER=0, PEAK, PIT, SADDLE, HUMAN, ALL};
 enum SwisstopoType {
@@ -153,11 +154,13 @@ public:
 };
 
 class CSVReader {
+    // gg constructors and conv methods
 public:
     CSVReader ();
     CSVReader (ASCReader& ascr);
-    CSVReader (int width, int height,
-	       double cellsize, double xllcorner, double yllcorner);
+    CSVReader (ASCHeader& asch);
+    // CSVReader (int width, int height,
+    // 	       double cellsize, double xllcorner, double yllcorner);
     
     void load (const char* filename, std::vector<SwissSpotHeight>& points);
     void load (const char* filename, std::vector<SwissSpotHeight>& points,
@@ -177,9 +180,10 @@ public:
     Point img2asc (Point i);
 
 private:
-    int width, height;
-    double cellsize;
-    double xllcorner, yllcorner;
+    ASCHeader asch;
+    // int width, height;
+    // double cellsize;
+    // double xllcorner, yllcorner;
 };
 
 

@@ -322,43 +322,45 @@ ClassifiedType critical2classified (CriticalType c)
     return OTHER;
 }
 
-CSVReader::CSVReader () :
-    width (0), height (0), cellsize (0),
-    xllcorner (0), yllcorner (0) {}
+CSVReader::CSVReader () : asch() {}
 
-CSVReader::CSVReader (ASCReader& ascr) :
-    width (ascr.width), height (ascr.height), cellsize (ascr.cellsize),
-    xllcorner (ascr.xllcorner), yllcorner (ascr.yllcorner) {}
+CSVReader::CSVReader (ASCReader& ascr) : asch (ascr) {}
 
-CSVReader::CSVReader (int width, int height,
-		      double cellsize, double xllcorner, double yllcorner) :
-    width (width), height (height), cellsize (cellsize),
-    xllcorner (xllcorner), yllcorner (yllcorner) {}
+CSVReader::CSVReader (ASCHeader& asch) : asch (asch) {}
+
+// CSVReader::CSVReader () :
+//     width (0), height (0), cellsize (0),
+//     xllcorner (0), yllcorner (0) {}
+
+// CSVReader::CSVReader (ASCReader& ascr) :
+//     width (ascr.width), height (ascr.height), cellsize (ascr.cellsize),
+//     xllcorner (ascr.xllcorner), yllcorner (ascr.yllcorner) {}
+
+
+    
+// CSVReader::CSVReader (int width, int height,
+// 		      double cellsize, double xllcorner, double yllcorner) :
+//     width (width), height (height), cellsize (cellsize),
+//     xllcorner (xllcorner), yllcorner (yllcorner) {}
 
 void CSVReader::asc2img (Point a, Point* i)
 {
-    i->x = (a.x - xllcorner) / cellsize;
-    i->y = (a.y - yllcorner) / cellsize;
+    asch.asc2img (a, i);
 }
 
 void CSVReader::img2asc (Point i, Point* a)
 {
-    a->x = (i.x * cellsize) + xllcorner;
-    a->y = (i.y * cellsize) + yllcorner;
+    asch.img2asc (i, a);
 }
 
 Point CSVReader::asc2img (Point a)
 {
-    Point i;
-    asc2img (a, &i);
-    return i;
+    return asch.asc2img (a);
 }
 
 Point CSVReader::img2asc (Point i)
 {
-    Point a;
-    img2asc (i, &a);
-    return a;
+    return asch.img2asc (i);
 }
 
 
@@ -473,10 +475,10 @@ void CSVReader::load (const char* filename, std::vector<SwissSpotHeight>& points
 
 	asc2img (pa, &sh.p);
 	// sh.oid = id;
-	if (sh.p.is_inside ((double) width, (double) height, cut))
+	if (sh.p.is_inside ((double) asch.width, (double) asch.height, cut))
 	    points.push_back (sh);
 	// else
-	//     printf ("[%d], p(%lf,%lf) dim[%d,%d]\n", points_read, sh.p.x, sh.p.y, width, height);
+	//     printf ("[%d], p(%lf,%lf) dim[%d,%d]\n", points_read, sh.p.x, sh.p.y, asch.width, asch.height);
 	
 	points_read++;
     }
@@ -549,11 +551,11 @@ void CSVReader::save (const char* filename, std::vector<int>& spots,
 
     	Point pi (track->lines[idx].entries[0].c.x + 0.5,
     		  track->lines[idx].entries[0].c.y + 0.5);
-    	double height = (*(ssp->dem[0]))(track->lines[idx].entries[0].c.x,
+    	double vv = (*(ssp->dem[0]))(track->lines[idx].entries[0].c.x,
     					 track->lines[idx].entries[0].c.y);
 	
 	SwissSpotHeight sh (pi);
-	sh.z = height;
+	sh.z = vv;
 	sh.ct = critical2classified (track->original_type (idx));
 	sh.st = UNDEFINED;
 	sh.dbt = DB_TRACK;

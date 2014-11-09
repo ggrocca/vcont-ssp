@@ -74,7 +74,7 @@ OBJ_EXT = oo
 ## conflict.
 # CPPSOURCES = file1.cc file2.cc
 # CSOURCES = file1.c file2.c
-CPPSOURCES = csvreader.cc demreader.cc dem.cc track.cc flipper.cc trackstats.cc scalespace.cc
+CPPSOURCES = csvreader.cc demreader.cc dem.cc track.cc flipper.cc trackstats.cc scalespace.cc ascheader.cc
 CPPSOURCES += swissclassifier.cc
 
 ## add directives -D__FILENAME_EXISTS for every file "filename.h" added here.

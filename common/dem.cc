@@ -201,6 +201,26 @@ void Dem::write (FILE* fp)
     fwrite (&(data[0]), sizeof (double), data.size(), fp);
 }
 
+void Dem::write (char* asc_name, ASCHeader asch)
+{
+    FILE* fp;
+    fp = fopen (asc_name, "w");
+    if (fp == NULL)
+    	eprintx (2, "Could not open file `%s'. %s\n", asc_name, strerror (errno));
+    
+    fprintf (fp, "ncols %d\n", asch.width);
+    fprintf (fp, "nrows %d\n", asch.height);
+    fprintf (fp, "xllcorner %lf\n", asch.xllcorner);
+    fprintf (fp, "yllcorner %lf\n", asch.yllcorner);
+    fprintf (fp, "cellsize %lf\n", asch.cellsize);
+    fprintf (fp, "NODATA_value %lf\n", asch.nodata_value);
+
+    int len = 0;
+    for (unsigned w = 0; w < width; w++)
+    	for (unsigned h = 0; h < height; h++)
+    	    fprintf (fp, h == height - 1? "%lf\n" : "%lf ", data[len++]);
+}
+
 
 double& Dem::operator() (Coord c, AccessType a) // = ABYSS
 {

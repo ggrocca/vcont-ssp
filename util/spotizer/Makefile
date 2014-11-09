@@ -74,7 +74,7 @@ OBJ_EXT = oo
 ## conflict.
 # CPPSOURCES = file1.cc file2.cc
 # CSOURCES = file1.c file2.c
-CPPSOURCES = csvreader.cc track.cc dem.cc demreader.cc flipper.cc trackstats.cc scalespace.cc
+CPPSOURCES = csvreader.cc track.cc dem.cc demreader.cc flipper.cc trackstats.cc scalespace.cc ascheader.cc
 #CPPSOURCES += gaussian.cc 
 CPPSOURCES += spotizer.cc
 #CSOURCES = rastertiff.c

@@ -1,6 +1,7 @@
 #include "track.hh"
 #include "demreader.hh"
 #include "csvreader.hh"
+#include "ascheader.hh"
 
 #include <vector>
 #include <algorithm>
@@ -183,7 +184,8 @@ void app_init(int argc, char *argv[])
 Track *curvature_track;
 Track *terrain_track;
 int width, height;
-double cellsize, xllcorner, yllcorner;
+// double cellsize, xllcorner, yllcorner;
+ASCHeader asch;
 TrackOrdering *terrain_track_order;
 TrackOrdering *curvature_track_order;
 
@@ -524,7 +526,7 @@ void main_query ()
 	query_and_save (oname+"-"+kt_name, life_best_f05, strength_best_f05, kt_sw, kt_swps, kt_st);
     }
     
-    CSVReader csvio (width, height, cellsize, xllcorner, yllcorner);
+    CSVReader csvio (asch);
     std::vector<SwissSpotHeight> other;
     for (int i = 0; i < swiss.size(); i++)
 	if (swiss[i].type () == OTHER)
@@ -553,7 +555,7 @@ void query_and_save (std::string prepend, double life, double strength,
     save_lifestrength (query_t, t2s_tp, t2s_fp, prepend+"-"+path_query);
 
     // save csv points sets
-    CSVReader csvio (width, height, cellsize, xllcorner, yllcorner);
+    CSVReader csvio (asch);
     std::vector<bool> swiss_marked (sw.size (),  false);
     std::vector<SwissSpotHeight> swiss_tp;
     std::vector<SwissSpotHeight> track_tp;
@@ -758,7 +760,7 @@ void main_old ()
 		s_fn.push_back (swiss[i]);
     }
     
-    CSVReader csvio (width, height, cellsize, xllcorner, yllcorner);
+    CSVReader csvio (asch);
     if (do_terrain2swiss || do_allthree)
     {
 	// csvio.save (path_gt_fn.c_str(), s_fn);
@@ -1065,7 +1067,7 @@ void classify_swiss (std::vector <SwissSpotHeight> s,
 	if (t2s[i].size() > 0)
 	    sc[t2s[i][0].idx].ct = critical2classified (t[i].type);
 
-    CSVReader csvio (width, height, cellsize, xllcorner, yllcorner);
+    CSVReader csvio (asch);
     csvio.save (fn.c_str(), sc);
 }
 
@@ -1102,17 +1104,17 @@ void load_all ()
     if (asc_file)
     {
 	ASCReader ascr (asc_file);
-
-	width = ascr.width;
-	height = ascr.height;
-	xllcorner = ascr.xllcorner;
-	yllcorner = ascr.yllcorner;
-	cellsize = ascr.cellsize;
+	asch = ASCHeader (ascr);
+	width = asch.width;
+	height = asch.height;
+	// xllcorner = ascr.xllcorner;
+	// yllcorner = ascr.yllcorner;
+	// cellsize = ascr.cellsize;
     }
 
     if (swiss_file)
     {
-	CSVReader csvio (width, height, cellsize, xllcorner, yllcorner);
+	CSVReader csvio (asch);
 	csvio.load (swiss_file, swiss, cut_borders);
 	swiss_points.clear ();
 

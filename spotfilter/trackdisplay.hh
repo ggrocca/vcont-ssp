@@ -11,6 +11,7 @@
 #include "demreader.hh"
 #include "grid.hh"
 #include "csvreader.hh"
+#include "ascheader.hh"
 
 #include <vector>
 #include <algorithm>
@@ -184,6 +185,9 @@ public:
     bool do_draw_crop;
     double border_cut;
     Coord crop_llc, crop_hrc;
+    bool do_draw_crop_cut;
+    double crop_cut;
+    Coord crop_cut_llc, crop_cut_hrc;
 };
 
 

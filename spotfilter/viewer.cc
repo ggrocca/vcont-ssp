@@ -655,13 +655,19 @@ void init_inspector_mode ()
     	       "min=0.0 step=0.000001");
 
     TwAddSeparator (cBar, 0, 0);
-    TwAddVarRW(cBar, "show border cut", TW_TYPE_BOOLCPP, &(td.do_draw_border_cut), "");
-    TwAddVarRW(cBar, "border cut", TW_TYPE_DOUBLE, &(td.border_cut), "max=1.0 min=0.0 step=0.01");
+    TwAddVarRW(cBar, "show global cut", TW_TYPE_BOOLCPP, &(td.do_draw_border_cut), "");
+    TwAddVarRW(cBar, "global cut", TW_TYPE_DOUBLE, &(td.border_cut), "max=1.0 min=0.0 step=0.01");
     TwAddVarRW(cBar, "show crop", TW_TYPE_BOOLCPP, &(td.do_draw_crop), "");
     TwAddVarRW(cBar, "crop llc.x", TW_TYPE_INT32, &(td.crop_llc.x), "");
     TwAddVarRW(cBar, "crop llc.y", TW_TYPE_INT32, &(td.crop_llc.y), "");
     TwAddVarRW(cBar, "crop hrc.x", TW_TYPE_INT32, &(td.crop_hrc.x), "");
     TwAddVarRW(cBar, "crop hrc.y", TW_TYPE_INT32, &(td.crop_hrc.y), "");
+    TwAddVarRW(cBar, "show crop cut", TW_TYPE_BOOLCPP, &(td.do_draw_crop_cut), "");
+    TwAddVarRW(cBar, "crop cut", TW_TYPE_DOUBLE, &(td.crop_cut), "max=1.0 min=0.0 step=0.01");
+    TwAddVarRO(cBar, "crop_cut llc.x", TW_TYPE_INT32, &(td.crop_cut_llc.x), "");
+    TwAddVarRO(cBar, "crop_cut llc.y", TW_TYPE_INT32, &(td.crop_cut_llc.y), "");
+    TwAddVarRO(cBar, "crop_cut hrc.x", TW_TYPE_INT32, &(td.crop_cut_hrc.x), "");
+    TwAddVarRO(cBar, "crop_cut hrc.y", TW_TYPE_INT32, &(td.crop_cut_hrc.y), "");
 }
   
 

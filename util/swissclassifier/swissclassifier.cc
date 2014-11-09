@@ -284,7 +284,8 @@ public:
 // d2fdxdy c
 
 int width, height;
-double cellsize, xllcorner, yllcorner;
+ASCHeader asch;
+// double cellsize, xllcorner, yllcorner;
 std::vector <SwissSpotHeight> swiss;
 std::vector <SwissSpotHeight> swiss_class;
 
@@ -422,13 +423,14 @@ int main (int argc, char *argv[])
     app_init (argc, argv);
 
     ASCReader ascr (asc_file);
-    width = ascr.width;
-    height = ascr.height;
-    xllcorner = ascr.xllcorner;
-    yllcorner = ascr.yllcorner;
-    cellsize = ascr.cellsize;
+    asch = ASCHeader (ascr);
+    width = asch.width;
+    height = asch.height;
+    // xllcorner = ascr.xllcorner;
+    // yllcorner = ascr.yllcorner;
+    // cellsize = ascr.cellsize;
     
-    CSVReader csvio (width, height, cellsize, xllcorner, yllcorner);
+    CSVReader csvio (asch);
     csvio.load (input_swiss_file, swiss);
     
     std::vector<Coord> nbw;

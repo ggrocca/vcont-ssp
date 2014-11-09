@@ -8,6 +8,7 @@
 #include "../common/scalespace.hh"
 #include "flipper.hh"
 #include "../common/csvreader.hh"
+#include "../common/ascheader.hh"
 
 #include "imagewriter.hh"
 // #include "tracking.hh"
@@ -26,6 +27,7 @@ char *critical_csv_name = 0;
 char *scalespace_write_name = 0;
 char *scalespace_read_name = 0;
 char *plateau_name = 0;
+char *asc_crop_name = 0;
 char *tiffnames = 0;
 char *statfile = 0;
 int numlevel = 0;
@@ -170,16 +172,19 @@ void app_init(int argc, char *argv[])
 		static char _critical_csv_str[_FNLEN] = {'\0'};
 		static char _scalespace_str[_FNLEN] = {'\0'};
 		static char _plateau_str[_FNLEN] = {'\0'};
+		static char _asc_crop_str[_FNLEN] = {'\0'};
 		snprintf (_tracking_str, _FNLEN, "%s%s" ,out_name, ".trk");
 		snprintf (_critical_str, _FNLEN, "%s%s" ,out_name, ".crt");
 		snprintf (_critical_csv_str, _FNLEN, "%s%s" ,out_name, ".crt.csv");
 		snprintf (_scalespace_str, _FNLEN, "%s%s" ,out_name, ".ssp");
 		snprintf (_plateau_str, _FNLEN, "%s%s" ,out_name, ".plt");
+		snprintf (_asc_crop_str, _FNLEN, "%s%s" ,out_name, "_crop.asc");
 		tracking_name = &(_tracking_str[0]);
 		critical_name = &(_critical_str[0]);
 		critical_csv_name = &(_critical_csv_str[0]);
 		scalespace_write_name = &(_scalespace_str[0]);
 		plateau_name = &(_plateau_str[0]);
+		asc_crop_name = &(_asc_crop_str[0]);
 #undef _FNLEN
 		argc--;
                 break;
@@ -273,6 +278,7 @@ int main (int argc, char *argv[])
     Dem* idem = NULL;
     DEMReader* dr = NULL;
     DEMSelector::Format fmt;
+    ASCHeader* asch = NULL;
     CSVReader csvio;
 
     if (imagefile != NULL)
@@ -284,9 +290,8 @@ int main (int argc, char *argv[])
 
 	if (fmt == DEMSelector::ASC)
 	{
-	    ASCReader* ascr = new ASCReader (imagefile);
-	    csvio = CSVReader (*ascr);
-	    delete ascr;
+	    asch = new ASCHeader (imagefile);
+	    csvio = CSVReader (*asch);
 	}
 	    
     }
@@ -361,6 +366,16 @@ int main (int argc, char *argv[])
 	delete d;
     }
 
+    if (asch != NULL && idem != NULL && do_crop)
+    {
+    	Dem* c = new Dem (*idem, crop_a, crop_b);
+	ASCHeader asch_crop (*asch, crop_a, crop_b);
+    	c->write (asc_crop_name, asch_crop);
+    	delete c;
+    }
+    if (asch != NULL)
+    	delete asch;
+    
     if (stage == 1)
 	exit (0);
 

@@ -134,6 +134,11 @@ public:
 	return Pair (x + rhs.x, y + rhs.y);
     }
 
+    Pair operator-(const Pair& rhs)
+    {
+	return Pair (x - rhs.x, y - rhs.y);
+    }
+
     static Pair lowest()
     {
 	T bogus;
@@ -191,6 +196,7 @@ public:
     Coord () : Pair<int>() {}
     Coord (int x, int y) : Pair<int>(x, y) {}
     Coord (const Coord& c) : Pair<int>(c) {}
+    Coord (const Pair<int>& pi) : Pair<int>(pi) {}
 
     /**
                      <2>           <3>
