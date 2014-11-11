@@ -13,20 +13,24 @@ if [ $DATASET == "dhm25" ]; then
 		      -o ../../../datasets/dhm25/morph_kleinform-classified.csv \
 		      -a ../../../datasets/dhm25/aargau-lucerne.asc \
 		      -t ../../../datasets/dhm25/aargau-lucerne_terr.trk \
-		      -S 1.0 -c
+		      -S 1.0 -c \
+                      > ../../../datasets/dhm25/morph_kleinform-classified.csv.out.txt
     
     ./swissclassifier -i ../../../datasets/dhm25/name_pkt.csv \
 		      -o ../../../datasets/dhm25/name_pkt-classified.csv \
 		      -a ../../../datasets/dhm25/aargau-lucerne.asc \
 		      -t ../../../datasets/dhm25/aargau-lucerne_terr.trk \
-		      -S 1.0 -c
+		      -S 1.0 -c \
+                      > ../../../datasets/dhm25/name_pkt-classified.csv.out.txt
 
 
     ./swissclassifier -i ../../../datasets/dhm25/hoehenkote.csv \
 		      -o ../../../datasets/dhm25/hoehenkote-classified.csv \
 		      -a ../../../datasets/dhm25/aargau-lucerne.asc \
 		      -t ../../../datasets/dhm25/aargau-lucerne_terr.trk \
-		      -S 1.0 -c
+		      -S 1.0 -c \
+                      > ../../../datasets/dhm25/hoehenkote-classified.csv.out.txt
+
 
     ./swissmangler.sh natural \
 		      NAMED_ALPINE_SUMMIT_100 NAMED_MAIN_SUMMIT_200 \
@@ -45,12 +49,13 @@ if [ $DATASET == "dhm25" ]; then
 		      MORPH_SINK_400 MORPH_DOLINE_100
 fi
 
+
 if [ $ALL == "true" ]; then DATASET="aletsch"; fi
 if [ $DATASET == "aletsch" ]; then
     ./swissclassifier -i ../../../datasets/aletsch/aletsch.csv \
 		      -o ../../../datasets/aletsch/aletsch-classified.csv \
 		      -a ../../../datasets/aletsch/aletsch.asc \
 		      -t ../../../datasets/aletsch/aletsch_terr.trk \
-		      -S 1.0 -c
-    
+		      -S 1.0 -c \
+                      > ../../../datasets/aletsch/aletsch-classified.csv.out.txt    
 fi
