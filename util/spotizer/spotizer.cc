@@ -938,7 +938,7 @@ public:
     int idx;
     std::vector <Ref>* refs;
     IdxRef (int idx, std::vector <Ref>* refs) : idx (idx), refs (refs) {}
-    bool operator< (IdxRef rhs) { return refs->size () < rhs.refs->size (); }
+    bool operator< (const IdxRef rhs) const { return refs->size () < rhs.refs->size (); }
 };
     
 
