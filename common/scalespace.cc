@@ -375,7 +375,7 @@ void ScaleSpace::write_plateaus (char* filename)
     if (fp == NULL)
 	eprintx (2, "Could not open file `%s'. %s\n", filename, strerror (errno));
 
-    fprintf (fp, "#levels: %zu\n", levels);
+    fprintf (fp, "#levels: %d\n", levels);
 
     std::vector < std::vector <Coord> > plateaus_list;
     for (int i = 0; i < levels; i++)

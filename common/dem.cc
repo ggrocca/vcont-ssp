@@ -215,10 +215,22 @@ void Dem::write (char* asc_name, ASCHeader asch)
     fprintf (fp, "cellsize %lf\n", asch.cellsize);
     fprintf (fp, "NODATA_value %lf\n", asch.nodata_value);
 
-    int len = 0;
-    for (unsigned w = 0; w < width; w++)
-    	for (unsigned h = 0; h < height; h++)
-    	    fprintf (fp, h == height - 1? "%lf\n" : "%lf ", data[len++]);
+    for (int y = 0; y < height; y++)
+	for (int x = 0; x < width; x++)
+	{
+	    //int yy = y;
+	    int yy = height - 1 - y;
+
+	    int xx = x;
+	    //int xx = width - 1 - x;
+	    
+	    //bool eol = yy == height - 1;
+	    //bool eol = yy == height - 1;
+	    bool eol = false;
+	    
+	    //fprintf (fp, eol? "%lf\n" : "%lf ", data[(xx * height) + yy]);
+	    fprintf (fp, eol? "%lf\n" : "%lf ", (*this)(xx, yy));
+	}
 }
 
 

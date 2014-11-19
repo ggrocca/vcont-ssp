@@ -21,7 +21,7 @@ ASCHeader::ASCHeader (ASCHeader& asch, Coord crop_llc, Coord crop_hrc)
 {
     width = crop_hrc.x - crop_llc.x;
     height = crop_hrc.y - crop_llc.y;
-    Point llcorner = img2asc (Point (crop_llc.x, crop_llc.y));
+    Point llcorner = asch.img2asc (Point (crop_llc.x, crop_llc.y));
     xllcorner = llcorner.x;
     yllcorner = llcorner.y;
     cellsize = asch.cellsize;

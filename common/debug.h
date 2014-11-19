@@ -134,7 +134,7 @@
 
 #define eprintx(exit_value, fmt, ...)					\
     do {								\
-	fprintf(stderr, "Fatal. %s:%d: %s(): " fmt, __FILE__,	\
+	fprintf(stderr, "Fatal. %s:%d: %s(): " fmt, __FILE__,		\
 		__LINE__, _FUNC, __VA_ARGS__);				\
 	if (DO_ASSERT)							\
 	    assert (0);							\
@@ -144,35 +144,35 @@
 #define tprint(fmt, ...)						\
     do {								\
 	if (_TRACE_TEST)						\
-	    fprintf(TRACE_STREAM, "%s:%d: %s(): " fmt, __FILE__,		\
+	    fprintf(TRACE_STREAM, "%s:%d: %s(): " fmt, __FILE__,	\
 		    __LINE__, _FUNC, __VA_ARGS__);			\
     } while (0)
 
-#define tprintp(preamble, fmt, ...)					\
+#define tprintp(pre, fmt, ...)						\
     do {								\
 	if (_TRACE_TEST)						\
-	    fprintf(TRACE_STREAM, preamble " %s:%d: %s(): " fmt, __FILE__,	\
+	    fprintf(TRACE_STREAM, pre " %s:%d: %s(): " fmt, __FILE__,	\
 		    __LINE__, _FUNC, __VA_ARGS__);			\
     } while (0)
 
 #define tprints(scope, fmt, ...)					\
     do {								\
 	if (_TRACE_TEST && (scope))					\
-	    fprintf(TRACE_STREAM, "%s:%d: %s(): " fmt, __FILE__,		\
+	    fprintf(TRACE_STREAM, "%s:%d: %s(): " fmt, __FILE__,	\
 		    __LINE__, _FUNC, __VA_ARGS__);			\
     } while (0)
 
-#define tprintsp(scope, preamble, fmt, ...)				\
+#define tprintsp(scope, pre, fmt, ...)					\
     do {								\
 	if (_TRACE_TEST && (scope))					\
-	    fprintf(TRACE_STREAM, preamble " %s:%d: %s(): " fmt, __FILE__,	\
+	    fprintf(TRACE_STREAM, pre " %s:%d: %s(): " fmt, __FILE__,	\
 		    __LINE__, _FUNC, __VA_ARGS__);			\
     } while (0)
 
 #define oprints(scope, fmt, ...)					\
     do {								\
 	if (_TRACE_TEST && (scope))					\
-	    fprintf(TRACE_STREAM, fmt, __VA_ARGS__);				\
+	    fprintf(TRACE_STREAM, fmt, __VA_ARGS__);			\
     } while (0)
 
 #endif // _DEBUG_H

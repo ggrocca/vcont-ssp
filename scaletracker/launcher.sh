@@ -39,11 +39,14 @@ if [ $DATASET == "crop_named_peaks" ]; then
     /usr/bin/time -f "%E real,%U user,%S sys" \
     		  -o ../../datasets/dhm25/crop_named_peaks_terr.time.txt \
     		  ./scaletracker \
-    		  -i ../../datasets/dhm25/aargau-lucerne.asc \
+    		  -g 1 -i ../../datasets/dhm25/aargau-lucerne.asc \
     		  -o ../../datasets/dhm25/crop_named_peaks_terr \
     		  -a -n 17 -p 0.01 0 -c 207 6 1573 1140\
     		  > ../../datasets/dhm25/crop_named_peaks_terr.out.txt 2> \
     		  ../../datasets/dhm25/crop_named_peaks_terr.err.txt
+    #quick hack for util/spotizer/launcher.sh compatibility
+    cp ../../datasets/dhm25/crop_named_peaks_terr_crop.asc \
+       ../../datasets/dhm25/crop_named_peaks.asc
 fi
 
 if [ $ALL == "true" ]; then DATASET="aletsch_terr"; fi

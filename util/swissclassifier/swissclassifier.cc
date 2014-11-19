@@ -243,10 +243,17 @@ public:
 	if (det < 0.0)
 	    return SADDLE;
 
-	if (det == 0.0 || first == 0.0)
-	    eprintx (-1,"Null determinant (%lf) or first term (%lf).\n", det, first);
+	// if (det == 0.0 || first == 0.0)
+	//     eprintx (-1,"Null determinant (%lf) or first term (%lf).\n", det, first);
+	// eprintx (-1,"%s\n","Impossible combination.");
 
-	eprintx (-1,"%s\n","Impossible combination.");
+	if (det == 0.0 || first == 0.0)
+	{
+	    eprint ("Null determinant (%lf) or first term (%lf).\n", det, first);
+	    return OTHER;
+	}
+	eprint ("%s\n","Impossible combination.");
+	return OTHER;
     }
     
     ClassifiedType getClassifiedType (double w)
