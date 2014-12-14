@@ -1377,7 +1377,7 @@ void TrackDisplay::swpts_load_csv (char* filename)
     CSVReader csvio (*asc);
     csvio.load (filename, swpts_ground_truth);
     
-    swpts_display  = true;
+    swpts_display = true;
 }
 
 #include "../common/strlcat.h"

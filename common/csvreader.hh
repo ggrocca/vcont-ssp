@@ -24,6 +24,7 @@ enum SwisstopoType {
 #define DB_TOPO_NAMED     (1 << 3)
 #define DB_TOPO_HEIGHT    (1 << 4)
 #define DB_TOPO_MORPH     (1 << 5)
+#define DB_GENERIC        (1 << 6)
 #define DB_SCALESPACE     (DB_CLASSIFICATION | DB_TRACK)
 #define DB_TOPO_KARTE     (DB_TOPO_NAMED | DB_TOPO_MORPH | DB_TOPO_HEIGHT)
 #define db_new(d)     ((d) = 0)
@@ -82,6 +83,7 @@ bool is_sametype (CriticalType ct, ClassifiedType st);
 ClassifiedType string2classified (std::string s);
 std::string classified2string (ClassifiedType t);
 ClassifiedType critical2classified (CriticalType c);
+CriticalType classified2critical (ClassifiedType c);
 
 class TrackSpot {
 public:

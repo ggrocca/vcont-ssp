@@ -6,14 +6,16 @@
 #include <vector>
 #include <algorithm>
 
-char *terrain_file = 0;
-char *curvature_file = 0;
-char *swiss_file = 0;
-char *mod_swiss_file = 0;
-char *asc_file = 0;
+char *terrain_file = NULL;
+char *curvature_file = NULL;
+char *swiss_file = NULL;
+char *mod_swiss_file = NULL;
+char *asc_file = NULL;
+char *generic_file = NULL;
 double target_distance = 2.0;
 double filter_curvature = 2.9;
 
+bool do_generic2swiss;
 bool do_terrain2swiss;
 bool do_curvature2swiss;
 bool do_terrain2curvature;
@@ -63,6 +65,7 @@ void print_help (FILE* f)
 	     "[-o outputname] : all output files begin with outputname.\n"
 	     "[-t terrain trackfile.trk]\n"
 	     "[-c curvature trackfile.trk]\n"
+	     "[-g generic csv input"
 	     "[-s swiss input points.csv]\n"
 	     "[-m modified swiss output points.csv]: dumb classifier\n"
 	     "[-a dem.asc]\n"
@@ -101,6 +104,11 @@ void app_init(int argc, char *argv[])
 
             case 's':
                 swiss_file = (*++argv);
+                argc--;
+                break;
+
+            case 'g':
+                generic_file = (*++argv);
                 argc--;
                 break;
 
@@ -147,6 +155,7 @@ void app_init(int argc, char *argv[])
         }
     }
 
+    do_generic2swiss = generic_file && swiss_file;
     do_terrain2curvature = terrain_file && curvature_file;
     do_curvature2swiss = curvature_file && swiss_file;
     do_terrain2swiss = terrain_file && swiss_file;
@@ -159,21 +168,22 @@ void app_init(int argc, char *argv[])
 	goto die;	
     }
     
-    if (!do_terrain2curvature && !do_curvature2swiss && !do_terrain2swiss)
+    if (!do_terrain2curvature && !do_curvature2swiss
+	&& !do_terrain2swiss && !do_generic2swiss)
     {
 	fprintf (stderr, "Two datasets are needed to make a comparison.\n\n");
 	goto die;
     }
     
-    if (swiss_file != NULL && asc_file == NULL)
+    if ((swiss_file != NULL || generic_file != NULL) && asc_file == NULL)
     {
 	fprintf (stderr, "Error: asc file needed for csv"
 		 " points input/output.\n\n");
 	goto die;
     }
-	
+
     return;
-	
+
  die:
     print_help(stderr);
     exit(1);
@@ -198,11 +208,14 @@ std::vector <TrackSpot> curvature;
 int terrain_peak_num = 0;
 int terrain_pit_num = 0;
 int terrain_saddle_num = 0;
+double generic_life_max;
+double generic_strength_max;
 double terrain_life_max;
 double terrain_strength_max;
 double curvature_life_max;
 double curvature_strength_max;
 std::vector <SwissSpotHeight> swiss;
+std::vector <SwissSpotHeight> generic;
 std::vector <SwissSpotHeight> swiss_peaks;
 std::vector <SwissSpotHeight> swiss_pits;
 std::vector <SwissSpotHeight> swiss_saddles;
@@ -210,6 +223,7 @@ std::vector <SwissSpotHeight> swiss_saddles;
 std::vector <Point> terrain_points;
 std::vector <Point> curvature_points;
 std::vector <Point> swiss_points;
+std::vector <Point> generic_points;
 std::vector <Point> swiss_peaks_points;
 std::vector <Point> swiss_pits_points;
 std::vector <Point> swiss_saddles_points;
@@ -259,6 +273,7 @@ void classify_swiss (std::vector <SwissSpotHeight> s,
 		     std::vector <std::vector <Ref> > t2s,
 		     std::string fn);
 
+void main_generic ();
 void main_query ();
 void main_old ();
 
@@ -268,7 +283,9 @@ int main (int argc, char *argv[])
 
     load_all ();
 
-    if (query_mode)
+    if (query_mode && generic_file)
+	main_generic ();
+    else if (query_mode)
 	main_query ();
     else
 	main_old ();
@@ -345,9 +362,161 @@ void write_roc_stats (FILE* f, int i, int j, bool last, double life, double stre
     // return f05;
 }
 
+void query_generic (std::vector <SwissSpotHeight>& spots_in,
+		    double life, double strength,
+		    std::vector <SwissSpotHeight>& spots,
+		    std::vector <Point>& points,
+		    ClassifiedType st);
+
 void query_and_save (std::string prepend, double life, double strength,
 		     std::vector <SwissSpotHeight>& sw, std::vector<Point>& swps,
 		     ClassifiedType st = ALL);
+
+void main_generic ()
+{
+    double best_query_f05 = -DBL_MAX;
+    double best_query_mcc = -DBL_MAX;
+    double best_query_roc_dist = DBL_MAX;
+    double best_query_pr_dist = DBL_MAX;
+    Point best_query_roc_point;
+    Point best_query_pr_point;
+    double life_best_f05, strength_best_f05;
+    double life_best_mcc, strength_best_mcc;
+    double life_best_roc, strength_best_roc;
+    double life_best_pr, strength_best_pr;
+
+
+    std::string output = oname+"-"+peaks+"-"+path_performance; // path_roc_t_max;
+    // kt_swps = swiss_peaks_points;
+    // kt_sw = swiss_peaks;
+    // kt_st = PEAK;
+    // kt_name = peaks;
+    printf ("\n -- PEAKS - swiss[%zu] - [%zu] --\n",
+    	    swiss_peaks.size(), generic.size());
+    
+    best_query_f05 = -DBL_MAX;
+    best_query_mcc = -DBL_MAX;
+    best_query_roc_dist = DBL_MAX;
+    best_query_pr_dist = DBL_MAX;
+	
+    FILE* fp = fopen (output.c_str(), "w");
+    fprintf (fp, "%s\n", roc_header);
+    
+    for (int i = 0; i < life_steps; i++)
+	for (int j = 0; j < strength_steps; j++)
+	{
+	    double life_s = (generic_life_max / (double) life_steps) * i;
+	    double strength_s = (generic_strength_max / (double) strength_steps) * j;
+
+	    // printf ("i %d j %d -- ls %lf ss %lf -- lmax %lf smax %lf\n",
+	    // 	    i, j, life_s, strength_s, generic_life_max, generic_strength_max);
+	    
+	    // query estrai punti del terreno: terrain + terrain2swiss
+	    std::vector <SwissSpotHeight> query_t;
+	    std::vector <Point> query_tp;
+	    std::vector <std::vector <Ref> > query_t2s;
+
+	    // query_t.clear ();
+	    // query_tp.clear ();
+	    // query_t2s.clear ();
+	    query_generic (generic, life_s, strength_s,
+			   query_t, query_tp, PEAK); // here choose type
+	
+	    int duplicates;
+	    int maxcandidates;
+	    fill_match (query_tp, swiss_peaks_points, query_t2s,
+			&duplicates, &maxcandidates);
+	    
+	    std::vector <int> t2s_tp, t2s_fp, t2s_fn;
+	    int t2s_tn = 0;
+	    // t2s_tp.clear ();
+	    // t2s_fp.clear ();
+	    // t2s_fn.clear ();
+	    // t2s_tn = 0;
+	    confusion (query_t2s, swiss_peaks_points, t2s_tp, t2s_fp, t2s_fn, &t2s_tn);
+
+	    std::vector<double> query_results;
+	    query_results.clear ();
+	    write_roc_stats (fp, i, j, j == strength_steps-1,
+			     life_s, strength_s,
+			     t2s_tp.size (), t2s_fp.size (),
+			     t2s_fn.size (), t2s_tn, duplicates, maxcandidates,
+			     query_results);
+
+	    double query_mcc;
+	    query_mcc = query_results[MCC_NUM];
+	    double query_f05;
+	    query_f05 = query_results[F05_NUM];
+	    Point query_roc_point;
+	    query_roc_point = Point(query_results[FPR_NUM], query_results[TPR_NUM]);
+	    double query_roc_dist;
+	    query_roc_dist = point_distance (Point (0.0, 1.0), query_roc_point);
+	    Point query_pr_point;
+	    query_pr_point = Point (query_results[TPR_NUM], query_results[PPV_NUM]);
+	    double query_pr_dist;
+	    query_pr_dist = point_distance (Point (1.0, 1.0), query_pr_point);
+	    
+	    // di quale parametro devo memorizzare la query?
+	    // memorizza parametri query piu' vicina a 1,1
+	    // sostituire con quello ritornato 
+	    if (best_query_mcc <= query_mcc)
+	    {
+		life_best_mcc = life_s;
+		strength_best_mcc = strength_s;
+		best_query_mcc = query_mcc;
+	    }
+	    
+	    if (best_query_f05 <= query_f05)
+	    {
+		life_best_f05 = life_s;
+		strength_best_f05 = strength_s;
+		best_query_f05 = query_f05;
+	    }
+	    
+	    if (best_query_roc_dist >= query_roc_dist)
+	    {
+		life_best_roc = life_s;
+		strength_best_roc = strength_s;
+		best_query_roc_dist = query_roc_dist;
+		best_query_roc_point = query_roc_point;
+	    }
+	    if (best_query_pr_dist >= query_pr_dist)
+	    {
+		life_best_pr = life_s;
+		strength_best_pr = strength_s;
+		best_query_pr_dist = query_pr_dist;
+		best_query_pr_point = query_pr_point;
+	    }
+	}
+    fclose (fp);
+    
+    fprintf (stdout, "best query mcc: %lf, life: %lf, strength: %lf\n",
+	     best_query_mcc, life_best_mcc, strength_best_mcc);
+    fprintf (stdout, "best query f05: %lf, life: %lf, strength: %lf\n",
+	     best_query_f05, life_best_f05, strength_best_f05);
+    fprintf (stdout, "best query roc: %lf (%lf,%lf), life: %lf, strength: %lf\n",
+	     best_query_roc_dist,
+	     best_query_roc_point.x, best_query_roc_point.y,
+	     life_best_roc, strength_best_roc);
+    fprintf (stdout, "best query pr: %lf (%lf,%lf), life: %lf, strength: %lf\n",
+	     best_query_pr_dist,
+	     best_query_pr_point.x, best_query_pr_point.y, 
+	     life_best_pr, strength_best_pr);
+
+    // -- GG should have query_save_generic that calls query_generic, not query_track
+    // fprintf (stdout, "saving f05 query\n");
+    // query_and_save (oname+"-"+peaks, life_best_f05, strength_best_f05,
+    // 		    swiss_peaks, swiss_peaks_points, PEAK);
+
+    // -- GG what's the point here?
+    // CSVReader csvio (asch);
+    // std::vector<SwissSpotHeight> other;
+    // for (unsigned i = 0; i < swiss.size(); i++)
+    // 	if (swiss[i].type () == OTHER)
+    // 	    other.push_back (swiss[i]);
+    // csvio.save ((oname+"-"+path_swiss_out).c_str(), other);
+}
+
 
 void main_query ()
 {
@@ -528,7 +697,7 @@ void main_query ()
     
     CSVReader csvio (asch);
     std::vector<SwissSpotHeight> other;
-    for (int i = 0; i < swiss.size(); i++)
+    for (unsigned i = 0; i < swiss.size(); i++)
 	if (swiss[i].type () == OTHER)
 	    other.push_back (swiss[i]);
     csvio.save ((oname+"-"+path_swiss_out).c_str(), other);
@@ -876,6 +1045,11 @@ void save_lifestrength (std::vector <TrackSpot>& spots,
     for (unsigned i = 0; i < idxs_tp.size(); i++)
 	tp[idxs_tp[i]] = true;
 
+    // GG WARN ADDED THIS FOR WHEN MAKE DEBUG COMPLAINED ABOUT idxs_fp not used
+    // you don't really understand what's going on here
+    for (unsigned i = 0; i < idxs_fp.size(); i++)
+	fp[idxs_fp[i]] = true;
+
     for (unsigned i = 0; i < spots.size(); i++)
 	if (!tp[i] && !fp[i])
 	    out[i] = true;
@@ -1098,6 +1272,27 @@ void query_track (Track* track, double life, double strength,
 
 }
 
+void query_generic (std::vector <SwissSpotHeight>& spots_in,
+		    double life, double strength,
+		    std::vector <SwissSpotHeight>& spots,
+		    std::vector <Point>& points,
+		    ClassifiedType st)
+{
+    spots.clear ();
+    points.clear ();
+    for (unsigned i = 0; i < spots_in.size(); i++)
+    {
+	double life_i = spots_in[i].life;
+	double strength_i = spots_in[i].strength;
+	ClassifiedType ct = spots_in[i].ct;
+	if (life_i >= life && strength_i >= strength && st == ct)
+	{
+	    spots.push_back (spots_in[i]);
+	    points.push_back (spots_in[i].p);
+	}
+    }
+}
+
 
 void load_all ()
 {
@@ -1112,6 +1307,27 @@ void load_all ()
 	// cellsize = ascr.cellsize;
     }
 
+    if (generic_file)
+    {
+	CSVReader csvio (asch);
+	csvio.load (generic_file, generic, cut_borders);
+	generic_points.clear ();
+
+	generic_life_max = 0.0;
+	generic_strength_max = 0.0;
+	
+	for (unsigned i = 0; i < generic.size (); i++)
+	{
+ 	    generic_points.push_back (generic[i].p);
+
+	    if (generic[i].life > generic_life_max)
+		generic_life_max = generic[i].life;
+
+	    if (generic[i].strength > generic_strength_max)
+		generic_strength_max = generic[i].strength;
+	}
+    }
+    
     if (swiss_file)
     {
 	CSVReader csvio (asch);

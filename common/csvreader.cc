@@ -10,6 +10,7 @@ static const char* csv_header_topo_morph = "X,Y,QUELLE_FC,GRUND_AEND,ART_AENDER,
 static const char* csv_header_topo_named = "X,Y,QUELLE_FC,GRUND_AEND,ART_AENDER,ART_AEND_1,DATUM_AEND,INKREMENTA,KARTOGRAF,HINWEIS_AE,BORDER_STA,SICHTBARKE,OBJEKTART,NAME,BESCHRIFTE,SG,HOEHE,RID1";
 static const char* csv_header_topo_shop = "X,Y,OBJECTID,OBJECTVAL,OBJECTORIG,YEAROFCHAN";
 static const char* csv_header_scalespace = "X,Y,Z,LIFE,STRENGTH,CLASSIFICATION,SWISSTOPO,DATABASE";
+static const char* csv_header_generic = "X,Y,Z,IMPORTANCE,CLASSIFICATION";
 
 static const char* other_s = "OTHER";
 static const char* peak_s = "PEAK";
@@ -17,6 +18,8 @@ static const char* pit_s = "PIT";
 static const char* saddle_s = "SADDLE";
 static const char* human_s = "HUMAN";
 
+// GG WARN should correct here: string without _S
+// -- bewware this will make files produced before modification uncorrect.
 static const char* named_alpine_summit_100_s = "NAMED_ALPINE_SUMMIT_100_S";
 static const char* named_main_summit_200_s = "NAMED_MAIN_SUMMIT_200";
 static const char* named_summit_300_s = "NAMED_SUMMIT_300";
@@ -244,6 +247,8 @@ DatabaseType header2databasetype (char* header)
 	db_set (dbt, DB_TOPO_HEIGHT);
     else if ((std::string(header)) == csv_header_scalespace)
 	db_set (dbt, DB_SCALESPACE);
+    else if ((std::string(header)) == csv_header_generic)
+	db_set (dbt, DB_GENERIC);
     else
 	eprintx (-1, "unrecognized swiss csv format. header:\n\t%s\n", header);
 
@@ -280,7 +285,7 @@ ClassifiedType string2classified (std::string s)
     else if (s == human_s)
 	return HUMAN;
 
-    eprint ("wrong type: %s\n", s.c_str());
+    eprint ("wrong type: `%s'\n", s.c_str());
     return OTHER;
 }
 
@@ -321,6 +326,27 @@ ClassifiedType critical2classified (CriticalType c)
     eprint ("Wrong type %d\n", c);
     return OTHER;
 }
+
+CriticalType classified2critical (ClassifiedType c)
+{
+    switch (c)
+    {
+    case HUMAN:
+    case OTHER:
+	return REG;
+    case PEAK:
+	return MAX;
+    case PIT:
+	return MIN;
+    case SADDLE:
+	return SA2;
+    default:
+	;
+    }
+    eprint ("Wrong type %d\n", c);
+    return REG;
+}
+
 
 CSVReader::CSVReader () : asch() {}
 
@@ -421,6 +447,22 @@ void CSVReader::load (const char* filename, std::vector<SwissSpotHeight>& points
 		sh.ct = string2classified (csvp.field (5));
 		sh.st = string2swisstopo (csvp.field (6));
 		sh.dbt = atoi (csvp.field (7));
+	    }
+	    break;
+	    
+	case DB_GENERIC:
+	    {
+		//"X,Y,Z,IMPORTANCE,CLASSIFICATION";
+		if (csvp.parse_next() != 5)
+		    goto outta_loop;
+		pa.x = atof (csvp.field (0));
+		pa.y = atof (csvp.field (1));
+		sh.z = atof (csvp.field (2));
+		sh.life = atof (csvp.field (3));
+		sh.strength = atof (csvp.field (3));
+		sh.ct = string2classified (csvp.field (4));
+		sh.st = UNDEFINED;
+		sh.dbt = dbt;
 	    }
 	    break;
 	    
