@@ -1,0 +1,27 @@
+gg@isengard:~/Repositories/scalespace/scalespace/util/swissclassifier$ ./swissmangler.sh natural NAMED_ALPINE_SUMMIT_100 NAMED_MAIN_SUMMIT_200 NAMED_SUMMIT_300 NAMED_PASS_700 MORPH_SINK_400 MORPH_DOLINE_100 NAMED_MAIN_HILL_400 NAMED_HILL_500 HEIGHT_NATURAL_400
+output file natural
+mangling NAMED_ALPINE_SUMMIT_100
+mangling NAMED_MAIN_SUMMIT_200
+mangling NAMED_SUMMIT_300
+mangling NAMED_PASS_700
+mangling MORPH_SINK_400
+mangling MORPH_DOLINE_100
+mangling NAMED_MAIN_HILL_400
+mangling NAMED_HILL_500
+mangling HEIGHT_NATURAL_400
+gg@isengard:~/Repositories/scalespace/scalespace/util/swissclassifier$ ./swissmangler.sh allpeaks NAMED_ALPINE_SUMMIT_100 NAMED_MAIN_SUMMIT_200 NAMED_SUMMIT_300 NAMED_PASS_700 MORPH_SINK_400 MORPH_DOLINE_100 NAMED_MAIN_HILL_400 NAMED_HILL_500output file allpeaks
+mangling NAMED_ALPINE_SUMMIT_100
+mangling NAMED_MAIN_SUMMIT_200
+mangling NAMED_SUMMIT_300
+mangling NAMED_PASS_700
+mangling MORPH_SINK_400
+mangling MORPH_DOLINE_100
+mangling NAMED_MAIN_HILL_400
+mangling NAMED_HILL_500
+gg@isengard:~/Repositories/scalespace/scalespace/util/swissclassifier$ ./swissmangler.sh mainpeaks NAMED_ALPINE_SUMMIT_100 NAMED_MAIN_SUMMIT_200 NAMED_SUMMIT_300 NAMED_PASS_700 MORPH_SINK_400 MORPH_DOLINE_100output file mainpeaks
+mangling NAMED_ALPINE_SUMMIT_100
+mangling NAMED_MAIN_SUMMIT_200
+mangling NAMED_SUMMIT_300
+mangling NAMED_PASS_700
+mangling MORPH_SINK_400
+mangling MORPH_DOLINE_100

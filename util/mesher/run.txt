@@ -1,0 +1,1 @@
+./mesher -i ../../../datasets/hawaii/hawaii1km-gdr.asc -o ../../../datasets/hawaii/hawaii.off -C 1000

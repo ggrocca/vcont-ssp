@@ -1,0 +1,2 @@
+./swissclassifier -i ../../../datasets/swiss/aletsch.csv -a ../../../datasets/swiss/aletsch.asc -o ../../../datasets/swiss/classified.csv
+./swissclassifier -i ../../../datasets/swiss/aletsch.csv -a ../../../datasets/swiss/aletsch.asc -o ../../../datasets/swiss/classref.csv -t ../../../datasets/swiss/aletsch_terr.trk -S 1.0
