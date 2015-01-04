@@ -31,6 +31,7 @@ char *asc_crop_name = 0;
 char *tiffnames = 0;
 char *statfile = 0;
 int numlevel = 0;
+bool do_relative_drop = false;
 bool do_perturb = false;
 double perturb_amp;
 int perturb_seed;
@@ -71,6 +72,7 @@ void print_help (FILE* f)
 	     "[-f N] : controlled filtering. 0: slow. 1: normal. 2: fast.\n"
 	     "[-m mult] : multiply tiff output values by mult. Default auto mode\n"
 	     "[-a] : check for flat areas\n"
+	     "[-D] : substitute Relative Drop calculation for strength. Peaks only. \n"
 	     // "[-e] : border points normalization\n"
 	     "[-q] : do final tracking query.\n"
 	     "\n"
@@ -217,6 +219,10 @@ void app_init(int argc, char *argv[])
 	    case 'B':
 		do_clip = true;
                 clip_value = -DBL_MAX;
+                break;
+
+	    case 'D':
+		do_relative_drop = true;
                 break;
 
             case 'f':
@@ -483,6 +489,9 @@ int main (int argc, char *argv[])
     // 	track->normalize_border_points ();
     
     track->get_strength (ssp->dem[0]);
+
+    if (do_relative_drop)
+	track->get_relative_drop (ssp->dem[0]);
     
     //track->write (tracking_name, order);
     track_writer (tracking_name, track, order);

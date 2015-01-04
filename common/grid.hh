@@ -71,50 +71,55 @@ public:
 	return *this;
     }
     
-    bool is_inside (const T w, const T h)
+    bool is_border (const T w, const T h) const
+    {
+	return x == 0 || x == w-1 || y == 0 || y == h-1;
+    }
+
+    bool is_inside (const T w, const T h) const
     {
 	return x >= 0 && x < w && y >= 0 && y < h;
     }
     
-    bool is_inside (const T w, const T h, double cut)
+    bool is_inside (const T w, const T h, double cut) const
     {
 	double wc = w * (cut / 2.0);
 	double hc = h * (cut / 2.0);
 	return x >= 0+wc && x < w-wc && y >= 0+hc && y < h-hc;
     }
 
-    bool is_inside (const T w, const T h, int window)
+    bool is_inside (const T w, const T h, int window) const
     {
 	return x >= window && x < w-window && y >= window && y < h-window;
     }
     
-    bool is_inside (const Pair<T> llc, const Pair<T> hrc)
+    bool is_inside (const Pair<T> llc, const Pair<T> hrc) const
     {
 	return x >= llc.x && x < hrc.x && y >= llc.y && y < hrc.y;
     }
     
 
-    bool is_outside (const T w, const T h)
+    bool is_outside (const T w, const T h) const
     {
 	return !is_inside (w, h);
     }
     
-    bool operator<(const Pair& rhs)
+    bool operator<(const Pair& rhs) const
     {
 	return (x < rhs.x && y < rhs.y);
     }
 
-    bool operator>(const Pair& rhs)
+    bool operator>(const Pair& rhs) const
     {
 	return (x > rhs.x && y > rhs.y);
     }
 
-    bool operator<=(const Pair& rhs)
+    bool operator<=(const Pair& rhs) const
     {
 	return (x <= rhs.x && y <= rhs.y);
     }
 
-    bool operator>=(const Pair& rhs)
+    bool operator>=(const Pair& rhs) const
     {
 	return (x >= rhs.x && y >= rhs.y);
     }
@@ -124,7 +129,7 @@ public:
 	return (x == rhs.x && y == rhs.y);
     }
 
-    bool operator!=(const Pair& rhs)
+    bool operator!=(const Pair& rhs) const
     {
 	return (! (*this == rhs));
     }
@@ -206,7 +211,7 @@ public:
        <0>           <5>
      **/
     
-    int linear_index (Coord c)
+    int linear_index (const Coord c) const
     {
 	int idx = -1;
 
@@ -242,7 +247,7 @@ public:
 	return idx;
     }
 
-    void neigh_6 (std::vector<Coord>& ac)
+    void neigh_6 (std::vector<Coord>& ac) const
     {
     	ac.clear ();
 
@@ -255,20 +260,51 @@ public:
     	ac.push_back (Coord (x-1, y));
     }
     
-    void append_6 (std::vector<Coord>& lc)
+    void append_6 (std::vector<Coord>& lc) const
     {
-    	lc.push_back (Coord (x, y+1));
-    	lc.push_back (Coord (x+1, y+1));
-    	lc.push_back (Coord (x+1, y));
+	std::vector<Coord> ac;
+	neigh_6 (ac);
+
+	for (int i = 0; i < ac.size(); i++)
+	    lc.push_back (ac[i]);
 	
-    	lc.push_back (Coord (x, y-1));
-    	lc.push_back (Coord (x-1, y-1));
-    	lc.push_back (Coord (x-1, y));
+    	// lc.push_back (Coord (x, y+1));
+    	// lc.push_back (Coord (x+1, y+1));
+    	// lc.push_back (Coord (x+1, y));
+	
+    	// lc.push_back (Coord (x, y-1));
+    	// lc.push_back (Coord (x-1, y-1));
+    	// lc.push_back (Coord (x-1, y));
+    }
+
+    void neigh_8 (std::vector<Coord>& ac) const
+    {
+    	ac.clear ();
+
+    	ac.push_back (Coord (x, y+1));
+    	ac.push_back (Coord (x+1, y+1));
+    	ac.push_back (Coord (x+1, y));
+	
+    	ac.push_back (Coord (x, y-1));
+    	ac.push_back (Coord (x-1, y-1));
+    	ac.push_back (Coord (x-1, y));
+
+    	ac.push_back (Coord (x-1, y+1));
+    	ac.push_back (Coord (x+1, y-1));
+    }
+    
+    void append_8 (std::vector<Coord>& lc) const
+    {
+	std::vector<Coord> ac;
+	neigh_8 (ac);
+
+	for (int i = 0; i < ac.size(); i++)
+	    lc.push_back (ac[i]);
     }
     
     // returns next coord around current one in a 6-connected fashion.
     // clockwise trip starting south east (-1,-1).
-    void round_trip_6 (Coord* const c)
+    void round_trip_6 (Coord* const c) const
     {
 	bool do_redo;
 	static bool ic = true;
@@ -326,7 +362,7 @@ public:
 
     // returns next coord around current one in a 8-connected fashion.
     // clockwise trip starting south east (-1,-1).
-    void round_trip_8 (Coord* const c)
+    void round_trip_8 (Coord* const c) const
     {
 	static bool ic = true;
 	static int pi = -1;

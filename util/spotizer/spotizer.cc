@@ -2,6 +2,7 @@
 #include "demreader.hh"
 #include "csvreader.hh"
 #include "ascheader.hh"
+#include "distribution_sampler.hh"
 
 #include <vector>
 #include <algorithm>
@@ -24,6 +25,8 @@ bool query_mode = false;
 bool prune_swiss_points = false;
 int life_steps = 0;
 int strength_steps = 0;
+double life_exp = 0.0;
+double strength_exp = 0.0;
 double cut_borders = 0.0;
 
 bool do_output = false;
@@ -69,7 +72,8 @@ void print_help (FILE* f)
 	     "[-s swiss input points.csv]\n"
 	     "[-m modified swiss output points.csv]: dumb classifier\n"
 	     "[-a dem.asc]\n"
-	     "[-Q LIFE_STEPS STRENGTH_STEPS] query mode - ROC analysis.\n"
+	     "[-Q LIFE_STEPS STRENGTH_STEPS] query mode - ROC and PR analysis.\n"
+	     "[-E LIFE_EXP STRENGTH_EXP] use an exponential distribution with given base. Zero defaults to linear.\n"
 	     "[-D DISTANCE] : distance window for matching points.\n"
 	     "[-F FILTER] : keep only curvature points with life higher than filter.\n"
 	     "[-C CUT] : cut border areas by percentage in [0,1].\n"
@@ -144,6 +148,13 @@ void app_init(int argc, char *argv[])
                 argc--;
                 break;
 
+	    case 'E':
+                life_exp = atof (*++argv);
+                argc--;
+                strength_exp = atof (*++argv);
+                argc--;
+                break;
+
             case 'F':
                 filter_curvature = atof (*++argv);
                 argc--;
@@ -210,8 +221,14 @@ int terrain_pit_num = 0;
 int terrain_saddle_num = 0;
 double generic_life_max;
 double generic_strength_max;
-double terrain_life_max;
-double terrain_strength_max;
+double terrain_all_life_max;
+double terrain_all_strength_max;
+double terrain_peaks_life_max;
+double terrain_peaks_strength_max;
+double terrain_pits_life_max;
+double terrain_pits_strength_max;
+double terrain_saddles_life_max;
+double terrain_saddles_strength_max;
 double curvature_life_max;
 double curvature_strength_max;
 std::vector <SwissSpotHeight> swiss;
@@ -385,6 +402,8 @@ void main_generic ()
     double life_best_roc, strength_best_roc;
     double life_best_pr, strength_best_pr;
 
+    DistributionSampler life_sampler (generic_life_max, 0.0, life_steps, life_exp);
+    DistributionSampler strength_sampler (generic_strength_max, 0.0, strength_steps, strength_exp);
 
     std::string output = oname+"-"+peaks+"-"+path_performance; // path_roc_t_max;
     // kt_swps = swiss_peaks_points;
@@ -405,12 +424,18 @@ void main_generic ()
     for (int i = 0; i < life_steps; i++)
 	for (int j = 0; j < strength_steps; j++)
 	{
-	    double life_s = (generic_life_max / (double) life_steps) * i;
-	    double strength_s = (generic_strength_max / (double) strength_steps) * j;
+	    // double life_s = (generic_life_max / (double) life_steps) * i;
+	    // double strength_s = (generic_strength_max / (double) strength_steps) * j;
+	    double life_s = life_exp == 0.0?
+		life_sampler.lin (i) :
+		life_sampler.exp_ts (i);
+	    double strength_s = strength_exp == 0.0?
+		strength_sampler.lin (j) :
+		strength_sampler.exp_ts (j);
 
 	    // printf ("i %d j %d -- ls %lf ss %lf -- lmax %lf smax %lf\n",
 	    // 	    i, j, life_s, strength_s, generic_life_max, generic_strength_max);
-	    
+
 	    // query estrai punti del terreno: terrain + terrain2swiss
 	    std::vector <SwissSpotHeight> query_t;
 	    std::vector <Point> query_tp;
@@ -533,7 +558,6 @@ void main_query ()
     double life_best_roc, strength_best_roc;
     double life_best_pr, strength_best_pr;
 
-
     for (int kt = 0; kt < 4; kt++)
     {
 	if (!prune_swiss_points && kt != 3)
@@ -544,6 +568,7 @@ void main_query ()
 	std::vector <SwissSpotHeight> kt_sw;
 	ClassifiedType kt_st;
 	std::string kt_name;
+	double kt_life_max, kt_strength_max;
 
 	switch (kt)
 	{
@@ -553,6 +578,8 @@ void main_query ()
 	    kt_sw = swiss_peaks;
 	    kt_st = PEAK;
 	    kt_name = peaks;
+	    kt_life_max = terrain_peaks_life_max;
+	    kt_strength_max = terrain_peaks_strength_max;
 	    printf ("\n -- PEAKS - swiss[%zu] - track[%d] --\n",
 		    swiss_peaks.size(), terrain_peak_num++);
 	    break;
@@ -560,10 +587,12 @@ void main_query ()
 	    kt_output = oname+"-"+pits+"-"+path_performance; //path_roc_t_min;
 	    kt_swps = swiss_pits_points;
 	    kt_sw = swiss_pits;
+	    kt_st = PIT;
 	    kt_name = pits;
+	    kt_life_max = terrain_pits_life_max;
+	    kt_strength_max = terrain_pits_strength_max;
 	    printf ("\n -- PITS - swiss[%zu] - track[%d] --\n",
 		    swiss_pits.size(), terrain_pit_num++);
-	    kt_st = PIT;
 	    break;
 	case 2: // sad
 	    kt_output = oname+"-"+saddles+"-"+path_performance; //path_roc_t_sad;
@@ -571,6 +600,8 @@ void main_query ()
 	    kt_sw = swiss_saddles;
 	    kt_st = SADDLE;
 	    kt_name = saddles;
+	    kt_life_max = terrain_saddles_life_max;
+	    kt_strength_max = terrain_saddles_strength_max;
 	    printf ("\n -- SADDLES - swiss[%zu] - track[%d] --\n",
 		    swiss_saddles.size(), terrain_saddle_num++);
 	    break;
@@ -580,6 +611,8 @@ void main_query ()
 	    kt_sw = swiss;
 	    kt_st = ALL;
 	    kt_name = all;
+	    kt_life_max = terrain_all_life_max;
+	    kt_strength_max = terrain_all_strength_max;
 	    printf ("\n -- ALL - swiss[%zu] - track[%zu] --\n",
 		    swiss.size(), terrain.size());
 	    break;
@@ -595,11 +628,20 @@ void main_query ()
 	FILE* fp = fopen (kt_output.c_str(), "w");
 	fprintf (fp, "%s\n", roc_header);
     
+	DistributionSampler life_sampler (kt_life_max, 0.0, life_steps, life_exp);
+	DistributionSampler strength_sampler (kt_strength_max, 0.0, strength_steps, strength_exp);
+
 	for (int i = 0; i < life_steps; i++)
 	    for (int j = 0; j < strength_steps; j++)
-	    {		
-		double life_s = (terrain_life_max / (double) life_steps) * i;
-		double strength_s = (terrain_strength_max / (double) strength_steps) * j;
+	    {
+		// double life_s = (terrain_life_max / (double) life_steps) * i;
+		// double strength_s = (terrain_strength_max / (double) strength_steps) * j;
+		double life_s = life_exp == 0.0?
+		    life_sampler.lin (i) :
+		    life_sampler.exp_ts (i);
+		double strength_s = strength_exp == 0.0?
+		    strength_sampler.lin (j) :
+		    strength_sampler.exp_ts (j);
 
 		// query estrai punti del terreno: terrain + terrain2swiss
 		std::vector <TrackSpot> query_t;
@@ -1326,6 +1368,9 @@ void load_all ()
 	    if (generic[i].strength > generic_strength_max)
 		generic_strength_max = generic[i].strength;
 	}
+	
+	printf ("generic_life_max %lf\n", generic_life_max);
+	printf ("generic_strength_max %lf\n", generic_strength_max);
     }
     
     if (swiss_file)
@@ -1384,8 +1429,15 @@ void load_all ()
 
 	terrain.clear ();
 	terrain_points.clear ();
-	terrain_life_max = 0.0;
-	terrain_strength_max = 0.0;
+	terrain_all_life_max = 0.0;
+	terrain_all_strength_max = 0.0;
+	terrain_peaks_life_max = 0.0;
+	terrain_peaks_strength_max = 0.0;
+	terrain_pits_life_max = 0.0;
+	terrain_pits_strength_max = 0.0;
+	terrain_saddles_life_max = 0.0;
+	terrain_saddles_strength_max = 0.0;
+	
 	for (unsigned i = 0; i < terrain_track->lines.size(); i++)
 	    if (terrain_track->is_original (i)
 		&& terrain_track->start_point (i).is_inside ((double) width,
@@ -1395,28 +1447,50 @@ void load_all ()
 		CriticalType cti = terrain_track->get_type (i);
 		double life_i = terrain_track->lifetime_elixir (i);
 		double strength_i = terrain_track->lines[i].strength;
-		if (terrain_life_max < life_i)
-		    terrain_life_max = life_i;
-		if (terrain_strength_max < strength_i)
-		    terrain_strength_max = strength_i;
+		
+		if (terrain_all_life_max < life_i)
+		    terrain_all_life_max = life_i;
+		if (terrain_all_strength_max < strength_i)
+		    terrain_all_strength_max = strength_i;
+		
 		terrain.push_back (TrackSpot (i, terrain_track->start_point (i),
 					      life_i, strength_i, cti));
 		terrain_points.push_back (terrain_track->start_point (i));
 		switch (critical2classified (cti))
 		{
 		case PEAK:
+		    if (terrain_peaks_life_max < life_i)
+			terrain_peaks_life_max = life_i;
+		    if (terrain_peaks_strength_max < strength_i)
+			terrain_peaks_strength_max = strength_i;
 		    terrain_peak_num++;
 		    break;
 		case PIT:
+		    if (terrain_pits_life_max < life_i)
+			terrain_pits_life_max = life_i;
+		    if (terrain_pits_strength_max < strength_i)
+			terrain_pits_strength_max = strength_i;
 		    terrain_pit_num++;
 		    break;
 		case SADDLE:
+		    if (terrain_saddles_life_max < life_i)
+			terrain_saddles_life_max = life_i;
+		    if (terrain_saddles_strength_max < strength_i)
+			terrain_saddles_strength_max = strength_i;
 		    terrain_saddle_num++;
 		    break;
 		default:
 		    break;
 		}
 	    }
+	printf ("terrain_all_life_max %lf\n", terrain_all_life_max);
+	printf ("terrain_all_strength_max %lf\n", terrain_all_strength_max);
+	printf ("terrain_peaks_life_max %lf\n", terrain_peaks_life_max);
+	printf ("terrain_peaks_strength_max %lf\n", terrain_peaks_strength_max);
+	printf ("terrain_pits_life_max %lf\n", terrain_pits_life_max);
+	printf ("terrain_pits_strength_max %lf\n", terrain_pits_strength_max);
+	printf ("terrain_saddles_life_max %lf\n", terrain_saddles_life_max);
+	printf ("terrain_saddles_strength_max %lf\n", terrain_saddles_strength_max);
     }
 
     if (curvature_file)

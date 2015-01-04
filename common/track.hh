@@ -116,6 +116,7 @@ public:
     void drink_elixir ();
     void normalize_border_points ();
     void get_strength (Dem* d);
+    void get_relative_drop (Dem *d);
     // Track* afterlife ();
 
     // void print_stats ();

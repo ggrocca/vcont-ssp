@@ -375,8 +375,8 @@ Point Track::start_point (int i)
 
     if (!is_born (i))
     {
-	p.x = x;
-	p.y = y;
+	p.x = x + 0.5;
+	p.y = y + 0.5;
     }
     else
     {
@@ -474,6 +474,26 @@ void Track::get_strength (Dem *d)
 	}
     }
 }
+
+void Track::get_relative_drop (Dem *d)
+{
+    for (unsigned i = 0; i < lines.size(); i++)
+    {
+	if (lines[i].is_original () && lines[i].type == MAX)
+	{
+	    double drop;
+	    CriticalPoint cp = CriticalPoint (lines[i].entries[0].c, lines[i].type);
+	    d->relative_drop (cp, &drop);
+
+	    lines[i].strength = drop;
+	    lines[i].scale = 0; //ScaleSpace::window2scale (kernel_max);
+
+	    // if (!cp.c.is_border (d->height, d->width) && lifetime (i) > 3.0)
+	    // 	exit (0);
+	}
+    }
+}
+
 
 int Track::__get_min_border_distance (int i)
 {

@@ -1,6 +1,7 @@
 #include "dem.hh"
 #include "../scaletracker/flipper.hh"
 
+#include <queue>
 
 
 // empty dem, no allocation
@@ -639,4 +640,78 @@ void Dem::averhood_max (CriticalPoint cp, int kernel, double* strength, int* ker
 
     // if (kernel > 80)
     // 	printf ("kernel: %d, kmax: %d\n", kernel, *kernel_max);
+}
+
+
+void Dem::relative_drop (CriticalPoint cp, double* drop)
+{
+    *drop = 0.0;
+    
+    if (cp.t != MAX)
+	return;
+
+    double zmax = (*this)(cp.c);
+    double zmin = DBL_MAX;
+    // gg create visited map with grid<char>
+    Grid<char>* map = new Grid<char>(this->width, this->height, false);
+    std::priority_queue<DropCell>* pq = new std::priority_queue<DropCell>;
+   
+    std::vector<Coord> ns;
+    cp.c.neigh_8 (ns);
+    (*map) (cp.c) = true;
+    for (int i = 0; i < ns.size(); i++)
+    {
+	DropCell cd;
+	cd.c = ns[i];
+	cd.z = (*this)(cd.c);
+	if (cd.c.is_inside (this->width, this->height))
+	{
+	    pq->push (cd);
+	    (*map) (cd.c) = true;
+	}
+    }
+    zmin = (pq->top()).z;
+
+    // printf ("RELATIVE DROP START (%3d,%3d)[%lf] -- zmin %lf\n", cp.c.x, cp.c.y, zmax, zmin);
+    // int counter = 0;
+    // printf ("<%5d> (%3d,%3d)[%lf] -- zmin %lf, size %zu\n", counter,    
+    // 	    (pq->top()).c.x, (pq->top()).c.y, (pq->top()).z, zmin, pq->size());	    
+    while (!pq->empty() &&
+	   (pq->top()).z < zmax &&
+	   !(pq->top()).c.is_border (this->width, this->height))
+    {
+	if ((pq->top()).z < zmin)
+	    zmin = (pq->top()).z;
+
+	// printf ("1     <%5d> (%3d,%3d)[%lf] -- zmin %lf, size %zu\n", counter,
+	// 	(pq->top()).c.x, (pq->top()).c.y, (pq->top()).z, zmin, pq->size());
+
+	(pq->top()).c.neigh_8 (ns);
+	pq->pop();
+	
+	// printf ("  2   <%5d> (%3d,%3d)[%lf] -- zmin %lf, size %zu\n", counter,
+	// 	(pq->top()).c.x, (pq->top()).c.y, (pq->top()).z, zmin, pq->size());
+
+	for (int i = 0; i < ns.size(); i++)
+	{
+	    DropCell cd;
+	    cd.c = ns[i];
+	    cd.z = (*this)(cd.c);
+
+	    if (!(*map)(cd.c) && cd.c.is_inside (this->width, this->height))
+	    {
+		pq->push (cd);
+		(*map) (cd.c) = true;
+	    }
+	}
+
+	// counter++;
+	// printf ("    3 <%5d> (%3d,%3d)[%lf] -- zmin %lf, size %zu\n", counter,
+	// 	(pq->top()).c.x, (pq->top()).c.y, (pq->top()).z, zmin, pq->size());
+    }
+
+ get_out:
+    *drop = zmin > zmax? 0.0 : zmax - zmin;
+    delete pq;
+    delete map;
 }

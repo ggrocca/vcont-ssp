@@ -11,6 +11,20 @@
 #include "gaussian.hh"
 #include "ascheader.hh"
 
+
+class DropCell {
+
+public:
+    
+    Coord c;
+    double z;
+
+    bool operator<(const DropCell& rhs) const
+    {
+	return (z < rhs.z);
+    }
+};
+
 class Averhood {
 
 public:
@@ -148,6 +162,7 @@ public:
     Averhood averhood (CriticalPoint cp, int kernel, Averhood prev);
     void averhood_max (CriticalPoint cp, int kernel,
 		       double* strength, int* kernel_max);
+    void relative_drop (CriticalPoint cp, double* drop);
 
 private:
     // bool _recursive_label (Grid<int>* idplats, Coord c, unsigned label,

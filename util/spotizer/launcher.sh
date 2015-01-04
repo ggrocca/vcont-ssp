@@ -11,23 +11,24 @@ function resdir_setup()
     fi
 }
 
-if [ $# -ne "8" ]; then
+if [[ !($# == 8 || $# == 10) ]]; then
     echo "Usage $0 DATASET[aletsch] MODE[basic] CURVSET CURVFACTOR DISTQUERY BORDERCUT PRUNE[y\|n] CSV[all|classified|refined]"
-    echo "Usage $0 DATASET[aletsch] MODE[query] LIFE_STEPS STRENGTH_STEPS DISTQUERY BORDERCUT PRUNE[y|n] CSV[file]"
-    echo "Usage $0 DATASET[dhm25|dhm25_generic] SET[aargau-lucerne|lucerne|crop_named_peaks] LIFE_STEPS STRENGTH_STEPS DISTQUERY BORDERCUT PRUNE[y|n] CSV[file]"
+    echo "Usage $0 DATASET[aletsch|aletsch_generic] MODE[query] LIFE_STEPS STRENGTH_STEPS DISTQUERY BORDERCUT PRUNE[y|n] CSV[file] {LIFE_EXP STRENGTH_EXP}"
+    echo "Usage $0 DATASET[dhm25|dhm25_generic] SET[aargau-lucerne|lucerne|crop_named_peaks] LIFE_STEPS STRENGTH_STEPS DISTQUERY BORDERCUT PRUNE[y|n] CSV[file] {LIFE_EXP STRENGTH_EXP}"
     exit 1
 fi
 
 DATASET=$1
 
-if [ $DATASET == "aletsch" ]; then
+EXPERIMENT="complete"
+if [[ $DATASET == "aletsch_generic" || $DATASET == "dhm25_generic" ]]; then
+    EXPERIMENT="generic"
+fi
+
+if [[ $DATASET == "aletsch" || $DATASET == "aletsch_generic" ]]; then
     MODE=$2
 fi
-if [ $DATASET == "dhm25" ]; then
-    MODE="query"
-    SET=$2
-fi
-if [ $DATASET == "dhm25_generic" ]; then
+if [[ $DATASET == "dhm25" || $DATASET == "dhm25_generic" ]]; then
     MODE="query"
     SET=$2
 fi
@@ -73,17 +74,23 @@ CSV=$CSVMODE.csv
 #     CSV="blah.csv"
 # fi
 
+EXPOPT=""
+EXPSTRING=""
+if [[ $# == 10 ]]; then
+    LIFE_EXP=$9
+    STRENGTH_EXP=${10}
+    EXPOPT="-E $LIFE_EXP $STRENGTH_EXP"
+    EXPSTRING="_E-l$LIFE_EXP-s$STRENGTH_EXP"
+fi
+
+
 #echo $CURVSET $CURVFACTOR $DIST
 
-if [ $DATASET == "aletsch" ]; then
+if [[ $DATASET == "aletsch" || $DATASET == "aletsch_generic" ]]; then
     BASEDIR="../../../datasets/aletsch"
     NAME="aletsch"
 fi
-if [ $DATASET == "dhm25" ]; then
-    BASEDIR="../../../datasets/dhm25"
-    NAME=$SET
-fi
-if [ $DATASET == "dhm25_generic" ]; then
+if [[ $DATASET == "dhm25" || $DATASET == "dhm25_generic" ]]; then
     BASEDIR="../../../datasets/dhm25"
     NAME=$SET
 fi
@@ -91,7 +98,7 @@ fi
 if [ "$MODE" == "basic" ]; then
     RESDIR=$BASEDIR/$NAME"-stats-basic-"$CSVMODE"-c"$CURVSET"-f"$CURVFACTOR"-d"$DIST"-b"$BCUT$PRUNE
 elif [ "$MODE" == "query" ]; then
-    RESDIR=$BASEDIR/$NAME"-stats-query-"$CSVMODE"-l"$LIFE_STEPS"-s"$STRENGTH_STEPS"-d"$DIST"-b"$BCUT$PRUNE
+    RESDIR=$BASEDIR/$NAME"-stats-query-"$CSVMODE"-l"$LIFE_STEPS"-s"$STRENGTH_STEPS$EXPSTRING"-d"$DIST"-b"$BCUT$PRUNE
 fi
     
 if [ ! -d $BASEDIR ]; then
@@ -118,55 +125,59 @@ if [ "$MODE" == "basic" ]; then
 
 elif [ "$MODE" == "query" ]; then
 
-    if [[ "$DATASET" != "dhm25_generic" ]]; then
+    if [[ $EXPERIMENT != "generic" ]]; then
 	resdir_setup $RESDIR
 	
 	echo ./spotizer -t $BASEDIR/$NAME"_terr.trk" \
     	     -a $BASEDIR/$NAME".asc" -s $BASEDIR/$CSV \
-    	     -Q $LIFE_STEPS $STRENGTH_STEPS -D $DIST -C $BCUT $PRUNE \
+    	     -Q $LIFE_STEPS $STRENGTH_STEPS -D $DIST -C $BCUT $PRUNE $EXPOPT \
     	     -o $RESDIR/"stats" \
     	     ">" $RESDIR/"stats.txt"
 	./spotizer -t $BASEDIR/$NAME"_terr.trk" \
     		   -a $BASEDIR/$NAME".asc" -s $BASEDIR/$CSV \
-    		   -Q $LIFE_STEPS $STRENGTH_STEPS -D $DIST -C $BCUT $PRUNE \
+    		   -Q $LIFE_STEPS $STRENGTH_STEPS -D $DIST -C $BCUT $PRUNE $EXPOPT \
     		   -o $RESDIR/"stats" \
     		   > $RESDIR/"stats.txt"
-	echo gnuplot -e "dir='$RESDIR'" plot_query.gp
-	gnuplot -e "dir='$RESDIR'" plot_query.gp
+	#echo gnuplot -e "dir='$RESDIR'" plot_query.gp
+	#gnuplot -e "dir='$RESDIR'" plot_query.gp
+	./plot_query.sh $RESDIR $maxlife $maxstrength
     fi
 
-    if [[ "$SET" == "crop_named_peaks" && "$DATASET" == "dhm25_generic" ]]; then
+    #    if [[ "$SET" == "crop_named_peaks" && "$DATASET" == "dhm25_generic" ]]; then
+    if [[ "$EXPERIMENT" == "generic" ]]; then
 	STRENGTH_STEPS=1
 	
 	DROPDIR=$RESDIR"_DROP"
 	resdir_setup $DROPDIR
 	echo ./spotizer -g $BASEDIR/$NAME"_drop.csv" \
     		   -a $BASEDIR/$NAME".asc" -s $BASEDIR/$CSV \
-    		   -Q $LIFE_STEPS $STRENGTH_STEPS -D $DIST -C $BCUT $PRUNE \
+    		   -Q $LIFE_STEPS $STRENGTH_STEPS -D $DIST -C $BCUT $PRUNE $EXPOPT \
     		   -o $DROPDIR/"stats" \
     		   ">" $DROPDIR/"stats.txt"	
 	./spotizer -g $BASEDIR/$NAME"_drop.csv" \
     		   -a $BASEDIR/$NAME".asc" -s $BASEDIR/$CSV \
-    		   -Q $LIFE_STEPS $STRENGTH_STEPS -D $DIST -C $BCUT $PRUNE \
+    		   -Q $LIFE_STEPS $STRENGTH_STEPS -D $DIST -C $BCUT $PRUNE $EXPOPT \
     		   -o $DROPDIR/"stats" \
     		   > $DROPDIR/"stats.txt"
-	echo gnuplot -e "dir='$DROPDIR'" plot_generic.gp
-	gnuplot -e "dir='$DROPDIR'" plot_generic.gp
+	#echo gnuplot -e "dir='$DROPDIR'" plot_generic.gp
+	#gnuplot -e "dir='$DROPDIR'" plot_generic.gp
+	./plot_generic.sh $DROPDIR $maxlife
 	
 	JAARADIR=$RESDIR"_JAARA"
 	resdir_setup $JAARADIR
 	echo ./spotizer -g $BASEDIR/$NAME"_jaara.csv" \
     		   -a $BASEDIR/$NAME".asc" -s $BASEDIR/$CSV \
-    		   -Q $LIFE_STEPS $STRENGTH_STEPS -D $DIST -C $BCUT $PRUNE \
+    		   -Q $LIFE_STEPS $STRENGTH_STEPS -D $DIST -C $BCUT $PRUNE $EXPOPT \
     		   -o $JAARADIR/"stats" \
     		   ">" $JAARADIR/"stats.txt"
 	./spotizer -g $BASEDIR/$NAME"_jaara.csv" \
     		   -a $BASEDIR/$NAME".asc" -s $BASEDIR/$CSV \
-    		   -Q $LIFE_STEPS $STRENGTH_STEPS -D $DIST -C $BCUT $PRUNE \
+    		   -Q $LIFE_STEPS $STRENGTH_STEPS -D $DIST -C $BCUT $PRUNE $EXPOPT \
     		   -o $JAARADIR/"stats" \
     		   > $JAARADIR/"stats.txt"
-	echo gnuplot -e "dir='$JAARADIR'" plot_generic.gp
-	gnuplot -e "dir='$JAARADIR'" plot_generic.gp
-
+	#echo gnuplot -e "dir='$JAARADIR'" plot_generic.gp
+	#gnuplot -e "dir='$JAARADIR'" plot_generic.gp
+	./plot_generic.sh $JAARADIR $maxlife
+	
     fi    
 fi

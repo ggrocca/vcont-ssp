@@ -30,6 +30,11 @@ void app_init(int argc, char *argv[])
         {
             switch( (*argv)[1] )
             {
+            case 'h':
+		print_help (stdout);
+		exit (0);
+                break;
+
             case 'a':
                 asc_file = (*++argv);
                 argc--;
@@ -63,7 +68,7 @@ void app_init(int argc, char *argv[])
 
     if (track_file == 0 || asc_file == 0)
     {
-	eprintx (-1, "%s\n", "Missing input file(s).");
+	eprint ("%s\n\n", "Missing input file(s).");
 	goto die;
     }
     
