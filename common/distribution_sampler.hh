@@ -28,6 +28,8 @@ public:
     // simple exponential distribution.
     double exp (double i)
     {
+	if (expfactor <= 1.0)
+	    return lin (i);
 	return (minpar * pow (expfactor, i)) + min;
     }
 
@@ -35,6 +37,8 @@ public:
     //   translated to make the first value always equal to min.
     double exp_t (double i)
     {
+	if (expfactor <= 1.0)
+	    return lin (i);
 	return ((minpar * pow (expfactor, i)) - minpar) + min;
     }
 
@@ -43,6 +47,8 @@ public:
     //   scaled to make the last value always equal to max.
     double exp_ts (double i)
     {
+	if (expfactor <= 1.0)
+	    return lin (i);
 	return (((minpar * pow (expfactor, i)) - minpar) * expmult) + min;
     }
 };

@@ -33,3 +33,15 @@ EXP:
 SINGLE - drop only, life only
 ./launcher.sh dhm25 crop_named_peaks 1000 1 3.0 0.13 y natural 1.002 0
 ./launcher.sh dhm25 crop_named_peaks 1 1000 3.0 0.13 y natural 0 1.006
+
+SPECIAL - special strength values, simple f05
+./launcher.sh aletsch query 100 1 3.0 0.1 y aletsch-classified 1.02 0 13.282430 15
+./launcher.sh dhm25 crop_named_peaks 100 1 3.0 0.07 y natural 1.02 0 7.687155 10
+./launcher.sh dhm25 crop_named_peaks 100 1 3.0 0.07 y allpeaks 1.02 0 45.996038 50
+./launcher.sh dhm25 crop_named_peaks 100 1 3.0 0.07 y mainpeaks 1.02 0 74.697446 80
+
+SPECIAL - special strength values, reduced strength values
+./launcher.sh aletsch query 100 100 3.0 0.1 y aletsch-classified 1.02 0 2 40
+./launcher.sh dhm25 crop_named_peaks 100 10 3.0 0.07 y natural 1.02 0 2 8
+./launcher.sh dhm25 crop_named_peaks 100 40 3.0 0.07 y allpeaks 1.02 0 2 50
+./launcher.sh dhm25 crop_named_peaks 100 60 3.0 0.07 y mainpeaks 1.02 0 2 80

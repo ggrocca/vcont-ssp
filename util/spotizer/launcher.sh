@@ -11,10 +11,10 @@ function resdir_setup()
     fi
 }
 
-if [[ !($# == 8 || $# == 10) ]]; then
+if [[ !($# == 8 || $# == 10 || $# == 12 || $# == 14) ]]; then
     echo "Usage $0 DATASET[aletsch] MODE[basic] CURVSET CURVFACTOR DISTQUERY BORDERCUT PRUNE[y\|n] CSV[all|classified|refined]"
     echo "Usage $0 DATASET[aletsch|aletsch_generic] MODE[query] LIFE_STEPS STRENGTH_STEPS DISTQUERY BORDERCUT PRUNE[y|n] CSV[file] {LIFE_EXP STRENGTH_EXP}"
-    echo "Usage $0 DATASET[dhm25|dhm25_generic] SET[aargau-lucerne|lucerne|crop_named_peaks] LIFE_STEPS STRENGTH_STEPS DISTQUERY BORDERCUT PRUNE[y|n] CSV[file] {LIFE_EXP STRENGTH_EXP}"
+    echo "Usage $0 DATASET[dhm25|dhm25_generic] SET[aargau-lucerne|lucerne|crop_named_peaks] LIFE_STEPS STRENGTH_STEPS DISTQUERY BORDERCUT PRUNE[y|n] CSV[file] {LIFE_EXP STRENGTH_EXP} {STRENGTH_MIN STRENGTH_MAX} {LIFE_MIN LIFE_MAX}"
     exit 1
 fi
 
@@ -48,8 +48,10 @@ BCUT=$6
 IS_PRUNE=$7
 if [ "$IS_PRUNE" == "y" ]; then
     PRUNE="-P"
+    PEAKS="-M"
 elif [ "$IS_PRUNE" == "n" ]; then
     PRUNE=""
+    PEAKS=""
 else
     echo Prune must be \"y\" or \"n\", not $IS_PRUNE
     exit 1
@@ -76,11 +78,31 @@ CSV=$CSVMODE.csv
 
 EXPOPT=""
 EXPSTRING=""
-if [[ $# == 10 ]]; then
+if [[ $# == 10  || $# == 12  || $# == 14 ]]; then
     LIFE_EXP=$9
     STRENGTH_EXP=${10}
     EXPOPT="-E $LIFE_EXP $STRENGTH_EXP"
     EXPSTRING="_E-l$LIFE_EXP-s$STRENGTH_EXP"
+fi
+
+STRENGTHOPT=""
+STRENGTHSTRING=""
+if [[ $# == 12  || $# == 14 ]]; then
+    STRENGTH_MIN=${11}
+    STRENGTH_MAX=${12}
+    if [[ $STRENGTH_MAX != 0 ]]; then
+	STRENGTHOPT="-S $STRENGTH_MAX $STRENGTH_MIN"
+	STRENGTHSTRING="_STm$STRENGTH_MIN-STM$STRENGTH_MAX"
+    fi
+fi
+
+LIFEOPT=""
+LIFESTRING=""
+if [[ $# == 14 ]]; then
+    LIFE_MIN=${13}
+    LIFE_MAX=${14}
+    LIFEOPT="-L $LIFE_MAX $LIFE_MIN"
+    LIFESTRING="_LFm$LIFE_MIN-LFM$LIFE_MAX"
 fi
 
 
@@ -98,7 +120,7 @@ fi
 if [ "$MODE" == "basic" ]; then
     RESDIR=$BASEDIR/$NAME"-stats-basic-"$CSVMODE"-c"$CURVSET"-f"$CURVFACTOR"-d"$DIST"-b"$BCUT$PRUNE
 elif [ "$MODE" == "query" ]; then
-    RESDIR=$BASEDIR/$NAME"-stats-query-"$CSVMODE"-l"$LIFE_STEPS"-s"$STRENGTH_STEPS$EXPSTRING"-d"$DIST"-b"$BCUT$PRUNE
+    RESDIR=$BASEDIR/$NAME"-stats-query-"$CSVMODE"-l"$LIFE_STEPS"-s"$STRENGTH_STEPS"-d"$DIST"-b"$BCUT$PRUNE$EXPSTRING$STRENGTHSTRING$LIFESTRING
 fi
     
 if [ ! -d $BASEDIR ]; then
@@ -112,12 +134,12 @@ if [ "$MODE" == "basic" ]; then
 
     echo ./spotizer -t $BASEDIR/$NAME"_terr.trk" -c $BASEDIR/$NAME"_curv_"$CURVSET".trk" \
 	 -a $BASEDIR/$NAME".asc" -s $BASEDIR/$CSV \
-	 -F $CURVFACTOR -D $DIST -C $BCUT $PRUNE \
+	 -F $CURVFACTOR -D $DIST -C $BCUT $PRUNE $PEAKS \
 	 -o $RESDIR/"stats" \
 	 ">" $RESDIR/"stats.txt"
     ./spotizer -t $BASEDIR/$NAME"_terr.trk" -c $BASEDIR/$NAME"_curv_"$CURVSET".trk" \
     	       -a $BASEDIR/$NAME".asc" -s $BASEDIR/$CSV \
-    	       -F $CURVFACTOR -D $DIST -C $BCUT $PRUNE \
+    	       -F $CURVFACTOR -D $DIST -C $BCUT $PRUNE $PEAKS \
     	       -o $RESDIR/"stats" \
     	       > $RESDIR/"stats.txt"
     echo gnuplot -e "dir='$RESDIR'" plot_basic.gp
@@ -130,17 +152,19 @@ elif [ "$MODE" == "query" ]; then
 	
 	echo ./spotizer -t $BASEDIR/$NAME"_terr.trk" \
     	     -a $BASEDIR/$NAME".asc" -s $BASEDIR/$CSV \
-    	     -Q $LIFE_STEPS $STRENGTH_STEPS -D $DIST -C $BCUT $PRUNE $EXPOPT \
+    	     -Q $LIFE_STEPS $STRENGTH_STEPS -D $DIST -C $BCUT \
+	     $PRUNE $PEAKS $EXPOPT $STRENGTHOPT $LIFEOPT \
     	     -o $RESDIR/"stats" \
     	     ">" $RESDIR/"stats.txt"
 	./spotizer -t $BASEDIR/$NAME"_terr.trk" \
     		   -a $BASEDIR/$NAME".asc" -s $BASEDIR/$CSV \
-    		   -Q $LIFE_STEPS $STRENGTH_STEPS -D $DIST -C $BCUT $PRUNE $EXPOPT \
+    		   -Q $LIFE_STEPS $STRENGTH_STEPS -D $DIST -C $BCUT \
+		   $PRUNE $PEAKS $EXPOPT $STRENGTHOPT $LIFEOPT \
     		   -o $RESDIR/"stats" \
     		   > $RESDIR/"stats.txt"
 	#echo gnuplot -e "dir='$RESDIR'" plot_query.gp
 	#gnuplot -e "dir='$RESDIR'" plot_query.gp
-	./plot_query.sh $RESDIR $maxlife $maxstrength
+	./plot_query.sh $RESDIR $PEAKS
     fi
 
     #    if [[ "$SET" == "crop_named_peaks" && "$DATASET" == "dhm25_generic" ]]; then
@@ -150,34 +174,38 @@ elif [ "$MODE" == "query" ]; then
 	DROPDIR=$RESDIR"_DROP"
 	resdir_setup $DROPDIR
 	echo ./spotizer -g $BASEDIR/$NAME"_drop.csv" \
-    		   -a $BASEDIR/$NAME".asc" -s $BASEDIR/$CSV \
-    		   -Q $LIFE_STEPS $STRENGTH_STEPS -D $DIST -C $BCUT $PRUNE $EXPOPT \
-    		   -o $DROPDIR/"stats" \
-    		   ">" $DROPDIR/"stats.txt"	
+    	     -a $BASEDIR/$NAME".asc" -s $BASEDIR/$CSV \
+    	     -Q $LIFE_STEPS $STRENGTH_STEPS -D $DIST -C $BCUT \
+	     $PRUNE $PEAKS $EXPOPT \
+    	     -o $DROPDIR/"stats" \
+    	     ">" $DROPDIR/"stats.txt"	
 	./spotizer -g $BASEDIR/$NAME"_drop.csv" \
     		   -a $BASEDIR/$NAME".asc" -s $BASEDIR/$CSV \
-    		   -Q $LIFE_STEPS $STRENGTH_STEPS -D $DIST -C $BCUT $PRUNE $EXPOPT \
+    		   -Q $LIFE_STEPS $STRENGTH_STEPS -D $DIST -C $BCUT \
+		   $PRUNE $PEAKS $EXPOPT \
     		   -o $DROPDIR/"stats" \
     		   > $DROPDIR/"stats.txt"
 	#echo gnuplot -e "dir='$DROPDIR'" plot_generic.gp
 	#gnuplot -e "dir='$DROPDIR'" plot_generic.gp
-	./plot_generic.sh $DROPDIR $maxlife
+	./plot_generic.sh $DROPDIR
 	
 	JAARADIR=$RESDIR"_JAARA"
 	resdir_setup $JAARADIR
 	echo ./spotizer -g $BASEDIR/$NAME"_jaara.csv" \
-    		   -a $BASEDIR/$NAME".asc" -s $BASEDIR/$CSV \
-    		   -Q $LIFE_STEPS $STRENGTH_STEPS -D $DIST -C $BCUT $PRUNE $EXPOPT \
-    		   -o $JAARADIR/"stats" \
-    		   ">" $JAARADIR/"stats.txt"
+    	     -a $BASEDIR/$NAME".asc" -s $BASEDIR/$CSV \
+    	     -Q $LIFE_STEPS $STRENGTH_STEPS -D $DIST -C $BCUT \
+	     $PRUNE $PEAKS $EXPOPT \
+    	     -o $JAARADIR/"stats" \
+    	     ">" $JAARADIR/"stats.txt"
 	./spotizer -g $BASEDIR/$NAME"_jaara.csv" \
     		   -a $BASEDIR/$NAME".asc" -s $BASEDIR/$CSV \
-    		   -Q $LIFE_STEPS $STRENGTH_STEPS -D $DIST -C $BCUT $PRUNE $EXPOPT \
+    		   -Q $LIFE_STEPS $STRENGTH_STEPS -D $DIST -C $BCUT \
+		   $PRUNE $PEAKS $EXPOPT \
     		   -o $JAARADIR/"stats" \
     		   > $JAARADIR/"stats.txt"
 	#echo gnuplot -e "dir='$JAARADIR'" plot_generic.gp
 	#gnuplot -e "dir='$JAARADIR'" plot_generic.gp
-	./plot_generic.sh $JAARADIR $maxlife
+	./plot_generic.sh $JAARADIR
 	
     fi    
 fi

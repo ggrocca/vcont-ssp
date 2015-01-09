@@ -149,7 +149,7 @@ public:
     bool has_plateaus ();            // this dem has adjacent points with equal value
     void identify_plateaus (std::vector < std::vector <Coord> >& plateaus_list);
 
-    RelationType point_relation (Coord a, Coord b);  // relation between adyacent a,b
+    RelationType point_relation (Coord a, Coord b);  // relation between adiacent a,b
     CriticalType point_type (Coord c);                       // classify point, coord
     CriticalType point_type (int x, int y);                    // classify point, x,y
 

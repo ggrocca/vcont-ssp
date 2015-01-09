@@ -25,16 +25,16 @@ plot_scattered_color $dir stats-peaks-performance.dat \
 		     tpr ppv life 3 PR-peak $zoommore
 
 for column in markedness informedness mcc ; do
-    simple_plot $dir stats-peaks-performance.dat terrain-$column.pdf \
+    simple_plot $dir stats-peaks-performance.dat terrain-peaks-$column.pdf \
 		life $column $column \* \* -1 1
 done
 
 for column in duplicates maxcandidates ; do
-    simple_plot $dir stats-peaks-performance.dat terrain-$column.pdf \
+    simple_plot $dir stats-peaks-performance.dat terrain-peaks-$column.pdf \
 		life $column $column \* \* \* \*
 done
 
 for column in f1 f2 f05 ppv tpr fpr fnr tnr ; do
-    simple_plot $dir stats-peaks-performance.dat terrain-$column.pdf \
+    simple_plot $dir stats-peaks-performance.dat terrain-peaks-$column.pdf \
 		life $column $column \* \* 0 1
 done

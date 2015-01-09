@@ -30,7 +30,15 @@ double strength_exp = 0.0;
 double cut_borders = 0.0;
 
 bool do_output = false;
+bool do_peaks_only = false;
 std::string oname;
+
+bool strength_user_limits = false;
+bool life_user_limits = false;
+double user_strength_min;
+double user_strength_max;
+double user_life_min;
+double user_life_max;
 
     //     csv saves:
     // TP: mycoords + swcoords (points that match swiss and are important)
@@ -73,11 +81,14 @@ void print_help (FILE* f)
 	     "[-m modified swiss output points.csv]: dumb classifier\n"
 	     "[-a dem.asc]\n"
 	     "[-Q LIFE_STEPS STRENGTH_STEPS] query mode - ROC and PR analysis.\n"
+	     "[-S STRENGTH_MAX STRENGTH_MIN] keep strength values in those boundaries.\n"
+	     "[-L LIFE_MAX LIFE_MIN] keep life values in those boundaries.\n"
 	     "[-E LIFE_EXP STRENGTH_EXP] use an exponential distribution with given base. Zero defaults to linear.\n"
 	     "[-D DISTANCE] : distance window for matching points.\n"
 	     "[-F FILTER] : keep only curvature points with life higher than filter.\n"
 	     "[-C CUT] : cut border areas by percentage in [0,1].\n"
 	     "[-P] : prune swiss input points using classification.\n"
+	     "[-M] : experiment on maxima (peaks) only.\n"
 	     "\n"
 	     );
 }
@@ -140,6 +151,10 @@ void app_init(int argc, char *argv[])
 		prune_swiss_points = true;
                 break;
 
+	    case 'M':
+		do_peaks_only = true;
+                break;
+
 	    case 'Q':
 		query_mode = true;
                 life_steps = atoi (*++argv);
@@ -153,6 +168,22 @@ void app_init(int argc, char *argv[])
                 argc--;
                 strength_exp = atof (*++argv);
                 argc--;
+                break;
+
+	    case 'S':
+                user_strength_max = atof (*++argv);
+                argc--;
+                user_strength_min = atof (*++argv);
+                argc--;
+		strength_user_limits = true;
+                break;
+
+	    case 'L':
+                user_life_max = atof (*++argv);
+                argc--;
+                user_life_min = atof (*++argv);
+                argc--;
+		life_user_limits = true;
                 break;
 
             case 'F':
@@ -563,6 +594,9 @@ void main_query ()
 	if (!prune_swiss_points && kt != 3)
 	    continue;
 
+	if (do_peaks_only && kt != 0)
+	    continue;
+	
 	std::string kt_output;
 	std::vector<Point> kt_swps;
 	std::vector <SwissSpotHeight> kt_sw;
@@ -627,9 +661,31 @@ void main_query ()
 	
 	FILE* fp = fopen (kt_output.c_str(), "w");
 	fprintf (fp, "%s\n", roc_header);
-    
-	DistributionSampler life_sampler (kt_life_max, 0.0, life_steps, life_exp);
-	DistributionSampler strength_sampler (kt_strength_max, 0.0, strength_steps, strength_exp);
+
+	float smax, smin;
+	if (kt == 0 && strength_user_limits)
+	{
+	    smax = user_strength_max;
+	    smin = user_strength_min;
+	}
+	else
+	{
+	    smax = kt_strength_max;
+	    smin = 0.0;
+	}
+	float lmax, lmin;
+	if (kt == 0 && life_user_limits)
+	{
+	    lmax = user_life_max;
+	    lmin = user_life_min;
+	}
+	else
+	{
+	    lmax = kt_life_max;
+	    lmin = 0.0;
+	}
+	DistributionSampler life_sampler (lmax, lmin, life_steps, life_exp);
+	DistributionSampler strength_sampler (smax, smin, strength_steps, strength_exp);
 
 	for (int i = 0; i < life_steps; i++)
 	    for (int j = 0; j < strength_steps; j++)
@@ -643,6 +699,9 @@ void main_query ()
 		    strength_sampler.lin (j) :
 		    strength_sampler.exp_ts (j);
 
+		// printf ("!!! [%d] - %lf - max %lf min %lf exp %lf\n",
+		// 	j, strength_s, smax, smin, strength_exp);
+		
 		// query estrai punti del terreno: terrain + terrain2swiss
 		std::vector <TrackSpot> query_t;
 		std::vector <Point> query_tp;

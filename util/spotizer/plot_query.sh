@@ -3,6 +3,7 @@
 source libplot.sh
 
 dir=$1
+peaks=$2
 # maxlife=$2
 # maxstrength=$3
 
@@ -13,7 +14,14 @@ dir=$1
 
 
 #for category in peaks pits saddles all; do
-for category in peaks all saddles pits ; do
+
+if [[ "$PEAKS" == "-M" ]]; then
+    categories="peaks all saddles pits"
+else
+    categories="peaks"
+fi
+
+for category in $categories ; do
 
     for graph in ROC PR ; do
 
@@ -63,5 +71,10 @@ for category in peaks all saddles pits ; do
     heat_map $dir stats-$category-performance.dat terrain-$category-$column.pdf \
 	     life strength $column
     done
+
+    simple_plot $dir stats-peaks-performance.dat terrain-peaks-f05-simple.pdf \
+		life f05 f05 \* \* 0 1
+
+
     
 done
