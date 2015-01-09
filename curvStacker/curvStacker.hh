@@ -17,17 +17,23 @@ class curvStacker
   bool isExpStep;
   FILE * fp;
   FILE * map;
+  FILE * hp;
+  FILE * vp;
   PngToMesh * p;
   double xmin,xmax,ymin,ymax;
   int width,height;
   string pngFile;
   int skipFactor;
-  int grid_width, grid_height, grid_cell_size;  
   bool grid;
   string * mapFile;
+  string * validFile;
+  string * heightFile;
   int fast_computation;
  public:
-  curvStacker(double,double,double,bool,int,string*,int);
+
+  int grid_width, grid_height, grid_cell_size;  
+
+  curvStacker(double,double,double,bool,int,string*,string*,int);
   void executeOnMesh(string,string);
   void executeOnPNG(string,string);
   void executeOnMultipleMeshes(vector<string>,string, bool);

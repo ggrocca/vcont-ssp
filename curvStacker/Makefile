@@ -63,8 +63,8 @@ endif
 ## C, CXX compiler
 # CXXC = g++
 # CC = gcc
-CXXC = g++
-CC = gcc
+CXXC = clang++
+CC = clang
 
 ## file extensions for C++ files, their objects and dependencies (e.g:
 ## .cpp/.dpp/.opp, or .cc/.dd/.oo or whatever you like; remember that

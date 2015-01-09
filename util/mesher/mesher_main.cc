@@ -24,6 +24,8 @@ Coord crop_a;
 Coord crop_b;
 int cell_size = 25;
 int mult_factor = 1;
+double threshold=0.0;
+bool threshActive=false;
 
 // GG things todo or add back in:
 
@@ -41,6 +43,7 @@ void print_help (FILE* f)
 	     "[-t tiffname] : write a tiff image for debug.\n"
 	     "[-C CELLSIZE] : multiply xy pixel coordinates by this value.\n"
 	     "[-M MULTFACTOR] : multiply z intensities by this value.\n"
+	     "[-b threshold] : crop values < threshold\n"
 	     "\n"
 	     );
 }
@@ -100,6 +103,11 @@ void app_init(int argc, char *argv[])
                 argc--;
                 break;
 
+	    case 'b':
+	      threshold = atof(*++argv);
+	      argc--;
+	      threshActive=true;
+	      break;
             default:
                 goto die;
             }
@@ -189,33 +197,32 @@ void mesher (Dem* dem, const char* offname)
 
     std::vector< std::vector<int> > newvs;
     std::vector< std::vector<int> > newfs;
-
+    int skipF=1;
     // int k = 0;
-    for (int i = 0; i < dem->width; i++)
-	for (int j = 0; j < dem->height; j++)
+    for (int i = 0; i < dem->width; i+=skipF)
+	for (int j = 0; j < dem->height; j+=skipF)
 	{
 	  // vertices
 	    std::vector<int> vertex;
 	    vertex.push_back (i * cell_size);
 	    vertex.push_back (j * cell_size);
-	    vertex.push_back (((*dem)(i, j)) * mult_factor);
-
+	    vertex.push_back ((((*dem)(i, j)) * mult_factor));
 	    vs.push_back (vertex);
 
 	    // faces
-	    if (i < dem->width-1 && j < dem->height-1)
+	    if (i < dem->width-skipF && j < dem->height-skipF)
 	    {
 		int v   = ( i    * dem->height) +  j;    // current vertex
-		int ve  = ((i+1) * dem->height) +  j;    // east vertex
-		int vn  = ( i    * dem->height) + (j+1); // north vertex
-		int vne = ((i+1) * dem->height) + (j+1); // north-east vertex
+		int ve  = ((i+skipF) * dem->height) +  j;    // east vertex
+		int vn  = ( i    * dem->height) + (j+skipF); // north vertex
+		int vne = ((i+skipF) * dem->height) + (j+skipF); // north-east vertex
 
 		std::vector<int> f1;
 		std::vector<int> f2;
 
-		f1.push_back (v);
-		f1.push_back (ve);
-		f1.push_back (vne);
+		f1.push_back (v/skipF);
+		f1.push_back (ve/skipF);
+		f1.push_back (vne/skipF);
 
 		f2.push_back (v);
 		f2.push_back (vne);
@@ -228,41 +235,47 @@ void mesher (Dem* dem, const char* offname)
 
 
 
-    int thresh=10;
-    int totVert=0;
-    for (int i=0; i<vs.size(); i++)
-      {
-	//TODO: call depending on parameter, thres as variable
-	if (vs[i][2]<thresh)
-	  zeroVert.insert(i);
-	else
-	  {
-	    totVert++;
-	    newvs.push_back(vs[i]);
-	  }
-      }
+    // if (threshActive)
+    //   {
+    // 	int totVert=0;
+    // 	for (int i=0; i<vs.size(); i++)
+    // 	  {
+    // 	    //TODO: call depending on parameter, thres as variable
+    // 	    if (vs[i][2]<threshold)
+    // 	      zeroVert.insert(i);
+    // 	    else
+    // 	      {
+    // 		totVert++;
+    // 		newvs.push_back(vs[i]);
+    // 	      }
+    // 	  }
 
-    int* realIndex=(int*)calloc(vs.size(),sizeof(int));
+    // 	int* realIndex=(int*)calloc(vs.size(),sizeof(int));
 
-    int k=0;
-    for (int i=0; i<vs.size(); i++)
-      {
-	if (zeroVert.count(i)!=0)
-	  continue;
-	realIndex[i]=k++;
-      }
+    // 	int k=0;
+    // 	for (int i=0; i<vs.size(); i++)
+    // 	  {
+    // 	    if (zeroVert.count(i)!=0)
+    // 	      continue;
+    // 	    realIndex[i]=k++;
+    // 	  }
 
-    for (int i=0; i<fs.size(); i++)
-      {
-	if (zeroVert.count(fs[i][0])!=0 || zeroVert.count(fs[i][1])!=0 || zeroVert.count(fs[i][2])!=0 )
-	  continue;
-	std::vector<int> vv;
-	vv.push_back(realIndex[fs[i][0]]);
-	vv.push_back(realIndex[fs[i][1]]);
-	vv.push_back(realIndex[fs[i][2]]);
-	newfs.push_back(vv);
-      }
-    
+    // 	for (int i=0; i<fs.size(); i++)
+    // 	  {
+    // 	    if (zeroVert.count(fs[i][0])!=0 || zeroVert.count(fs[i][1])!=0 || zeroVert.count(fs[i][2])!=0 )
+    // 	      continue;
+    // 	    std::vector<int> vv;
+    // 	    vv.push_back(realIndex[fs[i][0]]);
+    // 	    vv.push_back(realIndex[fs[i][1]]);
+    // 	    vv.push_back(realIndex[fs[i][2]]);
+    // 	    newfs.push_back(vv);
+    // 	  }
+    //   }    
+    // else 
+    //   {
+	newvs=vs;
+	newfs=fs;
+	//      }
     FILE *f = fopen (offname, "w");
     if (f == NULL)
 	eprintx (2, "Could not open file `%s'. %s\n", offname, strerror (errno));
@@ -277,21 +290,25 @@ void mesher (Dem* dem, const char* offname)
 	fprintf (f, "3 %d %d %d\n", newfs[i][0], newfs[i][1], newfs[i][2]);
 
     fclose(f);
-    #include <unistd.h>
-    char un[64] = "\0";
-    getlogin_r (un, 64);
-    std::string username_curr (un);
-    std::string username_gg ("gg");
-    std::string meshlabserver_path ((username_gg == username_curr)?
-				    "/Applications/meshlab.app/Contents/MacOS/meshlabserver":
-				    "meshlabserver");
-    // std::cout << username_curr <<":"<< username_gg<<":"<<meshlabserver_path<<std::endl;
+
+    if (threshActive)
+      {
+         #include <unistd.h>
+	char un[64] = "\0";
+	getlogin_r (un, 64);
+	std::string username_curr (un);
+	std::string username_gg ("gg");
+	std::string meshlabserver_path ((username_gg == username_curr)?
+					"/Applications/meshlab.app/Contents/MacOS/meshlabserver":
+					"meshlabserver");
+	// std::cout << username_curr <<":"<< username_gg<<":"<<meshlabserver_path<<std::endl;
 
 
-    std::string removescript ((username_gg == username_curr)? "removegg.mlx" : "remove.mlx");
+	std::string removescript ((username_gg == username_curr)? "removegg.mlx" : "remove.mlx");
   
-    std::string cmd = meshlabserver_path+" -i "+offname+" -o "+offname+" -s "+removescript;
-    system(cmd.c_str());
+	std::string cmd = meshlabserver_path+" -i "+offname+" -o "+offname+" -s "+removescript;
+	system(cmd.c_str());
+      }
 }
 
 

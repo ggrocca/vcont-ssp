@@ -33,7 +33,22 @@ public:
     }
 };
 
+class CritNikolas
+{
+public:
+  int crit;
+  double life;
+  double strength;
+  double scale;
 
+  CritNikolas(int i, double l, double s, double s2) : crit (i), life (l), strength (s), scale(s2) {}
+
+  bool operator <(const CritNikolas& rhs) const
+  {
+    return ((this->scale*this->life*this->strength) > (rhs.scale*rhs.life*rhs.strength));
+  }
+};
+  
 class TrackDisplay
 {
 public:
@@ -45,7 +60,11 @@ public:
     // void read_dem (char *file);
     void read_ssp (char *file);
     void read_track (char *file);
+  void read_signs(char*file);
+  void read_height(char*file);
+  void read_val(char*file);
     void query (double t);
+  void search_points(int t);
     void getbb (double* cx, double* cy, double* diam);
     void getbb (Point* a, Point* b);
     void draw (int dem_idx);
@@ -54,7 +73,7 @@ public:
     // additional csv points
 
 
-
+  
 
   bool draw_maxima;
   bool draw_minima;
@@ -115,6 +134,15 @@ public:
     bool draw_density_selected;
     bool draw_density_pool;
   bool draw_nikolas;
+  
+  bool show_axis;
+  bool showSigns;
+  bool show_nose;
+  bool show_noseRoot;
+  bool show_noseLimits;
+  bool show_underNose;
+  bool show_eyesOuterAngles;
+  int fiducialShow;
     double spot_scale;
     void init_spots ();
     double spots_maxima_imp_cut;
@@ -123,6 +151,11 @@ public:
   double spots_minima_life_cut;
     double spots_sellae_imp_cut;
   double spots_sellae_life_cut;
+  double simmetry_imp_cut_min;
+  double simmetry_life_cut_min;
+  double simmetry_imp_cut_max;
+  double simmetry_life_cut_max;
+
     int maxima_always_selected_num;
     int maxima_density_pool_num;
     int minima_always_selected_num;
@@ -184,6 +217,14 @@ public:
     void swpts_draw ();
     void swpts_load_csv (char* filename);
     void swpts_save_csv (char* filename);
+  
+  int searchNoseTip();
+  int searchNoseRoot(double, double);
+  int searchUnderNose(double, double);
+  void searchEyesOuterAngles(double, double,int&,int&);
+  void searchEyesOuterAngles(int&,int&);
+  void searchNoseLimits(double,double,int&,int&);
+  void computeAxis(double&,double&,double&,double&,vector<CritNikolas>);
 };
 
 

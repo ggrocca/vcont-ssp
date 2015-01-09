@@ -150,7 +150,10 @@ void special(int k, int x, int y)
 
 char* ssp_file = 0;
 char* trk_file = 0;
+char* signs_file = 0;
+char* height_file = 0;
 char* csv_in_file = 0;
+char* val_file = 0;
 char* csv_out_file;
 char* csv_out_file_default = "spotfilter_saved_points.csv";
 // char* plan_oblique = "plan_oblique"
@@ -189,6 +192,7 @@ void TW_CALL do_query (void *)
 { 
     td.query (time_value);
 }
+
 
 void TW_CALL do_elixir (void *)
 { 
@@ -250,6 +254,9 @@ void print_help (FILE* f)
 	     "[-a dem.asc]\n"
 	     "[-u] leave border points unnormalized\n"
 	     "[-m MULT] multiply values by MULT\n"
+	     "[-c signs] load sign map\n"
+	     "[-g heights] load height field\n"
+	     "[-v val] val file\n"
 	     "\n"
 	     );
 }
@@ -281,7 +288,15 @@ void app_init(int argc, char *argv[])
                 trk_file = (*++argv);
                 argc--;
                 break;
-
+		
+	    case 'c':
+	      signs_file = (*++argv);
+	      argc--;
+	      break;
+	    case 'g':
+	      height_file=(*++argv);
+	      argc--;
+	      break;
             case 'i':
                 csv_in_file = (*++argv);
                 argc--;
@@ -296,7 +311,10 @@ void app_init(int argc, char *argv[])
                 asc_file = (*++argv);
                 argc--;
                 break;
-
+	    case 'v':
+	      val_file = (*++argv);
+	      argc--;
+	      break;
             default:
                 goto die;
             }
@@ -355,6 +373,14 @@ int main (int argc, char *argv[])
 	    td.swpts_load_csv (csv_in_file);
     }
     
+    if (signs_file != NULL)
+      td.read_signs(signs_file);
+
+    if (height_file != NULL)
+      td.read_height(height_file);
+
+    if (val_file != NULL)
+      td.read_val(val_file);
     // m.bb();
     // m.initL();
 
@@ -508,7 +534,7 @@ int main (int argc, char *argv[])
     TwAddVarRO(cBar, "^ total", TW_TYPE_INT32, &(td.maxima_total_num), "");
     TwAddVarRO(cBar, "^ drawn maxima", TW_TYPE_INT32, &(td.maxima_draw_num), "");
     TwAddVarRW(cBar, "^ differential cut", TW_TYPE_DOUBLE, &(td.spots_maxima_imp_cut),
-    	       "min=0.0 step=0.001");
+    	       "min=0.0 step=0.00001");
     TwAddVarRW(cBar, "^ life cut", TW_TYPE_DOUBLE, &(td.spots_maxima_life_cut),
     	       "min=0.0 step=0.01");
      TwAddSeparator (cBar, 0, 0);
@@ -516,7 +542,7 @@ int main (int argc, char *argv[])
     TwAddVarRO(cBar, ". total", TW_TYPE_INT32, &(td.minima_total_num), "");
     TwAddVarRO(cBar, ". drawn minima", TW_TYPE_INT32, &(td.minima_draw_num), "");    
     TwAddVarRW(cBar, ". differential cut", TW_TYPE_DOUBLE, &(td.spots_minima_imp_cut),
-    	       "min=0.0 step=0.001");
+    	       "min=0.0 step=0.00001");
     TwAddVarRW(cBar, ". life cut", TW_TYPE_DOUBLE, &(td.spots_minima_life_cut),
     	       "min=0.0 step=0.01");
      TwAddSeparator (cBar, 0, 0);
@@ -528,8 +554,30 @@ int main (int argc, char *argv[])
     TwAddVarRW(cBar, "* life cut", TW_TYPE_DOUBLE, &(td.spots_sellae_life_cut),
     	       "min=0.0 step=0.01");
      TwAddSeparator (cBar, 0, 0);
+     TwAddVarRW(cBar, "show signs ", TW_TYPE_BOOLCPP, &(td.showSigns), "");
+     TwAddSeparator (cBar, 0, 0);
 
+     int i=1;
+     TwAddVarRW(cBar, "Search nose tip", TW_TYPE_BOOLCPP,  &(td.show_nose), "");
+     TwAddVarRW(cBar, "Search eyes outer angles", TW_TYPE_BOOLCPP,  &(td.show_eyesOuterAngles), "");
+     TwAddVarRW(cBar, "Search nose sides",TW_TYPE_BOOLCPP,  &(td.show_noseLimits), "");
+     TwAddVarRW(cBar, "Search underNose",TW_TYPE_BOOLCPP,  &(td.show_underNose), "");
+     TwAddVarRW(cBar, "Search nose root",TW_TYPE_BOOLCPP,  &(td.show_noseRoot), "");
+     TwAddVarRW(cBar, "fiducial to be shown", TW_TYPE_INT32, &(td.fiducialShow), "");
+     TwAddSeparator (cBar, 0, 0);
+     
 
+     TwAddVarRW(cBar, "Show simmetry axis",TW_TYPE_BOOLCPP,  &(td.show_axis), "");
+     TwAddVarRW(cBar, "- min differential cut", TW_TYPE_DOUBLE, &(td.simmetry_imp_cut_min),
+    	       "min=0.0 step=0.00001");
+     TwAddVarRW(cBar, "- min life cut", TW_TYPE_DOUBLE, &(td.simmetry_life_cut_min),
+    	       "min=0.0 step=0.01");
+     TwAddVarRW(cBar, "- max differential cut", TW_TYPE_DOUBLE, &(td.simmetry_imp_cut_max),
+    	       "min=0.0 step=0.00001");
+     TwAddVarRW(cBar, "- max life cut", TW_TYPE_DOUBLE, &(td.simmetry_life_cut_max),
+    	       "min=0.0 step=0.01");
+
+     TwAddSeparator (cBar, 0, 0);
 
     // TwAddSeparator (cBar, 0, 0);
 

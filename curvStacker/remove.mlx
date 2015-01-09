@@ -1,7 +1,7 @@
 <!DOCTYPE FilterScript>
 <FilterScript>
  <filter name="Remove Isolated pieces (wrt Face Num.)">
-  <Param type="RichInt" value="25" name="MinComponentSize"/>
+  <Param type="RichInt" value="35000" name="MinComponentSize"/>
  </filter>
  <filter name="Remove Unreferenced Vertex"/>
 </FilterScript>

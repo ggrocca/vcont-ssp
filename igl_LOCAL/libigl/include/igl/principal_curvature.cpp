@@ -366,6 +366,7 @@ IGL_INLINE CurvatureCalculator::CurvatureCalculator()
   this->zeroDetCheck=true;
   this->curvatureComputed=false;
   this->expStep=true;
+  srand(time(NULL));
 }
 
 IGL_INLINE void CurvatureCalculator::init(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F)
@@ -472,8 +473,10 @@ IGL_INLINE void CurvatureCalculator::finalEigenStuff (int i, std::vector<Eigen::
   if (c_val[0] > c_val[1])
   {
     curv[i]=std::vector<double>(2);
+  
     curv[i][0]=c_val(1);
     curv[i][1]=c_val(0);
+   
     curvDir[i]=std::vector<Eigen::Vector3d>(2);
     curvDir[i][0]=v2global;
     curvDir[i][1]=v1global;
@@ -487,7 +490,7 @@ IGL_INLINE void CurvatureCalculator::finalEigenStuff (int i, std::vector<Eigen::
     curvDir[i][0]=v1global;
     curvDir[i][1]=v2global;
   }
-  // ---- end Eigen stuff
+   // ---- end Eigen stuff
 }
 
 IGL_INLINE void CurvatureCalculator::getKRing(const int start, const double r, std::vector<int>&vv)

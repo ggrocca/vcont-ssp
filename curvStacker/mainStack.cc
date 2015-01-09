@@ -17,6 +17,7 @@ void print_help ()
 	     "-d demFile : path to output dem file.\n"
 	     "[-U] (Only if launched with -D option): print a single .ssp file instead of multiple .dem files\n"
 	     "[-c mapfile] : write map of curvature signs\n"
+	     "[-z heightFile] : write vertex heights on a file\n"
 	     "[-R radius] : radius to compute (dem output)"
 	     "[-B baseRad] : base radius to compute (ssp output)\n"
 	     "[-M maxRad] : max radius to compute (ssp output)\n"
@@ -49,6 +50,7 @@ int grid_width = 0;
 int grid_height = 0;
 double curvMultFactor = 0.0;
 string * mapFile = NULL;
+string * heightFile = NULL;
 int cellSize = 25;
 double lowestRandomValue = 0.0;
 vector<string> meshNames;
@@ -130,6 +132,10 @@ void app_init(int argc, char *argv[])
 	      mapFile = new string(*++argv);
 	      argc--;
 	      break;
+	    case 'z':
+	      heightFile = new string(*++argv);
+	      argc--;
+	      break;
 	    case 'D':
 	      meshNumb=atoi(*++argv);
 	      meshNames.reserve(meshNumb);
@@ -185,7 +191,7 @@ int main(int argc, char* argv[])
   now_max = demFile? radius : maxV;
   now_step = demFile? 1 : step;
   now_exp = demFile? 0 : expStep;
-  curvStacker s(now_base, now_max, now_step, now_exp ,skip, mapFile, fastComputation);
+  curvStacker s(now_base, now_max, now_step, now_exp ,skip, mapFile, heightFile, fastComputation);
 
   if (grid)
       s.setGrid (grid_width, grid_height, cellSize);
@@ -195,8 +201,7 @@ int main(int argc, char* argv[])
       s.lowestRandomValue = lowestRandomValue;
   s.do_topoindex = do_topoindex;
 
-  
-  
+   
   if (demFile)
   {
     if (meshNumb>0)

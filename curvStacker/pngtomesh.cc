@@ -2,6 +2,12 @@
 #include <fstream>
 #include <assert.h>
 #include <set>
+#include <cfloat>
+#include <Eigen/Core>
+#include <igl/read.h>
+#define IGL_HEADER_ONLY
+
+#include <igl/writeOFF.h>
 
 PngToMesh::PngToMesh(std::string filename, int skipFactor, int thresh)
 {
@@ -53,7 +59,7 @@ std::string PngToMesh::printPointCloud()
     std::vector<Face> newFaces;
     for (int i=0; i<vertices; i++)
     {
-        if (meshVertices[i].z<thresh)
+        if (meshVertices[i].z>thresh)
 	  {
             zeroVert.insert(i);
 	  }
@@ -63,7 +69,7 @@ std::string PngToMesh::printPointCloud()
 	    newVertices.push_back(meshVertices[i]);
 	  }
     }
-    
+ 
     int* realIndex=(int*)calloc(vertices,sizeof(int));
     int k=0;
     for (int i=0; i<vertices; i++)
@@ -98,6 +104,8 @@ bool PngToMesh::convert()
 	meshVertices.push_back(Vertex(x,y,getPixel(x,y)));
 	
       }
+
+
   for (unsigned int k=0; k<meshVertices.size()-vHeight-1; k++)
     {
 
@@ -151,10 +159,13 @@ void PngToMesh::removeIsolatedVertices(std::vector<Vertex> vertices, std::vector
   of << "OFF" << std::endl;
   of << vertices.size() << " " << faces.size() << " 0" << std::endl;
   for (int i=0; i<vertices.size(); i++)
-    of << vertices[i].x << " " << vertices[i].y << " " << vertices[i].z << std::endl;
+    {
+      of << (double)vertices[i].x << " " << (double)vertices[i].y << " " << (double)((double)vertices[i].z*(double)1) << std::endl;
+      
+    }
   for (int i=0; i<faces.size(); i++)
     of << "3 " << faces[i].x << " " <<faces[i].y << " " <<faces[i].z  << std::endl;
-
+  of.close();
   // GG ugly hack to make the call to meshlabserver work for both me and nikolas
 #include <unistd.h>
   char un[64] = "\0";
@@ -171,4 +182,54 @@ void PngToMesh::removeIsolatedVertices(std::vector<Vertex> vertices, std::vector
   
   std::string cmd = meshlabserver_path+" -i "+outpath+" -o "+outpath+" -s "+removescript;
   system(cmd.c_str());
+
+     double z_min=DBL_MAX,z_max=-DBL_MAX;
+      double y_max=-DBL_MAX;
+
+      Eigen::MatrixXd Vt;
+      Eigen::MatrixXi Ft;
+      igl::read(outpath.c_str(),Vt,Ft);
+
+    /* Qui devo scalare la mesh */
+  /* TODO: dipendente da parametro */
+  /* Devo studiarmi l'opzione grid*/
+  /**********************************************************************/
+      for (int i=0; i<Vt.rows(); i++)
+    {
+      if (Vt.row(i)[2]<z_min)
+  	z_min=Vt.row(i)[2];
+      if (Vt.row(i)[2]>z_max)
+  	z_max=Vt.row(i)[2];
+      if (Vt.row(i)[1]>y_max)
+  	y_max=Vt.row(i)[1];
+    }
+      std::cout << "****************\nz_min:" << z_min << "\t <_max " << z_max <<  "\t y_max_ " << y_max << std::endl;
+      for (int i=0; i<Vt.rows(); i++)
+    {
+      Vt.row(i)[2]-=z_min;
+      Vt.row(i)[2]*=((y_max/(z_max-z_min))/skipFactor)*1.3;
+    }
+  /**********************************************************************/
+
+     igl::writeOFF(outpath.c_str(),Vt,Ft);
+
+  //   of.open(outpath.c_str());
+
+  // if (!of)
+  //   {
+  //     fprintf(stderr, "Error: could not open output file %s\n", outpath.c_str());
+  //   }  
+  
+  // of << "OFF" << std::endl;
+  // of << Vt.rows() << " " << Ft.rows() << " 0" << std::endl;
+  // for (int i=0; i<Vt.rows(); i++)
+  //   {
+  //     of << (double)Vt.row(i)[0] << " " << (double)Vt.row(i)[1] << " " << (double)Vt.row(i)[2] << std::endl;
+      
+  //   }
+  
+  // for (int i=0; i<Ft.rows(); i++)
+  //   of << "3 " << Ft.row(i)[0] << " " <<Ft.row(i)[2] << " " <<Ft.row(i)[2]  << std::endl;
+  
+  // of.close();
 }

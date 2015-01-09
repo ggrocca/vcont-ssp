@@ -322,6 +322,19 @@ ScaleSpace::ScaleSpace (const char* filename, ScaleSpaceOpts opts)
 	    dem[i]->clip_background ((*dem[0]), opts.clip_value);
     }
 
+     if (opts.check (ScaleSpaceOpts::PERTURB))
+    {
+	tprintp ("!!!!!!!!", "%s", " PERTURB \n");
+	for (int i = 0; i < levels; i++)
+	  {
+	    Dem* td = new Dem (*(dem[i]), opts.perturb_amp, opts.perturb_seed);
+	    delete (dem[i]);
+	    dem[i] = td;
+	  }
+    }
+
+   
+
     // compute criticals and integral lines
 
     critical = std::vector< std::vector<CriticalPoint> > (levels);
