@@ -229,9 +229,9 @@ void curvStacker::printLevel(Eigen::MatrixXd V, vector<vector<double> > curv)
     } 
   if (validFile!=NULL)
     {
-      fwrite(&width, sizeof(int), 1, map);
-      fwrite(&height, sizeof(int), 1, map);
-      fwrite(&(signs.data[0]), sizeof(char), width*height, map);
+      fwrite(&width, sizeof(int), 1, vp);
+      fwrite(&height, sizeof(int), 1, vp);
+      fwrite(&(val.data[0]), sizeof(unsigned int), width*height, vp);
     }
   if (heightFile!=NULL)
     {
@@ -292,7 +292,7 @@ void curvStacker::printLevelGrid(Eigen::MatrixXd V, vector<vector<double> > curv
 	  min = data[k];
       if (data[k] > max)
 	  max = data[k];
-      if (V.row(k)[2]<10e-2)
+      if (V.row(k)[2]<1)
 	val(j,i) = 0;
     }
     
@@ -355,7 +355,7 @@ void curvStacker::printLevelGrid(Eigen::MatrixXd V, vector<vector<double> > curv
     {
       fwrite(&width, sizeof(int), 1, vp);
       fwrite(&height, sizeof(int), 1, vp);
-      fwrite(&(val.data[0]), sizeof(char), width*height, vp);
+      fwrite(&(val.data[0]), sizeof(unsigned int), width*height, vp);
     }
   if (heightFile!=NULL)
     {
@@ -442,6 +442,39 @@ void curvStacker::executeOnMultipleMeshes(vector<string> meshNames, string outFi
   if (!separateDems)
     fclose(fp);
 }
+
+
+
+void curvStacker::computeTextualCurvature(string meshFile,string outFile)
+{
+
+  cerr << "Starting execute on mesh " << endl;
+  CurvatureCalculator c;
+  Eigen::MatrixXd V;
+  Eigen::MatrixXi F;
+  cerr << "Reading mesh " << meshFile << endl;
+  igl::read(meshFile,V,F);
+  c.zeroDetCheck=false;
+  cerr << "Mesh read with " << V.rows() << " vertices "  << endl << endl;
+  c.init(V,F);
+  for (double r=base_radius; r<=max_radius; isExpStep?r*=step:r+=step)
+    {
+      std::ostringstream strs;
+      strs << r;
+      std::string str = strs.str();
+      cerr << "Starting computing radius " << r << endl;
+      c.sphereRadius=r;
+      if (r<20)
+	c.computeCurvature(false,fast_computation);
+      else
+	c.computeCurvature(do_topoindex,fast_computation);
+      cerr << "Computed radius " << r << endl;
+      c.printCurvature(outFile+"_"+str);
+    }
+ 
+}
+
+
 
 void curvStacker::executeOnMesh(string meshFile,string outFile)
 {
