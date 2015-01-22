@@ -10,7 +10,7 @@
 #include "track.hh"
 #include "demreader.hh"
 #include "grid.hh"
-#include "csvreader.hh"
+//#include "csvreader.hh"
 
 #include <vector>
 #include <algorithm>
@@ -206,17 +206,17 @@ public:
 
 
     // swisstopo additional points load/save/show
-    bool draw_csv;
+  //  bool draw_csv;
     bool swpts_active;
     bool swpts_display;
     double swpts_xllcorner, swpts_yllcorner;
     double swpts_cellsize;
-    std::vector<SwissSpotHeight> swpts_ground_truth;
+  //std::vector<SwissSpotHeight> swpts_ground_truth;
     
-    void swpts_load_asc (char* filename);
-    void swpts_draw ();
-    void swpts_load_csv (char* filename);
-    void swpts_save_csv (char* filename);
+    // void swpts_load_asc (char* filename);
+    // void swpts_draw ();
+    // void swpts_load_csv (char* filename);
+    // void swpts_save_csv (char* filename);
   
   int searchNoseTip();
   int searchNoseRoot(double, double);

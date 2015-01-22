@@ -52,7 +52,7 @@ int TrackDisplay::searchNoseTip()
 	continue;
       double dist=fabs(track->width/2-track->lines[spots_maxima[i].crit].entries[0].c.x);
       double dist_y=fabs(track->height/2-track->lines[spots_maxima[i].crit].entries[0].c.y);
-      if (life < track->time_of_life*0 || dist>track->width*0.1 || dist_y>track->height*0.3 || heights(track->lines[spots_maxima[i].crit].entries[0].c)<(max_h*0.95))
+      if (life < track->time_of_life*0 || dist>track->width*0.1 || dist_y>track->height*0.3 || heights(track->lines[spots_maxima[i].crit].entries[0].c)<(max_h*0.99))
 	continue;
       //if (t_scale > scale && (pow(life,10)*imp)-(pow(1000,dist)+pow(100,dist_y))>thresh)
       if (t_scale*imp*life>thresh)
@@ -267,15 +267,23 @@ void TrackDisplay::computeAxis(double& slope1,double&  yint1,double& slope2, dou
   double slopeTemp1=(sumXY-sumX*Ymean)/(sumX2-sumX*Xmean);
   double yintT2=Ymean-slopeTemp1*Xmean;
   
-
-  double slopeTemp2=-1/(slope1);
-
+  cout << "slopteTemp 1 " <<slopeTemp1<<endl;
+  
+  double slopeTemp2=abs(-1/(slope1));
+cout << "slopteTemp 2 " <<slopeTemp2<<endl;
 
   double dem1= sqrt(pow(slopeTemp1,2)+1);
   double dem2= sqrt(pow(slopeTemp2,2)+1);
 
+  cout << "dem1 " << dem1 << endl;
+  cout << "dem2 " << dem2 << endl;
+
+
   double A=slopeTemp1/dem1+slopeTemp2/dem2;
   double B=(-1)/dem1+(-1)/dem2;
+
+  cout << "A " << A << endl;
+  cout << "B " << B << endl;
 
   double medX=0.5*(nose_x+0.5*(nose_LimitsRx+nose_LimitsLx));
   double medY=0.5*(nose_y+0.5*(nose_LimitsRy+nose_LimitsLy));
@@ -295,7 +303,7 @@ TrackDisplay::TrackDisplay()
     draw_terrain = true;
     draw_track = false;
     draw_query = false;
-    draw_csv = false;
+    // draw_csv = false;
     clip_black = 0.0;
     clip_white = 65535.0;
     query_scale = 0.1;
@@ -1415,8 +1423,8 @@ void TrackDisplay::draw (int dem_idx)
 	}
     }
 
-    if (draw_csv)
-	swpts_draw ();
+    // if (draw_csv)
+    // 	swpts_draw ();
 
     if (show_axis)
       {
@@ -1515,7 +1523,7 @@ void TrackDisplay::draw (int dem_idx)
 		  {
 		    /* Confronto internamente life/imp */ 
 		    /* Dovrei trovare una misura di similarità ed usare questa per prendere il max */
-		    if (min(life_left,life_right)>0.7*max(life_left,life_right) && (vals.size() == 0 || vals(x22,y22)!=0)); /*&& min(strength_left,strength_right)>0.7*max(strength_left,strength_right)*/
+		    if (min(life_left,life_right)>0.7*max(life_left,life_right) && (heights(x22,y22)>1000)) /*&& min(strength_left,strength_right)>0.7*max(strength_left,strength_right)*/
 		      { 
 			pool_final.push_back(idx);
 			pool_final.push_back(idx2);
@@ -1575,91 +1583,91 @@ void TrackDisplay::draw_line_test (double d)
     //   exit (0);
 }
 
-void TrackDisplay::swpts_load_asc (char* filename)
-{
-    swpts_active = true;
+//void TrackDisplay::swpts_load_asc (char* filename)
+//{
+    // swpts_active = true;
 
-    ASCReader ascr (filename);
+    // ASCReader ascr (filename);
 
-    swpts_xllcorner = ascr.xllcorner;
-    swpts_yllcorner = ascr.yllcorner;
-    swpts_cellsize = ascr.cellsize;
-}
+    // swpts_xllcorner = ascr.xllcorner;
+    // swpts_yllcorner = ascr.yllcorner;
+    // swpts_cellsize = ascr.cellsize;
+//}
 
-void TrackDisplay::swpts_draw ()
-{
-    // static bool check = true;
+//void TrackDisplay::swpts_draw ()
+//{
+    // // static bool check = true;
     
-    for (unsigned i = 0; i < swpts_ground_truth.size(); i++)
-    {
-	double x = swpts_ground_truth[i].p.x;
-	double y = swpts_ground_truth[i].p.y;
+    // for (unsigned i = 0; i < swpts_ground_truth.size(); i++)
+    // {
+    // 	double x = swpts_ground_truth[i].p.x;
+    // 	double y = swpts_ground_truth[i].p.y;
 
-	// if (check)
-	//     printf ("GRUNTH: %lf,%lf %s ", x, y,
-	// 	    i < swpts_ground_truth.size()-1? "--" : "|\n");
+    // 	// if (check)
+    // 	//     printf ("GRUNTH: %lf,%lf %s ", x, y,
+    // 	// 	    i < swpts_ground_truth.size()-1? "--" : "|\n");
 	
-	glPushMatrix ();
-	glTranslated ((double) x, (double) y, 0.0);
-	glScaled (spot_scale, spot_scale, 1.0);
-	glColor3dv(magenta);	
-	__draw_cross ();
-	glPopMatrix();
+    // 	glPushMatrix ();
+    // 	glTranslated ((double) x, (double) y, 0.0);
+    // 	glScaled (spot_scale, spot_scale, 1.0);
+    // 	glColor3dv(magenta);	
+    // 	__draw_cross ();
+    // 	glPopMatrix();
 
-	glPushMatrix ();
-	glTranslated ((double) x, (double) y, 0.0);
-	glScaled (spot_scale / 2.0, spot_scale / 2.0, 1.0);
-	glColor3dv(black);
-	__draw_cross ();
+    // 	glPushMatrix ();
+    // 	glTranslated ((double) x, (double) y, 0.0);
+    // 	glScaled (spot_scale / 2.0, spot_scale / 2.0, 1.0);
+    // 	glColor3dv(black);
+    // 	__draw_cross ();
 
-	glPopMatrix();
+    // 	glPopMatrix();
 
-    }
+    // }
 
-    // check = false;
-}
+    // // check = false;
+//}
 
 
-void TrackDisplay::swpts_load_csv (char* filename)
-{
-    CSVReader csvio (ssp->dem[0]->width, ssp->dem[0]->height,
-		     swpts_cellsize, swpts_xllcorner, swpts_yllcorner);
-    csvio.load (filename, swpts_ground_truth);
+// void TrackDisplay::swpts_load_csv (char* filename)
+// {
+//     // CSVReader csvio (ssp->dem[0]->width, ssp->dem[0]->height,
+//     // 		     swpts_cellsize, swpts_xllcorner, swpts_yllcorner);
+//     // csvio.load (filename, swpts_ground_truth);
     
-    swpts_display  = true;
-}
+//     // swpts_display  = true;
+// }
 
 #include "../common/strlcat.h"
 
-void TrackDisplay::swpts_save_csv (char* filename)
-{
-    char cwd[2048] = "\0";
+// void TrackDisplay::swpts_save_csv (char* filename)
+// {
+//     char cwd[2048] = "\0";
     
-    // printf ("cwd: %s\n", cwd);
-    // printf ("filename: %s\n", filename);
+//     // printf ("cwd: %s\n", cwd);
+//     // printf ("filename: %s\n", filename);
 
-    if (filename != NULL && filename[0] != '/')
-    {
-	if (getcwd(cwd, sizeof(cwd)) == NULL)
-	    fprintf(stdout, "Could not get working dir: %s\n", strerror(errno));
+//     if (filename != NULL && filename[0] != '/')
+//     {
+// 	if (getcwd(cwd, sizeof(cwd)) == NULL)
+// 	    fprintf(stdout, "Could not get working dir: %s\n", strerror(errno));
 	
-	// printf ("cwd: %s\n", cwd);
-	// printf ("filename: %s\n", filename);
+// 	// printf ("cwd: %s\n", cwd);
+// 	// printf ("filename: %s\n", filename);
 
-	char *app_ending = ".app/Contents/Resources";
-	if (ends_with (cwd, app_ending))
-	{
-	    cwd[0] = '\0';
-	    strlcat (cwd, "../../../", 2048);
-	}
-	else
-	    cwd[0] = '\0';	    
-    }
-    strlcat (cwd, filename, 2048);
+// 	char *app_ending = ".app/Contents/Resources";
+// 	if (ends_with (cwd, app_ending))
+// 	{
+// 	    cwd[0] = '\0';
+// 	    strlcat (cwd, "../../../", 2048);
+// 	}
+// 	else
+// 	    cwd[0] = '\0';	    
+//     }
+//     strlcat (cwd, filename, 2048);
 
-    // printf ("final: %s\n", cwd);
+//     // printf ("final: %s\n", cwd);
 
-    CSVReader csvio (ssp->dem[0]->width, ssp->dem[0]->height,
-		     swpts_cellsize, swpts_xllcorner, swpts_yllcorner);
-    csvio.save (cwd, spots_current, track, ssp);
-}
+//     // CSVReader csvio (ssp->dem[0]->width, ssp->dem[0]->height,
+// // 		     swpts_cellsize, swpts_xllcorner, swpts_yllcorner);
+// //     csvio.save (cwd, spots_current, track, ssp);
+//  }

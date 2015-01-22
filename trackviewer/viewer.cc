@@ -216,7 +216,7 @@ void TW_CALL save_points (void *clientData)
 { 
     (void) clientData;
 
-    td.swpts_save_csv (csv_out_file);
+    // td.swpts_save_csv (csv_out_file);
 }
 
 
@@ -368,9 +368,9 @@ int main (int argc, char *argv[])
 
     if (asc_file != NULL)
     {
-	td.swpts_load_asc (asc_file);
+      //	td.swpts_load_asc (asc_file);
 	if (csv_in_file != NULL)
-	    td.swpts_load_csv (csv_in_file);
+	  ;//    td.swpts_load_csv (csv_in_file);
     }
     
     if (signs_file != NULL)
@@ -391,7 +391,7 @@ int main (int argc, char *argv[])
     td.getbb (&a, &b);
 
     if (csv_in_file != NULL)
-	td.draw_csv = true;
+      ;//	td.draw_csv = true;
 	
     // camera.set_bb (a, b);
     // camera.reshape (W, H);
@@ -447,7 +447,7 @@ int main (int argc, char *argv[])
     // 	       " keyIncr='<' keyDecr='>'"); 
 
     TwAddVarRW(cBar, "render terrain", TW_TYPE_BOOLCPP, &(td.draw_terrain), "");
-    TwAddVarRW(cBar, "render csv points", TW_TYPE_BOOLCPP, &(td.draw_csv), "");
+    //    TwAddVarRW(cBar, "render csv points", TW_TYPE_BOOLCPP, &(td.draw_csv), "");
 // #define __FNLEN 512
 //     char dem_num_bounds[__FNLEN] = {'\0'};
 //     snprintf (dem_num_bounds, __FNLEN, "min=0 max=%d step=1 "
