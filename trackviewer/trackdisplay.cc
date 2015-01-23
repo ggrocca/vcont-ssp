@@ -269,7 +269,9 @@ void TrackDisplay::computeAxis(double& slope1,double&  yint1,double& slope2, dou
   
   cout << "slopteTemp 1 " <<slopeTemp1<<endl;
   
-  double slopeTemp2=abs(-1/(slope1));
+  double slopeTemp2=(-1/(slope1));
+  if (slopeTemp2*slopeTemp1<0)
+    slopeTemp2*=-1;
 cout << "slopteTemp 2 " <<slopeTemp2<<endl;
 
   double dem1= sqrt(pow(slopeTemp1,2)+1);
