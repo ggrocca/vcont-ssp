@@ -1475,7 +1475,7 @@ void TrackDisplay::draw (int dem_idx)
 	  }
 	for (int i=0; i<spots_minima.size(); i++)
 	  {
-	    /* Ciclo sui massimi, se sono ~vicini all'asse di simmetria li visualizzo
+	    /* Ciclo sui minimi, se sono ~vicini all'asse di simmetria li visualizzo
 	     */
 	    int idx = spots_minima[i].crit;
 	    double x=track->lines[idx].entries[0].c.x;
@@ -1527,6 +1527,7 @@ void TrackDisplay::draw (int dem_idx)
 		    /* Dovrei trovare una misura di similarità ed usare questa per prendere il max */
 		    if (min(life_left,life_right)>0.7*max(life_left,life_right) && (heights(x22,y22)>1000)) /*&& min(strength_left,strength_right)>0.7*max(strength_left,strength_right)*/
 		      { 
+			/* Qui dovrei fare un candidate e mettere solo il migliore */
 			pool_final.push_back(idx);
 			pool_final.push_back(idx2);
 			
