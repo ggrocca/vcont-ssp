@@ -1508,6 +1508,8 @@ void TrackDisplay::draw (int dem_idx)
 	    /*--------------------------------------*/
 	    /* Il simmetrico di left ha coordinate (x2,y2),
 	       ora ciclo su right */
+	    int candidateIndex=-1;
+	    double thresh=-DBL_MAX;
 	    for (unsigned j = 0; j<pool_right.size(); j++)
 	      {
 		int idx2=pool_right[j];
@@ -1518,24 +1520,29 @@ void TrackDisplay::draw (int dem_idx)
 		double life_right = track->lines[idx2].elixir;
 		double strength_right = track->lines[idx2].strength;
 
-		
-
 		double distance=sqrt(pow(x2-x22,2)+pow(y2-y22,2));
 		if (distance<25)
 		  {
 		    /* Confronto internamente life/imp */ 
 		    /* Dovrei trovare una misura di similarità ed usare questa per prendere il max */
-		    if (min(life_left,life_right)>0.7*max(life_left,life_right) && (heights(x22,y22)>1000)) /*&& min(strength_left,strength_right)>0.7*max(strength_left,strength_right)*/
-		      { 
-			/* Qui dovrei fare un candidate e mettere solo il migliore */
-			pool_final.push_back(idx);
-			pool_final.push_back(idx2);
-			
+		    if (min(life_left,life_right)>0.7*max(life_left,life_right) && (heights(x22,y22)>6000)) /*&& min(strength_left,strength_right)>0.7*max(strength_left,strength_right)*/
+		      {
+			if (fabs(life_left-life_right)*fabs(strength_left-strength_right)>thresh && std::find(pool_final.begin(),pool_final.end(),idx2)==pool_final.end())
+			  {
+			    thresh=fabs(life_left-life_right)*fabs(strength_left-strength_right);
+			    candidateIndex=idx2;
+			  }
 		      }
 		  }
 		
 	      }
+	    if (candidateIndex!=-1)
+	      {
+		pool_final.push_back(idx);
+		pool_final.push_back(candidateIndex);
+	      }
 	  }
+	cout << "SIZE FINAL : " << pool_final.size() << endl;
 	for (int i=0; i<pool_final.size(); i++)
 	  {
 	    double scale=0.0;
