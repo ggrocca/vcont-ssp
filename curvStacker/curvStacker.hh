@@ -43,7 +43,7 @@ class curvStacker
   void initializeScaleSpace(Eigen::MatrixXd V);
   void minmaxCurvatures(double& min, double& max, vector<vector<double> > curv);
   void setGrid (int, int, int);
-
+  void computeTextualCurvature(string,string);
 
   double curvMultFactor;  
   double lowestRandomValue;

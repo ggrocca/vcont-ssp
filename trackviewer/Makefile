@@ -58,8 +58,8 @@ endif
 ## C, CXX compiler
 # CXXC = g++
 # CC = gcc
-CXXC = g++
-CC = gcc
+CXXC = clang++
+CC = clang
 
 ## file extensions for C++ files, their objects and dependencies (e.g:
 ## .cpp/.dpp/.opp, or .cc/.dd/.oo or whatever you like; remember that
@@ -77,7 +77,7 @@ OBJ_EXT = oo
 ## conflict.
 # CPPSOURCES = file1.cc file2.cc
 # CSOURCES = file1.c file2.c
-CPPSOURCES = viewer.cc camera.cc trackdisplay.cc track.cc demreader.cc scalespace.cc dem.cc flipper.cc trackstats.cc csvreader.cc
+CPPSOURCES = viewer.cc camera.cc trackdisplay.cc track.cc demreader.cc scalespace.cc dem.cc flipper.cc trackstats.cc
 CSOURCES =
 
 ## add directives -D__FILENAME_EXISTS for every file "filename.h" added here.

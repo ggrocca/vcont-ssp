@@ -9,12 +9,13 @@ using namespace std;
 void print_help ()
 {
     fprintf (stdout, "Usage: curvStacker "
-	     "{-i infile | -m infile | -D n mesh1 ... meshN} {-d outfile | -s outfile}\n"
+	     "{-i infile | -m infile | -D n mesh1 ... meshN} {-d outfile | -s outfile | -o outfile}\n"
 	     "-i pngFile : path to input png image\n"
 	     "-m meshFile : path to input mesh file\n"
 	     "-D n mesh1 ... meshN : use a scalespace of N smoothed meshes as input (the meshes must be named name-0.off ... name-n-1.off\n"
 	     "-s sspFile : path to output ssp file\n"
 	     "-d demFile : path to output dem file.\n"
+	     "-o curvFile : path to output for textual cuvature.\n"
 	     "[-U] (Only if launched with -D option): print a single .ssp file instead of multiple .dem files\n"
 	     "[-c mapfile] : write map of curvature signs\n"
 	     "[-z heightFile] : write vertex heights on a file\n"
@@ -57,6 +58,7 @@ vector<string> meshNames;
 int meshNumb = 0;
 bool separateDems = true;
 int fastComputation=0;
+string * curvFile = NULL;
 
 
 void app_init(int argc, char *argv[])
@@ -81,6 +83,10 @@ void app_init(int argc, char *argv[])
 	      break;
 	    case 'd':
 	      demFile=new string(*++argv);
+	      argc--;
+	      break;
+	    case 'o':
+	      curvFile=new string(*++argv);
 	      argc--;
 	      break;
 	    case 'M':
@@ -201,6 +207,10 @@ int main(int argc, char* argv[])
       s.lowestRandomValue = lowestRandomValue;
   s.do_topoindex = do_topoindex;
 
+  if (curvFile)
+    {
+      	  s.computeTextualCurvature(*meshFile, *sspFile);
+    }
    
   if (demFile)
   {
