@@ -10,6 +10,10 @@
 #include "../common/csvreader.hh"
 #include "../common/ascheader.hh"
 
+#include "scalarfield.hh"
+#include "track_mesh.hh"
+#include "flipper_mesh.hh"
+
 #include "imagewriter.hh"
 // #include "tracking.hh"
 
@@ -52,6 +56,9 @@ bool check_plateaus = false;
 bool do_final_query = false;
 // bool do_border_normalization = false;
 
+char *meshfile = 0;
+std::vector<char*> curvfiles;
+
 void print_help (FILE* f)
 {
     fprintf (f, "Usage: scaletracker\n"
@@ -60,6 +67,8 @@ void print_help (FILE* f)
 	     "[-d demfile] : load dem in double raw format\n"
 	     "[-r scalespace.ssp] : read scalespace in binary format\n"
 	     "[-o outname] : write files outname.trk, outname.crt, outname.ssp\n"
+	     "[-M meshfile] : 3D surface input\n"
+	     "[-C curvfile_1 ... curvfile_N ] : curvature scalar fields, ascii\n"
 	     "[-t tiffnames] : write a tiff for every level\n"
 	     "[-p amplitude seed] : randomly perturb data\n"
 	     "[-j numjumps] : do not consider first n levels\n"
@@ -156,6 +165,27 @@ void app_init(int argc, char *argv[])
                 argc--;
                 break;
 
+            case 'M':
+                meshfile = (*++argv);
+                argc--;
+                break;
+
+            case 'C':
+		{
+		    if (numlevel == 0)
+		    {
+			fprintf (stderr,
+				 "number of levels must be given before curvfiles!\n");
+			goto die;
+		    }
+		    for (int i = 0; i < numlevel; i++)
+		    {
+			curvfiles.push_back (*++argv);
+			argc--;
+		    }
+		}
+                break;
+
             case 'd':
                 demfile = (*++argv);
                 argc--;
@@ -248,23 +278,35 @@ void app_init(int argc, char *argv[])
         }
     }
 
-    if (imagefile == NULL && scalespace_read_name == NULL && demfile == NULL)
+    if (meshfile)
     {
-	fprintf (stderr, "No image, dem or scalespace input given.\n");
-	goto die;
+	if (numlevel < 2 || numlevel != curvfiles.size())
+	{
+	    fprintf (stderr, "Number of levels must be 2 or higher, "
+		     "and be the same as the number of curvature files.\n");
+	    goto die;
+	}
     }
+    else
+    {
+	if (imagefile == NULL && scalespace_read_name == NULL && demfile == NULL)
+	{
+	    fprintf (stderr, "No image, dem or scalespace input given.\n");
+	    goto die;
+	}
 
-    if ((imagefile != NULL || demfile != NULL) && numlevel < 2)
-    {
-	fprintf (stderr, "Number of levels `%d' is not valid. "
-		 "Positive integer greater than 1 required.\n", numlevel);
-	goto die;	
-    }
+	if ((imagefile != NULL || demfile != NULL) && numlevel < 2)
+	{
+	    fprintf (stderr, "Number of levels `%d' is not valid. "
+		     "Positive integer greater than 1 required.\n", numlevel);
+	    goto die;	
+	}
     
-    if (filter_algo < 0 || filter_algo > 2)
-    {
-	fprintf (stderr, "Unrecognized filter algorithm.\n");
-	goto die;
+	if (filter_algo < 0 || filter_algo > 2)
+	{
+	    fprintf (stderr, "Unrecognized filter algorithm.\n");
+	    goto die;
+	}
     }
     
 
@@ -272,14 +314,81 @@ void app_init(int argc, char *argv[])
 
     die:
     print_help(stderr);
-    exit(1);
+    exit (1);
 }
 
 void print_final_stats (Track* track, bool latex);
 
+void main_mesh ()
+{
+    Mesh* mesh = new Mesh (meshfile);
+    std::vector<ScalarField*> scfs;
+    for (int i = 0; i < numlevel; i++)
+	scfs.push_back (new ScalarField (*mesh, curvfiles[i]));
+
+    SurfaceScaleSpace* sssp = new SurfaceScaleSpace (scfs);
+
+    if (scalespace_write_name)
+	sssp->write_scalespace (scalespace_write_name);
+        
+    if (check_plateaus)
+	for (int i = 0; i < sssp->levels; i++)
+	    if (sssp->fields[i]->has_plateaus())
+		eprintx (-1, "scalespace has flat areas. level %d\n", i);
+
+    for (int i = 0; i < sssp->levels; i++)
+    {
+	int num_max, num_min, num_sad;
+	num_max = num_min = num_sad = 0;
+	for (unsigned j = 0; j < sssp->criticals[i].size(); j++)
+	{
+	    if (sssp->criticals[i][j].t == MAX)
+		num_max++;
+	    if (sssp->criticals[i][j].t == MIN)
+		num_min++;
+	    if (sssp->criticals[i][j].t == SA2)
+		num_sad++;
+	    if (sssp->criticals[i][j].t == SA3)
+		num_sad += 2;
+	}
+	fprintf (OTHER_STREAM, "\nlevel %d, num_max = %d, num_min = %d, num_sad = %d\n"
+		"\tnum_max - num_min = %d, num_max + num_min = %d\n"
+		"\t\tnum_max + num_min - num_sad = %d\n",
+		i, num_max, num_min, num_sad,
+		num_max - num_min, num_max + num_min,
+		num_max + num_min - num_sad);
+    }
+
+    if (critical_name)
+	sssp->write_critical (critical_name);
+    
+    Flipper_M* flipper = new Flipper_M (*sssp);
+    Track_M* track = new Track_M ();
+    flipper->track (*sssp, track);
+
+    track->get_strength (sssp->fields[0]);
+
+    if (do_relative_drop)
+	track->get_relative_drop (sssp->fields[0]);
+    
+    delete flipper;
+    // save files
+
+    track_writer_m (tracking_name, track);
+
+    delete track;
+    delete sssp;
+}
+
 int main (int argc, char *argv[])
 {
     app_init (argc, argv);
+
+    if (meshfile)
+    {
+	main_mesh ();
+	exit (0);
+    }
     
     Dem* idem = NULL;
     DEMReader* dr = NULL;
@@ -496,11 +605,13 @@ int main (int argc, char *argv[])
     //track->write (tracking_name, order);
     track_writer (tracking_name, track, order);
 
+    delete order;
+
     if (do_final_query)
 	print_final_stats (track, false);
 
     delete track;
-
+    delete ssp;
 	// Tracking *track = new Tracking (demsp);
 	
 	// printf ("\n=========================\n\n"

@@ -211,7 +211,7 @@ bool TrackLine::is_original ()
 
 bool Track::is_original (int i)
 {
-    return lines[i].is_original ();    
+    return lines[i].is_original ();
 }
 
 bool TrackLine::is_born ()
@@ -221,7 +221,7 @@ bool TrackLine::is_born ()
 
 bool Track::is_born (int i)
 {
-    return lines[i].is_born ();    
+    return lines[i].is_born ();
 }
 
 

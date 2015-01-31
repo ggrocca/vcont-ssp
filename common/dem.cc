@@ -489,7 +489,7 @@ CriticalType Dem::point_type (Coord c)
     CriticalType r = point_type_analyze (first, changes, c);
     point_print (SCOPE_POINTTYPE, c, r);
 
-    return (r);
+    return r;
 }
 
 CriticalType Dem::point_type (int x, int y)

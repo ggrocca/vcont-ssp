@@ -51,6 +51,15 @@ VPATH = ../common
 ## such variables as you need.
 # BASELIBS_DIR = ../../external/libs/dir
 
+ifneq (,$(filter $(USERNAME),deggio nikolas))
+BASELIBS_DIR = ../../Libraries
+endif
+
+ifeq ($(USERNAME),gg)
+BASELIBS_DIR = ../../libs
+endif
+
+
 ## C, CXX compiler
 # CXXC = g++
 # CC = gcc
@@ -75,6 +84,7 @@ OBJ_EXT = oo
 # CSOURCES = file1.c file2.c
 CPPSOURCES = dem.cc demreader.cc gaussian.cc scalespace.cc track.cc ascheader.cc
 CPPSOURCES += flipper.cc imagewriter.cc trackstats.cc csvreader.cc
+CPPSOURCES += scalarfield.cc track_mesh.cc flipper_mesh.cc
 CPPSOURCES += scaletracker_main.cc
 CSOURCES = rastertiff.c
 
@@ -111,6 +121,8 @@ override DEFINES +=
 override LDFLAGS +=
 override STATIC_LDFLAGS +=
 override FRAMEWORKS += 
+
+override INCLUDES +=  -I../igl_LOCAL/libigl/include -I${BASELIBS_DIR}/Eigen
 
 
 ####################################

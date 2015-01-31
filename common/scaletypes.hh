@@ -27,6 +27,14 @@ class CriticalPoint {
     CriticalPoint (Coord c, CriticalType t) : c (c), t (t) {}
 };
 
+class CriticalVertex {
+ public:
+    int v;
+    CriticalType t;
+    CriticalVertex () : v (0), t (REG) {}
+    CriticalVertex (int v, CriticalType t) : v (v), t (t) {}
+};
+
 
 static inline void point_type_step (RelationType current,
 				    RelationType* previous,
@@ -77,6 +85,45 @@ static inline CriticalType point_type_analyze (RelationType first,
 
     return SA2;
 }
+
+static inline CriticalType point_type_analyze (RelationType first,
+					       int changes,
+					       int v)
+{
+    if (changes == 0 && first == GT)
+	return MAX;
+
+    if (changes == 0 && first == LT)
+	return MIN;
+
+    if (changes == 0)
+    {
+	eprint ("Impossible plateu: %d\n", v);
+	return EQU;
+    }
+
+    if ((changes % 2) == 1)
+    {
+	eprint ("Odd number of changes: %d\n", v);
+	return REG;
+    }
+
+    changes /= 2;
+
+    if (changes == 1)
+	return REG;
+
+    if (changes == 2)
+	return SA2;
+
+    if (changes == 3)
+	return SA3;
+
+    eprintx (-1, "Unexpected monkey saddle (%d changes) - at vertex %d\n", changes, v);
+
+    return SA3;
+}
+
 
 static inline char relation2char (RelationType r)
 {

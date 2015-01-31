@@ -322,7 +322,7 @@ ScaleSpace::ScaleSpace (const char* filename, ScaleSpaceOpts opts)
 	    dem[i]->clip_background ((*dem[0]), opts.clip_value);
     }
 
-     if (opts.check (ScaleSpaceOpts::PERTURB))
+    if (opts.check (ScaleSpaceOpts::PERTURB))
     {
 	tprintp ("!!!!!!!!", "%s", " PERTURB \n");
 	for (int i = 0; i < levels; i++)
