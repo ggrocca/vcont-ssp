@@ -5,6 +5,7 @@
 #include "grid.hh"
 #include <math.h>
 #include <string>
+#include <string.h>
 #include <vector>
 
 class BoundingBox

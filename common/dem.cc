@@ -643,7 +643,7 @@ void Dem::averhood_max (CriticalPoint cp, int kernel, double* strength, int* ker
 }
 
 
-void Dem::relative_drop (CriticalPoint cp, double* drop)
+void Dem::relative_drop_max (CriticalPoint cp, double* drop)
 {
     *drop = 0.0;
     
@@ -654,12 +654,12 @@ void Dem::relative_drop (CriticalPoint cp, double* drop)
     double zmin = DBL_MAX;
     // gg create visited map with grid<char>
     Grid<char>* map = new Grid<char>(this->width, this->height, false);
-    std::priority_queue<DropCell>* pq = new std::priority_queue<DropCell>;
+    std::priority_queue<DropCell, std::vector<DropCell> >* pq = new std::priority_queue<DropCell, std::vector<DropCell> >;
    
     std::vector<Coord> ns;
     cp.c.neigh_8 (ns);
     (*map) (cp.c) = true;
-    for (int i = 0; i < ns.size(); i++)
+    for (unsigned i = 0; i < ns.size(); i++)
     {
 	DropCell cd;
 	cd.c = ns[i];
@@ -692,7 +692,7 @@ void Dem::relative_drop (CriticalPoint cp, double* drop)
 	// printf ("  2   <%5d> (%3d,%3d)[%lf] -- zmin %lf, size %zu\n", counter,
 	// 	(pq->top()).c.x, (pq->top()).c.y, (pq->top()).z, zmin, pq->size());
 
-	for (int i = 0; i < ns.size(); i++)
+	for (unsigned i = 0; i < ns.size(); i++)
 	{
 	    DropCell cd;
 	    cd.c = ns[i];
@@ -710,8 +710,92 @@ void Dem::relative_drop (CriticalPoint cp, double* drop)
 	// 	(pq->top()).c.x, (pq->top()).c.y, (pq->top()).z, zmin, pq->size());
     }
 
- get_out:
+    //get_out:
     *drop = zmin > zmax? 0.0 : zmax - zmin;
     delete pq;
     delete map;
+}
+
+void Dem::relative_drop_min (CriticalPoint cp, double* drop)
+{
+    *drop = 0.0;
+    
+    if (cp.t != MIN)
+	return;
+
+    double zmin = (*this)(cp.c);
+    double zmax = -DBL_MAX;
+    // gg create visited map with grid<char>
+    Grid<char>* map = new Grid<char>(this->width, this->height, false);
+    std::priority_queue<DropCell, std::vector<DropCell>, std::greater<DropCell> >* pq = new std::priority_queue<DropCell, std::vector<DropCell>, std::greater<DropCell> >;
+   
+    std::vector<Coord> ns;
+    cp.c.neigh_8 (ns);
+    (*map) (cp.c) = true;
+    for (unsigned i = 0; i < ns.size(); i++)
+    {
+	DropCell cd;
+	cd.c = ns[i];
+	cd.z = (*this)(cd.c);
+	if (cd.c.is_inside (this->width, this->height))
+	{
+	    pq->push (cd);
+	    (*map) (cd.c) = true;
+	}
+    }
+    zmax = (pq->top()).z;
+
+    // printf ("RELATIVE DROP START (%3d,%3d)[%lf] -- zmax %lf\n", cp.c.x, cp.c.y, zmin, zmax);
+    // int counter = 0;
+    // printf ("<%5d> (%3d,%3d)[%lf] -- zmax %lf, size %zu\n", counter,    
+    // 	    (pq->top()).c.x, (pq->top()).c.y, (pq->top()).z, zmax, pq->size());	    
+    while (!pq->empty() &&
+	   (pq->top()).z > zmin &&
+	   !(pq->top()).c.is_border (this->width, this->height))
+    {
+	if ((pq->top()).z > zmax)
+	    zmax = (pq->top()).z;
+
+	// printf ("1     <%5d> (%3d,%3d)[%lf] -- zmax %lf, size %zu\n", counter,
+	// 	(pq->top()).c.x, (pq->top()).c.y, (pq->top()).z, zmax, pq->size());
+
+	(pq->top()).c.neigh_8 (ns);
+	pq->pop();
+	
+	// printf ("  2   <%5d> (%3d,%3d)[%lf] -- zmax %lf, size %zu\n", counter,
+	// 	(pq->top()).c.x, (pq->top()).c.y, (pq->top()).z, zmax, pq->size());
+
+	for (unsigned i = 0; i < ns.size(); i++)
+	{
+	    DropCell cd;
+	    cd.c = ns[i];
+	    cd.z = (*this)(cd.c);
+
+	    if (!(*map)(cd.c) && cd.c.is_inside (this->width, this->height))
+	    {
+		pq->push (cd);
+		(*map) (cd.c) = true;
+	    }
+	}
+
+	// counter++;
+	// printf ("    3 <%5d> (%3d,%3d)[%lf] -- zmax %lf, size %zu\n", counter,
+	// 	(pq->top()).c.x, (pq->top()).c.y, (pq->top()).z, zmax, pq->size());
+    }
+
+    //get_out:
+    *drop = zmax < zmin? 0.0 : zmax - zmin;
+    delete pq;
+    delete map;
+}
+
+void Dem::relative_drop (CriticalPoint cp, double* drop)
+{
+    *drop = 0.0;
+    
+    if (cp.t == MAX)
+	relative_drop_max (cp, drop);
+
+    if (cp.t == MIN)
+	relative_drop_min (cp, drop);
 }

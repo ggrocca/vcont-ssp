@@ -57,11 +57,18 @@ void TW_CALL tw_getTimeValue (void *value, void* cd)
     *(double *) value = dt->time_value;
 }
 
-void TW_CALL tw_do_query(void* cd)
+void TW_CALL tw_do_query (void* cd)
 { 
     DisplayTrack* dt = (DisplayTrack*) cd;
 
     dt->query (dt->time_value);
+}
+
+void TW_CALL tw_do_query_elixir (void* cd)
+{ 
+    DisplayTrack* dt = (DisplayTrack*) cd;
+
+    dt->query_elixir (dt->time_value);
 }
 
 
@@ -177,6 +184,8 @@ DisplayTrack::DisplayTrack (Plane* p, GeoMapping* m, int sidx, int pidx) : Displ
     tprints (SCOPE_TRACKING, "HERE: %zu\n", track_order->events.size());
 
     draw_track = false;
+    draw_query_alive = false;
+    draw_query_original = false;
     draw_query = false;
     query_scale = 0.1;
     query_mult = 1.0;
@@ -216,12 +225,15 @@ DisplayTrack::DisplayTrack (Plane* p, GeoMapping* m, int sidx, int pidx) : Displ
     	       tw_setTimeValue, tw_getTimeValue,
     	       this, "min=0.0000 max=64.0000 step=0.25");
     TwAddButton (bar, "DO QUERY", tw_do_query, this, "");
+    TwAddButton (bar, "DO QUERY ELIXIR", tw_do_query_elixir, this, "");
     TwAddVarRW (bar, "query scale", TW_TYPE_DOUBLE,
 	       &(query_scale), "min=0.001 max=100.00 step=0.001");
     TwAddVarRW (bar, "query life mult", TW_TYPE_DOUBLE, &(query_mult),
 	       "min=0.0 max=100.00 step=0.05");
     TwAddVarRW (bar, "draw current pos", TW_TYPE_BOOLCPP, &(query_cur_pos), "");
     TwAddVarRW (bar, "draw death point", TW_TYPE_BOOLCPP, &(query_death), "");
+    TwAddVarRW (bar, "draw query alive", TW_TYPE_BOOLCPP, &(draw_query_alive), "");
+    TwAddVarRW (bar, "draw query original", TW_TYPE_BOOLCPP, &(draw_query_original), "");
 
     TwAddSeparator (bar, 0, 0);
 
@@ -260,6 +272,11 @@ DisplayTrack::~DisplayTrack () {}
 void DisplayTrack::query (double t)
 {
     track->query (t, vquery);
+}
+
+void DisplayTrack::query_elixir (double t)
+{
+    track->query_elixir (t, vquery);
 }
 
 
@@ -661,8 +678,14 @@ void DisplayTrack::display ()
     if (draw_query)
     {
 	for (unsigned i = 0; i < vquery.size(); i++)
+	{
+	    if (draw_query_alive && !vquery[i].is_alive)
+		continue;
+	    if (draw_query_original && vquery[i].is_born)
+		continue;
 	    __draw_critical_query (vquery[i], query_scale, query_mult,
 				   query_cur_pos, query_death);
+	}
     }
 
     if (draw_lines)

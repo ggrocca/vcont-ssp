@@ -2,6 +2,7 @@
 #define _MESH_HH
 
 #include "genericlimits.hh"
+#include "debug.h"
 
 #define IGL_HEADER_ONLY
 #include <igl/read.h>
@@ -180,6 +181,9 @@ public:
 	igl::read (meshFile,V,F);
 	igl::adjacency_list (F, VV);
 	igl::edges (F, E);
+
+	printf ("created mesh. V(%zu) F(%zu) E (%zu) VV (%zu)\n",
+		V.rows(), F.rows(), E.rows(), VV.size());
     }
 
     int size ()
@@ -187,6 +191,12 @@ public:
 	return VV.size();
     }
 
+    void print_info (int label)
+    {
+	printf ("[[%3d]]V(%zu) F(%zu) E (%zu) VV (%zu)\n",
+		label, V.rows(), F.rows(), E.rows(), VV.size());
+    }
+    
     // Vertex vertex (int idx)
     // {
     // 	return Vertex (*this, idx);
@@ -197,13 +207,22 @@ public:
 	return Point3D (V(idx, 0), V(idx, 1), V(idx, 2));
     }
 
-    int neighborhood (int idx, std::vector<int> vn)
+    int neighborhood (int idx, std::vector<int>& vn)
     {
 	vn.clear();
 	for (unsigned int i = 0; i < VV[idx].size(); i++)
 	    vn.push_back (VV[idx][i]);
+	
+	assert (vn.size() > (unsigned)0);
+	
+	return vn.size ();
     }
 
+    int neighborhood_size (int idx)
+    {
+	return VV[idx].size();
+    }
+    
     int neighbor_index (int idx, int idx_neigh)
     {
 	for (unsigned int i = 0; i < VV[idx].size(); i++)
@@ -213,7 +232,7 @@ public:
 	return -1;
     }
 
-    void edges (std::vector< std::vector<int> > edges)
+    void edges (std::vector< std::vector<int> >& edges)
     {
 	edges.clear ();
 	for (int i = 0; i < E.rows(); i++)
@@ -236,53 +255,51 @@ template <class T> class Field
 public:
 
     Mesh& mesh;
-    int size;
     std::vector<T> data;
 
-    Field (Mesh& mesh)
-	: mesh (mesh), size (mesh.size()), data () {}
+    Field (Mesh& m)
+	: mesh (m), data (m.size()) {}
 
-    Field (Mesh& mesh, T t)
-	: mesh (mesh), size (mesh.size()), data ()
+    Field (Mesh& m, T t)
+	: mesh (m), data (m.size())
     {
-	if (size < 0)
-	    eprintx (-1, "Negative dimension, %d.\n", size);
+	// if (size < 0)
+	//     eprintx (-1, "Negative dimension, %d.\n", size);
 
-        data.resize(size);
+        // data.resize(size);
 
-        for(int i = 0; i < size; ++i)
+        for(unsigned i = 0; i < size(); ++i)
 	    data[i] = t;
 	//operator () (i,j) = t;
     }
 
     T& operator() (int idx)
     {
-	if (idx >= data.size())
-	    eprintx (-1, "Impossible idx, %d (data length %d)\n", idx, data.size());
+	if (idx >= (int) data.size())
+	    eprintx (-1, "Impossible idx, %d (data length %zu)\n", idx, data.size());
 
 	return data[idx];
     }
 
     T& operator[] (int idx)
     {
-	if (idx >= data.size())
-	    eprintx (-1, "Impossible idx, %d (data length %d)\n", idx, data.size());
+	if (idx >= (int) data.size())
+	    eprintx (-1, "Impossible idx, %d (data length %zu)\n", idx, data.size());
 
 	return data[idx];
     }
 
-    // unsigned size ()
-    // {
-    //     return data.size();
-    // }
-
-    void resize (int _size)
+    unsigned size ()
     {
-	if (_size < 0)
-	    eprintx (-1, "Negative dimension %d.\n", _size);
+        return data.size();
+    }
 
-        data.resize(_size);
-        size = _size;
+    void resize (int sz)
+    {
+	if (sz < 0)
+	    eprintx (-1, "Negative dimension %d.\n", sz);
+
+        data.resize(sz);
     }
 
 };

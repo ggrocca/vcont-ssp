@@ -479,7 +479,7 @@ void Track::get_relative_drop (Dem *d)
 {
     for (unsigned i = 0; i < lines.size(); i++)
     {
-	if (lines[i].is_original () && lines[i].type == MAX)
+	if (lines[i].is_original () && (lines[i].type == MAX || lines[i].type == MIN))
 	{
 	    double drop;
 	    CriticalPoint cp = CriticalPoint (lines[i].entries[0].c, lines[i].type);
@@ -720,6 +720,40 @@ void Track::query (double t, std::vector<TrackRenderingEntry>& v, bool verbose)
     if (verbose)
 	tprintp ("!!!", "Found %zu criticals\n", v.size());
 }
+
+void Track::query_elixir (double t, std::vector<TrackRenderingEntry>& v, bool verbose)
+{
+    TrackRenderingEntry r;
+
+    v.resize (0);
+    for (unsigned i = 0; i < lines.size(); i++)
+    {
+	lines[i].mark = false;
+	int j = lines[i].get_entry (t);
+	if (lifetime_elixir (i) >= t)
+	{
+	    if (j == -1)
+		j = lines[i].entries.size () - 1;
+	    
+	    r.type = lines[i].get_type(j);
+	    r.tc = lines[i].entries[j].c;
+	    r.oc = lines[i].entries[0].c;
+	    r.idx = j;
+	    // r.tol = lines[i].lifetime();
+	    r.tol = lifetime(i);
+	    r.tob = lines[i].entries[0].t;
+	    r.is_born = lines[i].is_born ();
+	    r.is_alive = lines[i].is_alive ();
+	    Point p = final_point(i);
+	    r.fx = p.x; r.fy = p.y;
+	    v.push_back (r);
+	    lines[i].mark = true;
+	}
+    }
+    if (verbose)
+	tprintp ("!!!", "Found %zu criticals\n", v.size());
+}
+
 
 // void TrackOrder::assign (Track* tr)
 // {

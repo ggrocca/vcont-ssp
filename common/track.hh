@@ -112,7 +112,8 @@ public:
     void write (FILE *f);
     
     void query (double t, std::vector<TrackRenderingEntry>& v, bool verbose = true);
-
+    void query_elixir (double t, std::vector<TrackRenderingEntry>& v, bool verbose = true);
+    
     void drink_elixir ();
     void normalize_border_points ();
     void get_strength (Dem* d);

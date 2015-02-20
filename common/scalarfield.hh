@@ -20,6 +20,7 @@ public:
     ScalarField (ScalarField& sc);
     ScalarField (Mesh& mesh, FILE* fp);
 
+    unsigned size ();
     void write (FILE* fp);
     double& operator() (int v);
     double& operator[] (int v);

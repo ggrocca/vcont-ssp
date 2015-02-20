@@ -226,7 +226,7 @@ public:
 	std::vector<Coord> ac;
 	neigh_6 (ac);
 
-	for (int i = 0; i < ac.size(); i++)
+	for (unsigned i = 0; i < ac.size(); i++)
 	    lc.push_back (ac[i]);
 	
     	// lc.push_back (Coord (x, y+1));
@@ -259,7 +259,7 @@ public:
 	std::vector<Coord> ac;
 	neigh_8 (ac);
 
-	for (int i = 0; i < ac.size(); i++)
+	for (unsigned i = 0; i < ac.size(); i++)
 	    lc.push_back (ac[i]);
     }
     

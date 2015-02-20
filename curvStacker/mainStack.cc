@@ -19,7 +19,7 @@ void print_help ()
 	     "[-U] (Only if launched with -D option): print a single .ssp file instead of multiple .dem files\n"
 	     "[-c mapfile] : write map of curvature signs\n"
 	     "[-z heightFile] : write vertex heights on a file\n"
-	     "[-R radius] : radius to compute (dem output)"
+	     "[-R radius] : radius to compute (dem output)\n"
 	     "[-B baseRad] : base radius to compute (ssp output)\n"
 	     "[-M maxRad] : max radius to compute (ssp output)\n"
 	     "[-S stepRad] : step to increase radius (ssp output)\n"
@@ -42,24 +42,28 @@ double step = 2.0;
 bool expStep = false;
 bool do_topoindex = true;
 unsigned int skip = 2;
-string * meshFile = NULL;
-string * pngFile = NULL;
-string * sspFile = NULL;
-string * demFile = NULL;
 bool grid = false;
 int grid_width = 0;
 int grid_height = 0;
 double curvMultFactor = 0.0;
-string * mapFile = NULL;
-string * heightFile = NULL;
 int cellSize = 25;
 double lowestRandomValue = 0.0;
-vector<string> meshNames;
 int meshNumb = 0;
 bool separateDems = true;
 int fastComputation=0;
+
+// input 
+string * meshFile = NULL;
+string * pngFile = NULL;
+// output
+string * sspFile = NULL;
+string * demFile = NULL;
 string * curvFile = NULL;
 
+// not sure, but probably not mandatory
+string * mapFile = NULL;
+string * heightFile = NULL;
+vector<string> meshNames;
 
 void app_init(int argc, char *argv[])
 {
@@ -172,13 +176,22 @@ void app_init(int argc, char *argv[])
         }	
     }
 
-    if ((sspFile == NULL && demFile == NULL) ||
-	(sspFile != NULL && demFile != NULL))
-	goto die;
+    if (curvFile && meshFile)
+	return;
+    else if (demFile && (meshFile || pngFile))
+	return;
+    else if (sspFile && (meshFile || pngFile))
+	return;
+    else
+	goto die;	
+    
+    // if ((sspFile == NULL && demFile == NULL) ||
+    // 	(sspFile != NULL && demFile != NULL))
+    // 	goto die;
      
-    if ((meshFile == NULL && pngFile == NULL && meshNumb == 0) ||
-	(meshFile != NULL && pngFile != NULL))
-	goto die;
+    // if ((meshFile == NULL && pngFile == NULL && meshNumb == 0) ||
+    // 	(meshFile != NULL && pngFile != NULL))
+    // 	goto die;
 
     return;
 
@@ -209,7 +222,7 @@ int main(int argc, char* argv[])
 
   if (curvFile)
     {
-      	  s.computeTextualCurvature(*meshFile, *sspFile);
+      	  s.computeTextualCurvature(*meshFile, *curvFile);
     }
    
   if (demFile)

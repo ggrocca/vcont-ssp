@@ -37,6 +37,7 @@ public:
 
     void display ();
     void query (double t);
+    void query_elixir (double t);
 
     bool draw_track;
     double track_mult;
@@ -45,6 +46,8 @@ public:
     // double scale_criticals;
     // double life_multiplier;
     bool draw_query;
+    bool draw_query_alive;
+    bool draw_query_original;
     double query_mult;
     double query_scale;
     bool query_cur_pos;

@@ -214,10 +214,13 @@ void app_init(int argc, char *argv[])
 
 int main (int argc, char *argv[])
 {
+    printf ("boh\n");
     app_init (argc, argv);
 
+    printf ("boh\n");
     data_m = new DataManager (path, org);
     
+    printf ("boh\n");
     if (_TRACE_TEST && SCOPE_BOUNDINGBOX)
     {
 	BoundingBox lbb,wbb;
@@ -242,14 +245,15 @@ int main (int argc, char *argv[])
 	}
 
     }
+    printf ("boh\n");
 
     string exename = get_base (argv[0]);
 
+    printf ("prebb\n");
     BoundingBox bb = data_m->getbb ();
 
+    printf ("postbb\n");
     tprints (SCOPE_BOUNDINGBOX, "FINAL BB: (%lf, %lf), (%lf, %lf)\n", bb.a.x, bb.a.y, bb.b.x, bb.b.y);
-
-    camera.set (W, H, bb);
 
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
@@ -259,6 +263,10 @@ int main (int argc, char *argv[])
     TwInit(TW_OPENGL, NULL);
     TwWindowSize(W, H);
     TwHandleErrors(BreakOnError);
+
+    printf ("camerapre\n");
+    camera.set (W, H, bb);
+    printf ("camerapost\n");
 
     disp_m = new DisplayManager (data_m);
     disp_m->set_viewport (W, H);

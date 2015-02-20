@@ -8,14 +8,14 @@ Map_M::Map_M (Mesh& mesh) : Field<MapEntry_M> (mesh) {}
 
 Map_M::Map_M (Map_M& map) : Field<MapEntry_M> (mesh)
 {
-    for (int i = 0; i < size; i++)
+    for (unsigned i = 0; i < size(); i++)
 	(*this)[i] = map[i];
 }
 
 Map_M::Map_M (ScalarField& sc, std::vector<TrackLine_M>& lines)
-    : Field<MapEntry_M> (mesh)
+    : Field<MapEntry_M> (sc.mesh)
 {
-    for (int i = 0; i < size; i++)
+    for (unsigned i = 0; i < size(); i++)
     {
 	std::vector<int> vn;
 	mesh.neighborhood (i, vn);
@@ -101,7 +101,7 @@ CriticalType Map_M::point_type (int v)
 	point_type_step (current, &previous, &changes);
     }
 
-    return point_type_analyze (first, changes, v);
+    return point_type_analyze (first, changes, v, point_relation_num (v));
 }
 
 CriticalPair Map_M::pair(Edge_M e)
@@ -154,7 +154,7 @@ void Map_M::update_relations (ScalarField* sc, int v)
     std::vector<int> vn;
     mesh.neighborhood (v, vn);
 
-    if (vn.size() != point_relation_num (v))
+    if ((int) vn.size() != point_relation_num (v))
 	
     
     for (int i = 0; i < point_relation_num (v); i++)
@@ -209,7 +209,7 @@ void Flipper_M::track (SurfaceScaleSpace& ss, Track_M* track)
 
     process_flips_all_m (flip, track, ss, ts);
 
-    track->size = ss.fields[0]->size;
+    track->size = ss.fields[0]->size();
 }
 
 
@@ -248,7 +248,7 @@ void create_flips_m (ScalarField* b, ScalarField* n, std::vector<Flip_M>& fs)
     std::vector< std::vector<int> > edges;
     b->mesh.edges (edges);
     
-    for (int i = 0; i < edges.size(); i++)
+    for (unsigned i = 0; i < edges.size(); i++)
     {
 	Edge_M e;
 	e = Edge_M (edges[i][0], edges[i][1]);
@@ -282,7 +282,9 @@ void process_flips_all_m (std::vector< std::vector<Flip_M> >& flips,
 			  SurfaceScaleSpace& ss,
 			  TrackString& ts)
 {
+    //-- ss.fields[0]->mesh.print_info (1);
     init_critical_lines_m (ss.criticals[0], track->lines);
+    //-- ss.fields[0]->mesh.print_info (2);
 
     Map_M* map = NULL;
     // Map* oldmap;
@@ -290,8 +292,11 @@ void process_flips_all_m (std::vector< std::vector<Flip_M> >& flips,
     for (unsigned i = 0; i < flips.size(); i++)
     {
 	// oldmap = (map)? map : NULL;
+	//-- ss.fields[0]->mesh.print_info ((3*100)+(i*10)+1);
 
 	map = new Map_M (*(ss.fields[i]), track->lines);
+
+	//-- ss.fields[0]->mesh.print_info ((3*100)+(i*10)+2);
 
 	// tprint ("begin_ check map, level %d\n", i);
 
@@ -308,7 +313,11 @@ void process_flips_all_m (std::vector< std::vector<Flip_M> >& flips,
 
 	// tprint ("end_ check map, level %d\n", i);
 
+	//-- ss.fields[0]->mesh.print_info ((3*100)+(i*10)+4);
+
     	process_flips_m (flips[i], map, track->lines, i, ts);
+
+	//-- ss.fields[0]->mesh.print_info ((3*100)+(i*10)+5);
 
 	track->time_of_life = (double) i + 1;
 	

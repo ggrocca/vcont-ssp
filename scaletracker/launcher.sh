@@ -92,9 +92,9 @@ if [ $DATASET == "aletsch_terr" ]; then
     		  -a -n 15 -p 0.01 0 $DROPOPT \
     		  > ../../datasets/aletsch/aletsch_terr.out.txt \
     		  2> ../../datasets/aletsch/aletsch_terr.err.txt
-    ../util/track2csv/track2csv -a ../../datasets/dhm25/aletsch.asc \
-				-t ../../datasets/dhm25/aletsch_terr.trk \
-				-o ../../datasets/dhm25/aletsch_terr.trk.csv \
+    ../util/track2csv/track2csv -a ../../datasets/aletsch/aletsch.asc \
+				-t ../../datasets/aletsch/aletsch_terr.trk \
+				-o ../../datasets/aletsch/aletsch_terr.trk.csv
     set +x
 fi
 

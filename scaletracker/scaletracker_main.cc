@@ -280,7 +280,7 @@ void app_init(int argc, char *argv[])
 
     if (meshfile)
     {
-	if (numlevel < 2 || numlevel != curvfiles.size())
+	if (numlevel < 2 || numlevel != (int) curvfiles.size())
 	{
 	    fprintf (stderr, "Number of levels must be 2 or higher, "
 		     "and be the same as the number of curvature files.\n");
@@ -326,18 +326,23 @@ void main_mesh ()
     for (int i = 0; i < numlevel; i++)
 	scfs.push_back (new ScalarField (*mesh, curvfiles[i]));
 
+    // mesh->print_info (1);
     SurfaceScaleSpace* sssp = new SurfaceScaleSpace (scfs);
+    // mesh->print_info (2);
 
     if (scalespace_write_name)
 	sssp->write_scalespace (scalespace_write_name);
+    // mesh->print_info (3);
         
     if (check_plateaus)
 	for (int i = 0; i < sssp->levels; i++)
 	    if (sssp->fields[i]->has_plateaus())
 		eprintx (-1, "scalespace has flat areas. level %d\n", i);
+    // mesh->print_info (4);
 
     for (int i = 0; i < sssp->levels; i++)
     {
+	// mesh->print_info ((5 * 10) + i);
 	int num_max, num_min, num_sad;
 	num_max = num_min = num_sad = 0;
 	for (unsigned j = 0; j < sssp->criticals[i].size(); j++)
@@ -359,12 +364,17 @@ void main_mesh ()
 		num_max + num_min - num_sad);
     }
 
+    // mesh->print_info (6);
     if (critical_name)
 	sssp->write_critical (critical_name);
+    // mesh->print_info (7);
     
     Flipper_M* flipper = new Flipper_M (*sssp);
     Track_M* track = new Track_M ();
+    // mesh->print_info (8);
+
     flipper->track (*sssp, track);
+    // mesh->print_info (9);
 
     track->get_strength (sssp->fields[0]);
 

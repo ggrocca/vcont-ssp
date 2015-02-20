@@ -88,7 +88,7 @@ static inline CriticalType point_type_analyze (RelationType first,
 
 static inline CriticalType point_type_analyze (RelationType first,
 					       int changes,
-					       int v)
+					       int v, int nbsize)
 {
     if (changes == 0 && first == GT)
 	return MAX;
@@ -119,7 +119,8 @@ static inline CriticalType point_type_analyze (RelationType first,
     if (changes == 3)
 	return SA3;
 
-    eprintx (-1, "Unexpected monkey saddle (%d changes) - at vertex %d\n", changes, v);
+    eprintx (-1, "Unexpected monkey saddle (%d changes) - at vertex %d - nbsz(%d)\n",
+	     changes, v, nbsize);
 
     return SA3;
 }

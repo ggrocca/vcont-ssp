@@ -23,6 +23,11 @@ public:
     {
 	return (z < rhs.z);
     }
+
+    bool operator>(const DropCell& rhs) const
+    {
+	return (z > rhs.z);
+    }
 };
 
 class Averhood {
@@ -169,6 +174,8 @@ private:
     // 			    std::vector < std::vector <Coord> >& plateaus_list);
     bool _iterative_label (Grid<int>* idplats, Coord c, unsigned label,
 			   std::vector < std::vector <Coord> >& plateaus_list);
+    void relative_drop_max (CriticalPoint cp, double* drop);
+    void relative_drop_min (CriticalPoint cp, double* drop);
 };
 
 #endif // _DEM_HH

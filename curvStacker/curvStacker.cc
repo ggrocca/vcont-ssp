@@ -460,7 +460,7 @@ void curvStacker::computeTextualCurvature(string meshFile,string outFile)
   for (double r=base_radius; r<=max_radius; isExpStep?r*=step:r+=step)
     {
       std::ostringstream strs;
-      strs << r;
+      strs << std::setw(3) << std::setfill('0') << r;
       std::string str = strs.str();
       cerr << "Starting computing radius " << r << endl;
       c.sphereRadius=r;
@@ -469,7 +469,7 @@ void curvStacker::computeTextualCurvature(string meshFile,string outFile)
       else
 	c.computeCurvature(do_topoindex,fast_computation);
       cerr << "Computed radius " << r << endl;
-      c.printCurvature(outFile+"_"+str);
+      c.printCurvature(outFile+"_"+str+".curv");
     }
  
 }

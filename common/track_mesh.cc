@@ -233,6 +233,7 @@ void Track_M::drink_elixir ()
 }
 void Track_M::get_strength (ScalarField* d)
 {
+    (void) d;    
     for (unsigned i = 0; i < lines.size(); i++)
     {
 	lines[i].strength = 0.0;
@@ -242,6 +243,7 @@ void Track_M::get_strength (ScalarField* d)
 
 void Track_M::get_relative_drop (ScalarField* d)
 {
+    (void) d;
     for (unsigned i = 0; i < lines.size(); i++)
     {
 	lines[i].strength = 0.0;

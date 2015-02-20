@@ -16,7 +16,9 @@ ScalarField::ScalarField (Mesh& mesh, const char*curvfile) : Field<double> (mesh
 	double kv1, kv2;
 	Point3D kd1, kd2;
 
-	fscanf (fp, "%lf lf lf lf lf lf lf lf ", &kv1, &kv2,
+	fscanf (fp, "%lf %lf "
+		"%lf %lf %lf "
+		"%lf %lf %lf ", &kv1, &kv2,
 		&kd1.x, &kd1.y, &kd1.z,
 		&kd2.x, &kd2.y, &kd2.z);
 
@@ -27,7 +29,7 @@ ScalarField::ScalarField (Mesh& mesh, const char*curvfile) : Field<double> (mesh
 
 ScalarField::ScalarField (ScalarField& sc) : Field<double> (sc.mesh), max (sc.max), min (sc.min)
 {
-    for (int i = 0; i < sc.size; i++)
+    for (unsigned i = 0; i < sc.size(); i++)
 	(*this)(i) = sc (i);
 }
 
@@ -54,10 +56,17 @@ ScalarField::ScalarField (Mesh& mesh, FILE* fp) : Field<double> (mesh) // binary
     
     tprints (SCOPE_IO, "min: %le, max:%le\n", min, max);
 }
-   
+
+unsigned ScalarField::size ()
+{
+    return data.size();
+}
+
+
 void ScalarField::write (FILE* fp)
 {
-    fwrite (&size, sizeof (int), 1, fp);
+    int sz = size();
+    fwrite (&sz, sizeof (int), 1, fp);
     fwrite (&(data[0]), sizeof (double), data.size(), fp);
 }
 
@@ -86,7 +95,7 @@ bool ScalarField::is_equal (int a, int b)
 
 bool ScalarField::has_plateaus ()
 {
-    for (int i = 0; i < size; i++)
+    for (unsigned i = 0; i < size(); i++)
     {
 	std::vector<int> vn;
 	mesh.neighborhood (i, vn);
@@ -131,6 +140,9 @@ CriticalType ScalarField::point_type (int v)
     std::vector<int> vn;
     mesh.neighborhood (v, vn);
 
+    // fprintf (stderr, "!!!!!! %zu -- v: %d V(%zu) VV(%zu)\n",
+    // 	     vn.size(), v, mesh.V.size(), mesh.VV.size());
+    
     first = previous = point_relation (v, vn[vn.size()-1]);
     
     for (unsigned i = 0; i < vn.size(); i++)
@@ -139,7 +151,7 @@ CriticalType ScalarField::point_type (int v)
 	point_type_step (current, &previous, &changes);
     }
 
-    CriticalType r = point_type_analyze (first, changes, v);
+    CriticalType r = point_type_analyze (first, changes, v, vn.size());
 
     return r;
 }
@@ -153,7 +165,13 @@ void scan_critical_vertices (ScalarField* f, std::vector<CriticalVertex>& cps)
 {
     cps.clear();
 
-    for (int i = 0; i < f->size; i++)
+    int nbmax = 0;
+    for (unsigned i = 0; i < f->size(); i++)
+	if (f->mesh.neighborhood_size (i) > nbmax)
+	    nbmax = f->mesh.neighborhood_size (i);
+   printf ("max neighborhood_size: %d\n", nbmax);
+    
+    for (unsigned i = 0; i < f->size(); i++)
 	{
 	    CriticalType ct;
 
@@ -169,6 +187,8 @@ void scan_critical_vertices (ScalarField* f, std::vector<CriticalVertex>& cps)
 
 SurfaceScaleSpace::SurfaceScaleSpace (std::vector<ScalarField*> scfs)
 {
+    levels = scfs.size ();
+    
     fields = std::vector<ScalarField*>(levels);
     for (int i = 0; i < levels; i++)
 	fields[i] = scfs[i];
