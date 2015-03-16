@@ -33,7 +33,7 @@ class curvStacker
 
   int grid_width, grid_height, grid_cell_size;  
 
-  curvStacker(double,double,double,bool,int,string*,string*,int);
+  curvStacker(double,double,double,bool,int,string*,string*,int,double);
   void executeOnMesh(string,string);
   void executeOnPNG(string,string);
   void executeOnMultipleMeshes(vector<string>,string, bool);
@@ -48,4 +48,6 @@ class curvStacker
   double curvMultFactor;  
   double lowestRandomValue;
   bool do_topoindex;  
+  bool shapeIndex;
+  string * shapeFile=NULL;
 };

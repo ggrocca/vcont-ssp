@@ -594,9 +594,9 @@ void init_inspector_mode ()
 
     td.elixir_mult = td.importance_mult = 0.0;
     TwAddVarRW(cBar, "life mult", TW_TYPE_DOUBLE, &(td.elixir_mult),
-    	       "min=0.0 max=1.0 step=0.05");
+    	       "min=0.0 step=0.05");
     TwAddVarRW(cBar, "importance mult", TW_TYPE_DOUBLE, &(td.importance_mult),
-    	       "min=0.0 max=1.0 step=0.05");
+    	       "min=0.0 step=0.05");
     TwAddSeparator (cBar, 0, 0);
 
     td.inspector_maxima = true;

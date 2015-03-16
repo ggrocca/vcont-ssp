@@ -48,7 +48,7 @@ do
 	n_m=$(($chunks-$((i*a))))
     fi
 
-    echo "./curvStacker -D $n_m ${meshes[@]:0+$((i*a)):$a} -d ${!argsN} -G 437 659 -C 25 -O 2 -c map -L -200000 -t &"
+    echo "./curvStacker -D $n_m ${meshes[@]:0+$((i*a)):$a} -d ${!argsN} -G 365 510 -C 30 -O 2 -c map$i -z height$i -L -200000 -t &"
     ./curvStacker -D $n_m ${meshes[@]:0+$((i*a)):$a} -d ${!argsN} -G 365 510 -C 30 -O 2 -c map$i -z height$i -L -200000 -t &
  done
 

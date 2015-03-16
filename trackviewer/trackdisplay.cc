@@ -1,4 +1,7 @@
 #include "trackdisplay.hh"
+#include "CImg.h"
+
+using namespace cimg_library;
 
 double white[3] =   {1.0,1.0,1.0};
 double black[3] =   {0.0,0.0,0.0};
@@ -11,10 +14,12 @@ double magenta[3] = {1.0,0.0,1.0};
 
 int signs_w , signs_h;
 int height_w , height_h;
+int shape_w , shape_h;
 int val_w , val_h;
 Grid<char> signs;
 Grid<double> heights;
 Grid<unsigned int> vals;
+vector<Grid<double> > shapeIndices;
 double max_h;
 
 // Scale colore se ne trovano tante in giro, una che di solito
@@ -52,18 +57,25 @@ int TrackDisplay::searchNoseTip()
 	continue;
       double dist=fabs(track->width/2-track->lines[spots_maxima[i].crit].entries[0].c.x);
       double dist_y=fabs(track->height/2-track->lines[spots_maxima[i].crit].entries[0].c.y);
-      if (life < track->time_of_life*0 || dist>track->width*0.1 || dist_y>track->height*0.3 || heights(track->lines[spots_maxima[i].crit].entries[0].c)<(max_h*0.99))
-	continue;
+      if (dist_y>track->height*0.1)// || heights(track->lines[spots_maxima[i].crit].entries[0].c)<(max_h*0.99))
+       	continue;
       //if (t_scale > scale && (pow(life,10)*imp)-(pow(1000,dist)+pow(100,dist_y))>thresh)
-      if (t_scale*imp*life>thresh)
-	{
-	  // thresh=(pow(life,10)*imp)-(pow(2,dist)+pow(2,dist_y));
-	  cand=i;
-	  thresh=t_scale*life*imp;
-	  //scale=t_scale;
-	}
+      // if (t_scale*imp*life>thresh)
+      // 	{
+      // 	  // thresh=(pow(life,10)*imp)-(pow(2,dist)+pow(2,dist_y));
+      // 	  cand=i;
+      // 	  thresh=t_scale*life*imp;
+      // 	  //scale=t_scale;
+      // 	}
       //		spots_fiducial.push_back(CritNikolas(spots_maxima[i].crit,spots_maxima[i].elix, track->lines[spots_maxima[i].crit].strength,track->lines[spots_maxima[i].crit].scale));
+      if (heights(track->lines[spots_maxima[i].crit].entries[0].c)>thresh)
+	{
+	  cand=i;
+	  thresh=heights(track->lines[spots_maxima[i].crit].entries[0].c);
+	}
+      
     }
+
   return cand;
 }
 
@@ -85,7 +97,7 @@ void TrackDisplay::searchNoseLimits(double x_nose, double y_nose, int& cand1, in
       double y=track->lines[spots_minima[i].crit].entries[0].c.y;
       double dist=fabs(x-x_nose);
       double dist_y=fabs(y-y_nose);
-      if (life < track->time_of_life*0 || dist>track->width*0.3 || dist_y>track->height*0.05 || x<=x_nose)
+      if (dist>track->width*0.2 || dist_y>track->height*0.05 || x<=x_nose)
 	continue;
       for (int j=0; j<spots_minima.size(); j++)
 	{
@@ -98,13 +110,15 @@ void TrackDisplay::searchNoseLimits(double x_nose, double y_nose, int& cand1, in
 	   double y2=track->lines[spots_minima[j].crit].entries[0].c.y;
 	   double dist2=fabs(x2-x_nose);
 	   double dist_y2=fabs(y2-y_nose);
-	   if (life < track->time_of_life*0 || dist2>track->width*0.3 || dist_y2>track->height*0.05 || x2>=x_nose)
+	   if (dist2>track->width*0.2 || dist_y2>track->height*0.05 || x2>=x_nose)
 	     continue;
 
-	   if (fabs(dist2-dist)<track->width*0.05 && fabs(y-y2) < track->height * 0.02  && min(life*1,life2*1)*dist2*dist > thresh)
-	     {
-	       thresh=min(life*imp,life2*imp2)*dist2*dist;
-	       cand1=i;
+	   //	   if (fabs(dist2-dist)<track->width*0.05 && fabs(y-y2) < track->height * 0.02  && min(life*1,life2*1)*dist2*dist > thresh)
+	   if (life*life2>thresh && fabs(y2-y)<10)  
+	   {
+	     //thresh=min(life*imp,life2*imp2)*dist2*dist;
+	     thresh=life*life2;
+	     cand1=i;
 	       cand2=j;
 	     }
      
@@ -113,13 +127,95 @@ void TrackDisplay::searchNoseLimits(double x_nose, double y_nose, int& cand1, in
 }
 
 
+void TrackDisplay::searchMouth(double x_nose,  double y_nose, int& cand1, int& cand2, int& cand3, int& cand4)
+{
+  double y_cand;
+  double thresh_l, thresh_r;
+  thresh_l=thresh_r=-DBL_MAX;
+  /* Prima cerco i due punti laterali */
+  for (int i=0; i<spots_maxima.size(); i++)
+    {
+	
+      double life= spots_maxima[i].elix;
+      double imp = track->lines[spots_maxima[i].crit].strength;
+      imp=(imp-min_imp)/(max_imp-min_imp)*track->time_of_life;
+      double t_scale= track->lines[spots_maxima[i].crit].scale;
+      //		if (isinf(imp))
+      //continue;
+      double x=track->lines[spots_maxima[i].crit].entries[0].c.x;
+      double y=track->lines[spots_maxima[i].crit].entries[0].c.y;
+      if (fabs(x-x_nose)<15 || y>y_nose || heights(x,y)<border_cut || y>y_nose-50 || y<track->height/6 || x>=x_nose) continue;
+
+      double x_half=track->width/2;
+      double y2=y;
+      double x2=x_half+(x_half-x);
+
+      for (int j=0; j<spots_maxima.size(); j++)
+	{
+	  if (i==j)
+	    continue;
+	   double life2= spots_maxima[j].elix;
+	   double imp2 = track->lines[spots_maxima[j].crit].strength;
+	   imp2=(imp2-min_imp)/(max_imp-min_imp)*track->time_of_life;
+	   double t_scale2 = track->lines[spots_maxima[j].crit].scale;
+	   //		if (isinf(imp))
+	   //continue;
+	   double x22=track->lines[spots_maxima[j].crit].entries[0].c.x;
+	   double y22=track->lines[spots_maxima[j].crit].entries[0].c.y;
+	   double dist2=fabs(x2-x_nose);
+	   if (fabs(x22-x_nose)<15 || y22>y_nose || heights(x22,y22)<border_cut || y22>y_nose-50  || y22<track->height/6 || x22<=x_nose) continue;
+	   double distance=sqrt(pow(x2-x22,2)+pow(y2-y22,2));
+	   if (distance<25)
+	     {
+	       if ((imp*imp2)>thresh_l && fabs(y-y22)<10)
+		 {
+		   thresh_l=imp*imp2;//life*life2;
+		   cand1=i;
+		   cand2=j;
+		   y_cand=y;
+		 }
+	     }	
+}
+    }
+  
+  double thresh_up, thresh_down;
+  thresh_up=thresh_down=-DBL_MAX;
+  /* Ora cerco i centrali */
+  for (int i=0; i<spots_maxima.size(); i++)
+    {
+      double life= spots_maxima[i].elix;
+      double imp = track->lines[spots_maxima[i].crit].strength;
+      double t_scale= track->lines[spots_maxima[i].crit].scale;
+      //		if (isinf(imp))
+      //continue;
+      double x=track->lines[spots_maxima[i].crit].entries[0].c.x;
+      double y=track->lines[spots_maxima[i].crit].entries[0].c.y;
+      if (fabs(x-x_nose)>25 || y>y_nose || heights(x,y)<border_cut || y>y_nose-20) continue;
+      
+      double val=imp*life;
+      if (life>thresh_up && y>y_cand)
+	{
+	  cand3=i;
+	  thresh_up = imp*life;
+	}
+      else if (life>thresh_down && y<y_cand && y>y_cand-50)
+	{
+	  cand4=i;
+	  thresh_down = imp*life;
+	}
+
+    }
+}
+
+
 // void TrackDisplay::bestFitVertical(double x_nose, double y_nose, double x_root, double y_root, double x_under, double y_nose)
 // {
 // }
 
-void TrackDisplay::searchEyesOuterAngles(double x_nose, double y_nose, int& cand1, int& cand2)
+void TrackDisplay::searchEyesAngles(double x_nose, double y_nose, int& cand1, int& cand2, int& cand3, int& cand4)
 {
   double thresh=-DBL_MAX;
+  double thresh2=-DBL_MAX;
   double scale= -DBL_MAX;
   double soft = DBL_MAX;
   int cand=-1;
@@ -135,34 +231,157 @@ void TrackDisplay::searchEyesOuterAngles(double x_nose, double y_nose, int& cand
       double y=track->lines[spots_maxima[i].crit].entries[0].c.y;
       double dist=fabs(x-x_nose);
       double dist_y=fabs(y-y_nose);
-      if (life < track->time_of_life*0.7 || dist_y>track->height*0.01 || x<=x_nose)
+      if (life < track->time_of_life*0.95 ||  x<=x_nose || y<=y_nose) 
 	continue;
+      double x_half=track->width/2;
+      double y2=y;
+      double x2=x_half+(x_half-x);
+
+
       for (int j=0; j<spots_maxima.size(); j++)
 	{
+	  if (i==j)
+	    continue;
 	   double life2= spots_maxima[j].elix;
 	   double imp2 = track->lines[spots_maxima[j].crit].strength;
 	   double t_scale2 = track->lines[spots_maxima[j].crit].scale;
 	   //		if (isinf(imp))
 	   //continue;
-	   double x2=track->lines[spots_maxima[j].crit].entries[0].c.x;
-	   double y2=track->lines[spots_maxima[j].crit].entries[0].c.y;
+	   double x22=track->lines[spots_maxima[j].crit].entries[0].c.x;
+	   double y22=track->lines[spots_maxima[j].crit].entries[0].c.y;
 	   double dist2=fabs(x2-x_nose);
 	   double dist_y2=fabs(y2-y_nose);
-	   if (life < track->time_of_life*0.7 || dist_y2>track->height*0.01 || x2>=x_nose)
+	   if (life < track->time_of_life*0.95 || x2>=x_nose  || y2<=y_nose)
 	     continue;
-
-	   if (fabs(dist2-dist)<track->width*0.05 && fabs(y-y2) < track->height * 0.02  && min(life*imp,life2*imp2)/**dist2*dist*/ > thresh)
+	   double distance=sqrt(pow(x2-x22,2)+pow(y2-y22,2));
+	   if (distance<25)
 	     {
-	       thresh=min(life*imp,life2*imp2);//*dist2*dist;
-	       cand1=i;
-	       cand2=j;
+		    if (/*min(life_left,life_right)>0.7*max(life_left,life_right) && */(heights(x22,y22)>border_cut-1000)) /*&& min(strength_left,strength_right)>0.7*max(strength_left,strength_right)*/
+		      {
+			if (imp*imp2>thresh)
+			  {
+			    thresh=imp*imp2;
+			    //thresh=distance;
+			    cand1=i;
+			    cand2=j;
+			  }
+		      }
 	     }
-     
+	}
+    }
+ 
+  /*Devo capire se ho preso gli esterni o gli interni... */
+  isInner=abs(track->lines[spots_maxima[cand1].crit].entries[0].c.x-track->lines[spots_maxima[cand2].crit].entries[0].c.x)<track->width/3;
+  thresh=-DBL_MAX;
+    for (int i=0; i<spots_maxima.size(); i++)
+    {
+      if (i==cand1) continue;
+      double life= spots_maxima[i].elix;
+      double imp = track->lines[spots_maxima[i].crit].strength;
+      double t_scale= track->lines[spots_maxima[i].crit].scale;
+      //		if (isinf(imp))
+      //continue;
+      double x=track->lines[spots_maxima[i].crit].entries[0].c.x;
+      double y=track->lines[spots_maxima[i].crit].entries[0].c.y;
+      double dist=fabs(x-x_nose);
+      double dist_y=fabs(y-y_nose);
+      if (/*life < track->time_of_life*0 || */ x<=x_nose || (!isInner &&x>=track->lines[spots_maxima[cand1].crit].entries[0].c.x) || (isInner &&x<=track->lines[spots_maxima[cand1].crit].entries[0].c.x) || fabs(y-track->lines[spots_maxima[cand1].crit].entries[0].c.y)>55)
+	continue;
+      double x_half=track->width/2;
+      double y2=y;
+      double x2=x_half+(x_half-x);
+
+
+      for (int j=0; j<spots_maxima.size(); j++)
+	{
+	  if (i==j || j==cand2)
+	    continue;
+	   double life2= spots_maxima[j].elix;
+	   double imp2 = track->lines[spots_maxima[j].crit].strength;
+	   double t_scale2 = track->lines[spots_maxima[j].crit].scale;
+	   //		if (isinf(imp))
+	   //continue;
+	   double x22=track->lines[spots_maxima[j].crit].entries[0].c.x;
+	   double y22=track->lines[spots_maxima[j].crit].entries[0].c.y;
+	   double dist2=fabs(x2-x_nose);
+	   double dist_y2=fabs(y2-y_nose);
+
+	   if (/*life < track->time_of_life*0 || */ x22>=x_nose || (!isInner &&x22<=track->lines[spots_maxima[cand2].crit].entries[0].c.x) || (isInner &&x22>=track->lines[spots_maxima[cand2].crit].entries[0].c.x) || fabs(y22-track->lines[spots_maxima[cand2].crit].entries[0].c.y)>55)
+	     continue;
+	   double distance=sqrt(pow(x2-x22,2)+pow(y2-y22,2));
+	   if (distance<25)
+	     {
+		    if (/*min(life_left,life_right)>0.7*max(life_left,life_right) && */(heights(x22,y22)>border_cut-1000)) /*&& min(strength_left,strength_right)>0.7*max(strength_left,strength_right)*/
+		      {
+			if (imp*imp2>thresh)
+			  {
+			    thresh=imp*imp2;
+			    //thresh=distance;
+			    cand3=i;
+			    cand4=j;
+			  }
+		      }
+	     }
 	}
     }
 }
 
 
+void TrackDisplay::searchEyebrows(double y_lower, int& cand1, int& cand2)
+{
+  double thresh=-DBL_MAX;
+    for (int i=0; i<spots_maxima.size(); i++)
+    {
+	
+      double life= spots_maxima[i].elix;
+      double imp = track->lines[spots_maxima[i].crit].strength;
+      double t_scale= track->lines[spots_maxima[i].crit].scale;
+      //		if (isinf(imp))
+      //continue;
+      double x=track->lines[spots_maxima[i].crit].entries[0].c.x;
+      double y=track->lines[spots_maxima[i].crit].entries[0].c.y;
+      double dist_y=fabs(y-y_lower);
+      if (y<=y_lower) 
+	continue;
+      double x_half=track->width/2;
+      double y2=y;
+      double x2=x_half+(x_half-x);
+      if (x>x_half) continue;
+
+      for (int j=0; j<spots_maxima.size(); j++)
+	{
+	  if (i==j)
+	    continue;
+	   double life2= spots_maxima[j].elix;
+	   double imp2 = track->lines[spots_maxima[j].crit].strength;
+	   double t_scale2 = track->lines[spots_maxima[j].crit].scale;
+	   //		if (isinf(imp))
+	   //continue;
+	   double x22=track->lines[spots_maxima[j].crit].entries[0].c.x;
+	   double y22=track->lines[spots_maxima[j].crit].entries[0].c.y;
+	   double dist_y2=fabs(y2-y_lower);
+	   if (y22<=y_lower) 
+	     continue;
+	   if (x<x_half) continue;
+	   double distance=sqrt(pow(x2-x22,2)+pow(y2-y22,2));
+	   if (distance<25)
+	     {
+		    if (/*min(life_left,life_right)>0.7*max(life_left,life_right) && */(heights(x22,y22)>border_cut)) /*&& min(strength_left,strength_right)>0.7*max(strength_left,strength_right)*/
+		      {
+			if (fabs(imp*imp2)>thresh)
+			  {
+			    thresh=fabs(imp*imp2);
+			    //			    thresh=life*life2*imp*imp2;
+			    //thresh=distance;
+			    cand1=i;
+			    cand2=j;
+			  }
+		      }
+	     }
+	}
+    }
+
+}
 
 int TrackDisplay::searchNoseRoot (double x_nose, double y_nose)
 {
@@ -267,25 +486,25 @@ void TrackDisplay::computeAxis(double& slope1,double&  yint1,double& slope2, dou
   double slopeTemp1=(sumXY-sumX*Ymean)/(sumX2-sumX*Xmean);
   double yintT2=Ymean-slopeTemp1*Xmean;
   
-  cout << "slopteTemp 1 " <<slopeTemp1<<endl;
+  //cout << "slopteTemp 1 " <<slopeTemp1<<endl;
   
   double slopeTemp2=(-1/(slope1));
   if (slopeTemp2*slopeTemp1<0)
     slopeTemp2*=-1;
-cout << "slopteTemp 2 " <<slopeTemp2<<endl;
+//cout << "slopteTemp 2 " <<slopeTemp2<<endl;
 
   double dem1= sqrt(pow(slopeTemp1,2)+1);
   double dem2= sqrt(pow(slopeTemp2,2)+1);
 
-  cout << "dem1 " << dem1 << endl;
-  cout << "dem2 " << dem2 << endl;
+  //cout << "dem1 " << dem1 << endl;
+  //cout << "dem2 " << dem2 << endl;
 
 
   double A=slopeTemp1/dem1+slopeTemp2/dem2;
   double B=(-1)/dem1+(-1)/dem2;
 
-  cout << "A " << A << endl;
-  cout << "B " << B << endl;
+  //cout << "A " << A << endl;
+  //cout << "B " << B << endl;
 
   double medX=0.5*(nose_x+0.5*(nose_LimitsRx+nose_LimitsLx));
   double medY=0.5*(nose_y+0.5*(nose_LimitsRy+nose_LimitsLy));
@@ -301,6 +520,8 @@ cout << "slopteTemp 2 " <<slopeTemp2<<endl;
 TrackDisplay::TrackDisplay()
 {
 
+  max_imp=-DBL_MAX;
+  min_imp=DBL_MAX;
     // draw_time_labels = false;
     draw_terrain = true;
     draw_track = false;
@@ -324,8 +545,8 @@ TrackDisplay::TrackDisplay()
     draw_nikolas=true;
     draw_maxima=false;
     bool showSigns=false;
-    bool show_axis=false;
-    fiducialShow=3;
+    show_axis=false;
+    fiducialShow=0;
     draw_minima=false;
     draw_sellae=false;
     scale_by_life=true;
@@ -333,9 +554,11 @@ TrackDisplay::TrackDisplay()
     life_imp=0.01;
     strength_imp=0.01;
     show_nose=true;
-    show_noseLimits=false;
-    show_noseRoot=false;
-    show_underNose=false;
+    show_noseLimits=true;
+    show_noseRoot=true;
+    show_underNose=true;
+    show_eyesOuterAngles=true;
+    show_mouth=true;
     draw_elixir = false;
     elixir_mult = 1.0;
     elixir_scale = 0.5;
@@ -345,6 +568,7 @@ TrackDisplay::TrackDisplay()
     importance_cut = 0.0;
     normal_lives = false;
 
+    border_cut=15000;
     //density_maxima_num = 0;
     draw_spots = true;
     multiply_elix_spots = false;
@@ -371,6 +595,11 @@ TrackDisplay::TrackDisplay()
     sellae_always_selected_num = 6;
     sellae_density_pool_num = 30;
     spots_sellae_imp_cut = 0.0;
+    simmetry_imp_cut_max=0.005;
+    simmetry_imp_cut_min=0.005;
+    simmetry_life_cut_max=2.5;
+    simmetry_life_cut_min=6.5;
+
 
     swpts_display = false;
     swpts_active = false;
@@ -382,12 +611,41 @@ TrackDisplay::TrackDisplay()
 //     dems.push_back(DEMSelector::get (file));
 // }
 
+void TrackDisplay::readShapes(vector<string> files)
+{
+  int i;
+  for (i=0; i<files.size(); i++)
+    {
+      cout << "FILE: " << files[i].c_str() << endl;
+      FILE * fp = fopen(files[i].c_str(), "r");
+      fread (&shape_w, sizeof (int), 1, fp);
+      fread (&shape_h, sizeof (int), 1, fp);
+
+      double* shapeT=(double*)malloc(sizeof(double)*shape_w*shape_h);
+
+      fread (&(shapeT[0]), sizeof (double), shape_w*shape_h, fp);
+      Grid<double> temp(shape_w,shape_h,-DBL_MAX);
+
+      shapeIndices.push_back(temp);
+
+
+      for (int j=0; j<shape_w*shape_h; j++)
+	shapeIndices[i].data[j]=shapeT[j];
+
+      fclose(fp);
+    } 
+}
+
 void TrackDisplay::read_ssp (char *file)
 {
     ssp = new ScaleSpace (file, ScaleSpaceOpts());
 
     clip_white = ssp->dem[0]->max;
     clip_black = ssp->dem[0]->min;
+
+    clip_black=-10;
+    clip_white=10;
+    multiply=150;
 }
 
 void TrackDisplay::read_track (char *file)
@@ -411,7 +669,7 @@ void TrackDisplay::read_signs(char *file)
   char* signsT=(char*)malloc(sizeof(char)*signs_w*signs_h);
 
   fread (&(signsT[0]), sizeof (char), signs_w*signs_h, fp);
-  cout << "W: " << signs_w << " H: " << signs_h << endl;
+  //cout << "W: " << signs_w << " H: " << signs_h << endl;
   signs=Grid<char>(signs_w,signs_h,'n');
 
   for (int i=0; i<signs_w*signs_h; i++)
@@ -429,7 +687,7 @@ void TrackDisplay::read_height(char *file)
   double* heightT=(double*)malloc(sizeof(double)*height_w*height_h);
 
   fread (&(heightT[0]), sizeof (double), height_w*height_h, fp);
-  cout << "W: " << height_w << " H: " << height_h << endl;
+  //cout << "W: " << height_w << " H: " << height_h << endl;
   heights=Grid<double>(height_w,height_h,-DBL_MAX);
 
   int c=0;
@@ -440,33 +698,33 @@ void TrackDisplay::read_height(char *file)
 	
       if (heightT[i]<min_H)
 	min_H=heightT[i];
-      if (heightT[i]>max_H)
+      if (heightT[i]>max_H && heightT[i]<22000)
 	max_H=heightT[i];
       heights.data[i]=heightT[i];
     }
-  cout << "MinH: " << min_H << "\t MaxH: " << max_H << "\t numero di entry a 0: " << c << endl;
+  //cout << "MinH: " << min_H << "\t MaxH: " << max_H << "\t numero di entry a 0: " << c << endl;
   max_h=max_H;
 }
 
-void TrackDisplay::read_val(char *file)
-{
-  printf("Opening file %s\n" , file);
-  FILE * fp = fopen(file, "r");
-  fread (&val_w, sizeof (int), 1, fp);
-  fread (&val_h, sizeof (int), 1, fp);
+// void TrackDisplay::read_val(char *file)
+// {
+//   printf("Opening file %s\n" , file);
+//   FILE * fp = fopen(file, "r");
+//   fread (&val_w, sizeof (int), 1, fp);
+//   fread (&val_h, sizeof (int), 1, fp);
 
-  unsigned int* valT=(unsigned int*)malloc(sizeof(unsigned int)*val_w*val_h);
+//   unsigned int* valT=(unsigned int*)malloc(sizeof(unsigned int)*val_w*val_h);
 
-  fread (&(valT[0]), sizeof (unsigned int), val_w*val_h, fp);
-  cout << "W: " << val_w << " H: " << val_h << endl;
-  vals=Grid<unsigned int>(val_w,val_h,UINT_MAX);
+//   fread (&(valT[0]), sizeof (unsigned int), val_w*val_h, fp);
+//   //cout << "W: " << val_w << " H: " << val_h << endl;
+//   vals=Grid<unsigned int>(val_w,val_h,UINT_MAX);
 
-    for (int i=0; i<val_w*val_h; i++)
-    {
-      vals.data[i]=valT[i];
-    }
+//     for (int i=0; i<val_w*val_h; i++)
+//     {
+//       vals.data[i]=valT[i];
+//     }
   
-}
+// }
 
 
 void TrackDisplay::query (double t)
@@ -848,7 +1106,7 @@ void __draw_critical_elixir (Coord c, CriticalType type, double elixir,  double 
     double y = c.y;
 
     double scale_tol = tol_mult * (1.0 + elixir);
-
+  
     glPushMatrix ();
     glTranslated ((double) x, (double) y, 0.0);
     glScaled (scale, scale, 1.0);
@@ -873,13 +1131,18 @@ void TrackDisplay::init_spots ()
     {
 	if (track->is_original (i))
 	{
-	    if (track->original_type (i) == MAX)
-		spots_maxima.push_back (CritElix (i, track->lifetime_elixir (i)));
-	    if (track->original_type (i) == MIN)
-		spots_minima.push_back (CritElix (i, track->lifetime_elixir (i)));
-	    if (track->original_type (i) == SA2 ||
-		track->original_type (i) == SA3)
-		spots_sellae.push_back (CritElix (i, track->lifetime_elixir (i)));
+	  if (track->lines[i].strength>max_imp)
+	    max_imp=track->lines[i].strength;
+	 
+	  if (track->lines[i].strength<min_imp)
+	    min_imp=track->lines[i].strength;
+	  if (track->original_type (i) == MAX)
+	    spots_maxima.push_back (CritElix (i, track->lifetime_elixir (i)));
+	  if (track->original_type (i) == MIN)
+	    spots_minima.push_back (CritElix (i, track->lifetime_elixir (i)));
+	  if (track->original_type (i) == SA2 ||
+	      track->original_type (i) == SA3)
+	    spots_sellae.push_back (CritElix (i, track->lifetime_elixir (i)));
 	}
     }
 
@@ -926,6 +1189,8 @@ static double __clip (double v, double min, double max, double mul)
 
 void TrackDisplay::draw (int dem_idx)
 {
+  //multiply=150;
+  //scale_by_life=false;
   vector<CritNikolas> spots_fiducial;
     glMatrixMode (GL_PROJECTION);
     glPushMatrix ();
@@ -966,9 +1231,10 @@ void TrackDisplay::draw (int dem_idx)
 	//     }
 	// glEnd();
 
-
+      int level = dem_idx;
+      // CImg<double> pic(ssp->dem[level]->width,ssp->dem[level]->height,3);
 	glBegin (GL_TRIANGLES);
-	int level = dem_idx;
+	
 
 	for (int i = 0; i < ssp->dem[level]->width - 1; i++)
 	    for (int j = 0; j < ssp->dem[level]->height - 1; j++)
@@ -976,15 +1242,22 @@ void TrackDisplay::draw (int dem_idx)
 		double min = clip_black;
 		double max = clip_white;
 		double mul = multiply;
-
+		
 		double vij = (*ssp->dem[level]) (i, j);
 		double vipj = (*ssp->dem[level]) (i+1, j);
 		double vijp = (*ssp->dem[level]) (i, j+1);
 		double vipjp = (*ssp->dem[level]) (i+1, j+1);
+		
 		vij = __clip (vij, min, max, mul);
 		vipj = __clip (vipj, min, max, mul);
 		vijp = __clip (vijp, min, max, mul);
 		vipjp = __clip (vipjp, min, max, mul);
+
+		
+		// pic(i,j,0)=vij*10000;
+		// pic(i,j,1)=vij*10000;
+		// pic(i,j,2)=vij*10000;
+
 
 		glColor3f (vij, vij, vij);
 		glVertex2f (i, j);
@@ -1001,9 +1274,9 @@ void TrackDisplay::draw (int dem_idx)
 		glVertex2f (i+1, j+1);
 	    }
 	glEnd();
-
+	// pic.save("Out.tiff");
+	// exit(0);
     }
-
     if (draw_track)
     {
 	for (unsigned i = 0; i < track->lines.size(); i++)
@@ -1122,12 +1395,35 @@ void TrackDisplay::draw (int dem_idx)
 	  }
 	if (show_eyesOuterAngles)
 	  {
-	    int cand1, cand2;
-	    searchEyesOuterAngles(track->lines[spots_fiducial[1].crit].entries[0].c.x, track->lines[spots_fiducial[1].crit].entries[0].c.y,cand1,cand2);
+	    int cand1, cand2,cand3,cand4;
+	    searchEyesAngles(track->lines[spots_fiducial[0].crit].entries[0].c.x, track->lines[spots_fiducial[0].crit].entries[0].c.y,cand1,cand2,cand3,cand4);
 	    spots_fiducial.push_back(CritNikolas(spots_maxima[cand1].crit,spots_maxima[cand1].elix, track->lines[spots_maxima[cand1].crit].strength,track->lines[spots_maxima[cand1].crit].scale));
 
 	    spots_fiducial.push_back(CritNikolas(spots_maxima[cand2].crit,spots_maxima[cand2].elix, track->lines[spots_maxima[cand2].crit].strength,track->lines[spots_maxima[cand2].crit].scale));
+	    spots_fiducial.push_back(CritNikolas(spots_maxima[cand3].crit,spots_maxima[cand3].elix, track->lines[spots_maxima[cand3].crit].strength,track->lines[spots_maxima[cand3].crit].scale));
+
+	    spots_fiducial.push_back(CritNikolas(spots_maxima[cand4].crit,spots_maxima[cand4].elix, track->lines[spots_maxima[cand4].crit].strength,track->lines[spots_maxima[cand4].crit].scale));
+
 	  }
+	if (show_mouth)
+	  {
+	    int cand1, cand2,cand3,cand4;
+	    searchMouth(track->lines[spots_fiducial[0].crit].entries[0].c.x, track->lines[spots_fiducial[0].crit].entries[0].c.y,cand1,cand2,cand3,cand4);
+	    spots_fiducial.push_back(CritNikolas(spots_maxima[cand1].crit,spots_maxima[cand1].elix, track->lines[spots_maxima[cand1].crit].strength,track->lines[spots_maxima[cand1].crit].scale));
+
+	    spots_fiducial.push_back(CritNikolas(spots_maxima[cand2].crit,spots_maxima[cand2].elix, track->lines[spots_maxima[cand2].crit].strength,track->lines[spots_maxima[cand2].crit].scale));
+	    spots_fiducial.push_back(CritNikolas(spots_maxima[cand3].crit,spots_maxima[cand3].elix, track->lines[spots_maxima[cand3].crit].strength,track->lines[spots_maxima[cand3].crit].scale));
+
+	    spots_fiducial.push_back(CritNikolas(spots_maxima[cand4].crit,spots_maxima[cand4].elix, track->lines[spots_maxima[cand4].crit].strength,track->lines[spots_maxima[cand4].crit].scale));
+
+	  }
+	// if (show_eyebrows)
+ // 	  {
+ // 	    int cand1, cand2;
+ // 	    searchEyebrows(track->lines[spots_fiducial[6].crit].entries[0].c.y,cand1,cand2);
+ // 	    spots_fiducial.push_back(CritNikolas(spots_maxima[cand1].crit,spots_maxima[cand1].elix, track->lines[spots_maxima[cand1].crit].strength,track->lines[spots_maxima[cand1].crit].scale));
+ // spots_fiducial.push_back(CritNikolas(spots_maxima[cand2].crit,spots_maxima[cand2].elix, track->lines[spots_maxima[cand2].crit].strength,track->lines[spots_maxima[cand2].crit].scale));
+ // 	  }
 	for (unsigned i = 0; i < spots_add.size(); i++)
 	    {
 	      int idx = spots_add[i].crit;
@@ -1158,7 +1454,7 @@ void TrackDisplay::draw (int dem_idx)
 				    spot_scale, scale);
 
 	    if (i==min(fiducialShow-1,(int)spots_fiducial.size()-1))
-	      cout <<  spots_fiducial[i].life << "," << track->lines[spots_fiducial[i].crit].strength <<  "," << track->lines[spots_fiducial[i].crit].scale << "," << spots_fiducial[i].life* track->lines[spots_fiducial[i].crit].strength*track->lines[spots_fiducial[i].crit].scale <<  "," << track->lines[spots_fiducial[i].crit].entries[0].c.x << "," << track->lines[spots_fiducial[i].crit].entries[0].c.y << " height: " << heights(track->lines[spots_fiducial[i].crit].entries[0].c) << "\n";
+	      cout <<  spots_fiducial[i].life << "," << track->lines[spots_fiducial[i].crit].strength <<  "," << track->lines[spots_fiducial[i].crit].scale << "," << spots_fiducial[i].life* track->lines[spots_fiducial[i].crit].strength*track->lines[spots_fiducial[i].crit].scale <<  "," << track->lines[spots_fiducial[i].crit].entries[0].c.x << "," << track->lines[spots_fiducial[i].crit].entries[0].c.y << " height: " << heights(track->lines[spots_fiducial[i].crit].entries[0].c) << "\n";// << "\t Shape index at scale 0: " << shapeIndices[0](track->lines[spots_fiducial[i].crit].entries[0].c) << endl;
 
 	  }
 	
@@ -1465,7 +1761,7 @@ void TrackDisplay::draw (int dem_idx)
 	    double y=track->lines[idx].entries[0].c.y;
 
 	    double orientation= (px2 - px1) * (y - py1) - (py2 - py1) * (x - px1);
-	    if (track->lines[idx].strength>simmetry_imp_cut_max && track->lines[idx].elixir>simmetry_life_cut_max)
+	    //if (track->lines[idx].strength>simmetry_imp_cut_max && track->lines[idx].elixir>simmetry_life_cut_max)
 	      if(orientation >= -10e-10)
 		pool_left.push_back(idx);
 	      else
@@ -1481,7 +1777,7 @@ void TrackDisplay::draw (int dem_idx)
 	    double x=track->lines[idx].entries[0].c.x;
 	    double y=track->lines[idx].entries[0].c.y;
 	    double orientation= (px2 - px1) * (y - py1) - (py2 - py1) * (x - px1);
-	    if (track->lines[idx].strength>simmetry_imp_cut_min && track->lines[idx].elixir>simmetry_life_cut_min)
+	    //if (track->lines[idx].strength>simmetry_imp_cut_min && track->lines[idx].elixir>simmetry_life_cut_min)
 	      if(orientation >= -10e-10)
 		pool_left.push_back(idx);
 	      else
@@ -1508,6 +1804,13 @@ void TrackDisplay::draw (int dem_idx)
 	    /*--------------------------------------*/
 	    /* Il simmetrico di left ha coordinate (x2,y2),
 	       ora ciclo su right */
+	    
+	    /* Provo col simmetrico rispetto all'asse verticale esatto */
+	    double x_half=track->width/2;
+	    y2=y;
+	    x2=x_half+(x_half-x);
+
+	    if (track->lines[idx].strength<simmetry_imp_cut_max || track->lines[idx].elixir<simmetry_life_cut_max) continue;
 	    int candidateIndex=-1;
 	    double thresh=-DBL_MAX;
 	    for (unsigned j = 0; j<pool_right.size(); j++)
@@ -1519,17 +1822,20 @@ void TrackDisplay::draw (int dem_idx)
 		double y22=track->lines[idx2].entries[0].c.y;
 		double life_right = track->lines[idx2].elixir;
 		double strength_right = track->lines[idx2].strength;
-
+		if (track->lines[idx2].strength<simmetry_imp_cut_max || track->lines[idx2].elixir<simmetry_life_cut_max) continue;
+		/* TODO la divisione per la distanza sputtana tutto, però devo usare qualcosa del genere... */
 		double distance=sqrt(pow(x2-x22,2)+pow(y2-y22,2));
 		if (distance<25)
 		  {
+		    //cout<< "distance : " << distance << endl;
 		    /* Confronto internamente life/imp */ 
 		    /* Dovrei trovare una misura di similarità ed usare questa per prendere il max */
-		    if (min(life_left,life_right)>0.7*max(life_left,life_right) && (heights(x22,y22)>6000)) /*&& min(strength_left,strength_right)>0.7*max(strength_left,strength_right)*/
+		    if (/*min(life_left,life_right)>0.7*max(life_left,life_right) && */(heights(x22,y22)>border_cut)) /*&& min(strength_left,strength_right)>0.7*max(strength_left,strength_right)*/
 		      {
-			if (fabs(life_left-life_right)*fabs(strength_left-strength_right)>thresh && std::find(pool_final.begin(),pool_final.end(),idx2)==pool_final.end())
+			if (fabs(strength_left-strength_right)>thresh && 1/fabs(strength_left-strength_right)>thresh > sim_cut && std::find(pool_final.begin(),pool_final.end(),idx2)==pool_final.end())
 			  {
-			    thresh=fabs(life_left-life_right)*fabs(strength_left-strength_right);
+			    thresh=fabs(strength_left-strength_right);
+			    //thresh=distance;
 			    candidateIndex=idx2;
 			  }
 		      }
@@ -1540,9 +1846,10 @@ void TrackDisplay::draw (int dem_idx)
 	      {
 		pool_final.push_back(idx);
 		pool_final.push_back(candidateIndex);
+
 	      }
 	  }
-	cout << "SIZE FINAL : " << pool_final.size() << endl;
+	//cout << "SIZE FINAL : " << pool_final.size() << endl;
 	for (int i=0; i<pool_final.size(); i++)
 	  {
 	    double scale=0.0;
@@ -1560,7 +1867,86 @@ void TrackDisplay::draw (int dem_idx)
 
 
 	  }
-      }    
+      }
+    if (automatic)
+      {
+
+	FILE * fp=fopen(autoFile->c_str(),"w");
+	/* qui stampo nell'ordine giusto su file */
+	
+	int occhioSxOut, occhioSxIn, occhioDxOut,occhioDxIn;
+	if (isInner) 
+	  {
+	    occhioSxOut=8;
+	    occhioSxIn=6;
+	    occhioDxOut=7;
+	    occhioDxIn=5;
+	  }
+	else 
+	  {
+	    occhioSxOut=6;
+	    occhioSxIn=8;
+	    occhioDxOut=5;
+	    occhioDxIn=7;
+	  }
+	/* Occhio sx - esterno if (!isInner) 6 else 8*/
+	int idx=spots_fiducial[occhioSxOut].crit;
+	fprintf(fp, "%d\t%d\n", track->lines[idx].entries[0].c.x, track->height-track->lines[idx].entries[0].c.y);
+
+	/* Occhio sx - interno if (isInner) 6 else 8*/
+	idx=spots_fiducial[occhioSxIn].crit;
+	fprintf(fp, "%d\t%d\n", track->lines[idx].entries[0].c.x, track->height-track->lines[idx].entries[0].c.y);
+
+	/* Radice naso 1*/
+	idx=spots_fiducial[1].crit;
+	fprintf(fp, "%d\t%d\n", track->lines[idx].entries[0].c.x, track->height-track->lines[idx].entries[0].c.y);
+
+
+	/* Occhio dx - interno  if (isInner) 5 else 7*/
+      	idx=spots_fiducial[occhioDxIn].crit;
+	fprintf(fp, "%d\t%d\n", track->lines[idx].entries[0].c.x, track->height-track->lines[idx].entries[0].c.y);
+	/* Occhio dx - esterno if (!isInner) 5 else 7*/
+	idx=spots_fiducial[occhioDxOut].crit;
+	fprintf(fp, "%d\t%d\n", track->lines[idx].entries[0].c.x, track->height-track->lines[idx].entries[0].c.y);
+
+	/* Naso sx 3*/
+	idx=spots_fiducial[3].crit;
+	fprintf(fp, "%d\t%d\n", track->lines[idx].entries[0].c.x, track->height-track->lines[idx].entries[0].c.y);
+
+	/* Naso Punta 0*/
+	idx=spots_fiducial[0].crit;
+	fprintf(fp, "%d\t%d\n", track->lines[idx].entries[0].c.x, track->height-track->lines[idx].entries[0].c.y);
+
+	/* Sotto naso 4*/
+	idx=spots_fiducial[4].crit;
+	fprintf(fp, "%d\t%d\n", track->lines[idx].entries[0].c.x, track->height-track->lines[idx].entries[0].c.y);
+
+	/* Naso dx 2 */
+	idx=spots_fiducial[2].crit;
+	fprintf(fp, "%d\t%d\n", track->lines[idx].entries[0].c.x, track->height-track->lines[idx].entries[0].c.y);
+
+	/* Bocca sx  9*/
+	idx=spots_fiducial[9].crit;
+	fprintf(fp, "%d\t%d\n", track->lines[idx].entries[0].c.x, track->height-track->lines[idx].entries[0].c.y);
+
+	/* PRova per fixare sto1 e sto2 */
+
+	double x_med=(track->lines[spots_fiducial[9].crit].entries[0].c.x+track->lines[spots_fiducial[10].crit].entries[0].c.x)/2;
+
+	/* Bocca sopra 11*/
+	idx=spots_fiducial[11].crit;
+	fprintf(fp, "%d\t%d\n", track->lines[idx].entries[0].c.x, track->height-track->lines[idx].entries[0].c.y);
+
+	/* Bocca sotto 12*/
+	idx=spots_fiducial[12].crit;
+	fprintf(fp, "%d\t%d\n", track->lines[idx].entries[0].c.x, track->height-track->lines[idx].entries[0].c.y);
+
+	/* Bocca dx 10 */
+	idx=spots_fiducial[10].crit;
+	fprintf(fp, "%d\t%d\n", track->lines[idx].entries[0].c.x, track->height-track->lines[idx].entries[0].c.y);
+
+	exit(0);
+      }
     glMatrixMode (GL_PROJECTION);
     glPopMatrix ();
     glMatrixMode (GL_MODELVIEW);

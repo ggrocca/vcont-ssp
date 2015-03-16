@@ -16,7 +16,7 @@ of sampling */
 #include <cfloat>
 #include <algorithm>
 
-curvStacker::curvStacker(double base_rad, double max_rad, double step, bool expStep, int skipFactor, string* mapFile, string* heightFile, int fast)
+curvStacker::curvStacker(double base_rad, double max_rad, double step, bool expStep, int skipFactor, string* mapFile, string* heightFile, int fast, double shapeIndex)
 {
   srand((unsigned)time(NULL));
   isExpStep=expStep;
@@ -37,6 +37,7 @@ curvStacker::curvStacker(double base_rad, double max_rad, double step, bool expS
   do_topoindex = false;
   fast_computation=fast;
   validFile=new string("valid");
+  this->shapeIndex=shapeIndex;
 }
 
 
@@ -173,7 +174,7 @@ void curvStacker::printLevel(Eigen::MatrixXd V, vector<vector<double> > curv)
 	signs(j,i)='c';
       else
 	signs(j,i)='u';
-      heights(j,i)=V.row(k)[2];
+      heights(i,j)=V.row(k)[2];
       /* Inizializzo Val=0 i valori di background più bassi */
       if (V.row(k)[2]<10e-2)
 	val(j,i) = 0;
@@ -186,38 +187,7 @@ void curvStacker::printLevel(Eigen::MatrixXd V, vector<vector<double> > curv)
 
   /* Qui il ciclo per val */
   
-  bool keepGoing=false;
-  int v=0;
-  int m,n;
-  do 
-    {
-      /* Ciclo sui val */
-      for (int k=0; k<V.rows(); k++)
-	{
-	  int x=V.row(k)[0];
-	  int y=V.row(k)[1];
-	  int i=(y-ymin)/skipFactor;
-	  int j=(x-xmin)/skipFactor;
-	  if (val(j,i)==v)
-	    {
-	      /* Qui guardo i vicini (8-vicini?)*/
-	      for (m=(int)std::max(i-1,0);m++;m<std::min(i+1,width))
-		for (n=std::max(j-1,0);n++;m<std::min(n+1,height))
-		  {
-		    if (val(m,n)>v)
-		      {
-			val(m,n)=v+1;
-			keepGoing=true;
-		      }
-		  }
-	    }
-	}
-      /* Se val (j,i) == i allora ciclo sui vicini, quelli che hanno val>i metto a i+1 e keepGoing=true*/
-      /* QUesto vuol dire che se a fine ciclo non ho keep=true ho marcato tutto. */
-      
-      v++;
-    }
-  while (keepGoing);
+
 
   /* Now I print the curvature signs */
 
@@ -251,6 +221,7 @@ void curvStacker::printLevelGrid(Eigen::MatrixXd V, vector<vector<double> > curv
     double * data = (double*) malloc (sizeof(double) * grid_width * grid_height);
     Grid<char> signs(grid_width,grid_height,'n');
     Grid<double> heights(grid_width,grid_height,-DBL_MAX);
+    Grid<double> shapeIndices(grid_width,grid_height,-DBL_MAX);
     Grid<unsigned int> val(width,height,UINT_MAX);
     for (int i = 0; i < grid_width * grid_height; i++)
 	data[i]=-DBL_MAX;
@@ -287,6 +258,8 @@ void curvStacker::printLevelGrid(Eigen::MatrixXd V, vector<vector<double> > curv
       heights(i,j)=V.row(kk)[2];
       
       data[k] = curv[kk][0] * curv[kk][1] * curvMultFactor;
+      double sI = (2/M_PI)*atan((curv[kk][0]+curv[kk][1])/(curv[kk][0]-curv[kk][1]));
+      shapeIndices(i,j) = sI;
 
       if (data[k] < min)
 	  min = data[k];
@@ -295,47 +268,7 @@ void curvStacker::printLevelGrid(Eigen::MatrixXd V, vector<vector<double> > curv
       if (V.row(k)[2]<1)
 	val(j,i) = 0;
     }
-    
- /* Qui il ciclo per val */
-  
-  bool keepGoing=false;
-  int v=0;
-  int m,n;
-  // do 
-  //   {
-  //     keepGoing=false;
-  //     /* Ciclo sui val */
-  //     for (int k=0; k<V.rows(); k++)
-  // 	{
-  // 	  int x=V.row(k)[0];
-  // 	  int y=V.row(k)[1];
-  // 	  int i=(y-ymin)/skipFactor;
-  // 	  int j=(x-xmin)/skipFactor;
-  // 	  cout << "i,j" << " " << i << " " << j << endl;
-  // 	  if (val(j,i)==v)
-  // 	    {
-  // 	      /* Qui guardo i vicini (8-vicini?)*/
-  // 	      for (m=(int)std::max(i-1,0);m++;m<std::min(i+1,width))
-  // 		for (n=std::max(j-1,0);n++;m<std::min(j+1,height))
-  // 		  {	 
-		    
-  // 		    if (val(n,m)>v)
-  // 		      {
-  // 			val(n,m)=v+1;
-  // 			keepGoing=true;
-  // 		      }
-  // 		  }
-  // 	    }
-  // 	}
-  //     /* Se val (j,i) == i allora ciclo sui vicini, quelli che hanno val>i metto a i+1 e keepGoing=true*/
-  //     /* QUesto vuol dire che se a fine ciclo non ho keep=true ho marcato tutto. */
-      
-  //     v++;
-  //   }
-  // while (keepGoing);
-
  
-
     cerr << "printLevelGrid(): Range dei livelli di curvatura. "
 	"[min:"<<min<<", max:"<<max<<"]. Mult factor: "<<curvMultFactor<<
 	". -- grid["<<grid_width<<"],["<<grid_height<<"]. cellsize="<<grid_cell_size
@@ -343,7 +276,13 @@ void curvStacker::printLevelGrid(Eigen::MatrixXd V, vector<vector<double> > curv
 
     fwrite(&(data[0]), sizeof(double), grid_width * grid_height, fp);
     //free(data);
-
+    
+    FILE * shape = fopen(shapeFile->c_str(),"wb");
+     fwrite(&grid_width, sizeof(int), 1, shape);
+     fwrite(&grid_height, sizeof(int), 1, shape);
+     fwrite(&(shapeIndices.data[0]), sizeof(double), grid_width*grid_height, shape);
+     fclose(shape);
+     cout << "Wrote on: " << shapeFile << endl;
 
   if (mapFile!=NULL)
     {
@@ -432,12 +371,16 @@ void curvStacker::executeOnMultipleMeshes(vector<string> meshNames, string outFi
       else
 	c.computeCurvature(do_topoindex,fast_computation);
       cerr << "Computed radius " << radius << endl;
+      std::stringstream a;
+      a << "shapeIndices" << time;
+      shapeFile=new string(a.str());
       grid? printLevelGrid (V,c.curv) : printLevel(V,c.curv);
       if (separateDems)
 	fclose(fp);
       mapFile=NULL;
       heightFile=NULL;
       validFile=NULL;
+      shapeFile=NULL;
     }
   if (!separateDems)
     fclose(fp);
