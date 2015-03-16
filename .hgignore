@@ -16,6 +16,8 @@ curvStacker/curvStacker
 
 *.class
 
+run*.txt
+
 common/custom_debug.h
 
 */.file_old_goal
