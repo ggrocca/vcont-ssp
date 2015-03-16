@@ -17,6 +17,8 @@ curvStacker/curvStacker
 *.class
 
 run*.txt
+*.pdf
+*.tmp.dat
 
 common/custom_debug.h
 
