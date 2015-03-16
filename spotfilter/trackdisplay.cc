@@ -93,6 +93,10 @@ TrackDisplay::TrackDisplay()
     do_draw_crop = false;
     do_draw_crop_cut = false;
     crop_cut = 0.2;
+
+    draw_critical_circle = false;
+    draw_current_point = false;
+    set_life_cut_on_index = false;
 };
 
 
@@ -211,6 +215,91 @@ void TrackDisplay::getbb (Point* a, Point* b)
     b->y = (double) height;
 }
 
+void __draw_circle() 
+{
+    float cx = 0.0;
+    float cy = 0.0;
+    float r = 5.0;
+    int num_segments = 10 * sqrtf(r);//change the 10 to a smaller/bigger number as needed
+
+    double st = 1.0;
+
+    float theta = 2 * 3.1415926 / float(num_segments); 
+    float tangetial_factor = tanf(theta);//calculate the tangential factor 
+
+    float radial_factor = cosf(theta);//calculate the radial factor 
+	
+    float x = r;//we start at angle = 0 
+
+    float y = 0; 
+    
+    glBegin(GL_POLYGON); 
+    for(int ii = 0; ii < num_segments; ii++) 
+    { 
+	glVertex2f(x + cx, y + cy);//output vertex 
+        
+	//calculate the tangential vector 
+	//remember, the radial vector is (x, y) 
+	//to get the tangential vector we flip those coordinates and negate one of them 
+
+	float tx = -y; 
+	float ty = x; 
+        
+	//add the tangential vector 
+
+	x += tx * tangetial_factor; 
+	y += ty * tangetial_factor; 
+        
+	//correct using the radial factor 
+
+	x *= radial_factor; 
+	y *= radial_factor; 
+    } 
+    glEnd();
+
+
+    x = r;//we start at angle = 0 
+    y = 0; 
+    float px, py;
+    float sx = r -st; //we start at angle = 0 
+    float sy = 0; 
+    float psx, psy;
+
+    // black border around circle
+    glColor3f (0.0, 0.0, 0.0);
+    glBegin(GL_QUADS); 
+    for(int ii = 0; ii < num_segments+1; ii++) 
+    { 
+ 	if (ii != 0)
+	{
+	    glVertex2f(x + cx, y + cy);
+	    glVertex2f(sx + cx, sy + cy);
+	    glVertex2f(psx + cx, psy + cy);
+	    glVertex2f(px + cx, py + cy);
+	}
+
+	// bigger outer circle
+	px = x;
+	py = y;
+	float tx = -y; 
+	float ty = x; 
+	x += tx * tangetial_factor; 
+	y += ty * tangetial_factor; 
+	x *= radial_factor; 
+	y *= radial_factor; 
+	// smaller inner circle
+	psx = sx;
+	psy = sy;
+	float tsx = -sy; 
+	float tsy = sx; 
+	sx += tsx * tangetial_factor; 
+	sy += tsy * tangetial_factor; 
+	sx *= radial_factor; 
+	sy *= radial_factor; 
+    } 
+    glEnd(); 
+}
+
 void __draw_quad ()
 {
     double qs = 10.0;
@@ -250,7 +339,7 @@ void __draw_quad ()
     glEnd ();
 }
 
-void __draw_critical_color (CriticalType t)
+void __draw_critical_color (CriticalType t, bool __circle=false)
 {
     switch (t)
     {
@@ -275,7 +364,10 @@ void __draw_critical_color (CriticalType t)
 	fprintf (stderr, "__draw_critical_color() problem\n");
     }
 
-    __draw_quad ();
+    if (__circle)
+	__draw_circle ();
+    else
+	__draw_quad ();
     
  }
 
@@ -491,7 +583,7 @@ void __draw_critical_track (Coord c, CriticalType t,
     glPopMatrix();
 }
 
-void __draw_critical_query (TrackRenderingEntry r,  double scale, double tol_mult,
+void TrackDisplay::__draw_critical_query (TrackRenderingEntry r,  double scale, double tol_mult,
 			    bool cur_pos, bool draw_death)
 {
     double x = r.oc.x;
@@ -510,7 +602,7 @@ void __draw_critical_query (TrackRenderingEntry r,  double scale, double tol_mul
     glScaled (scale, scale, 1.0);
     if (scale_tol != 0.0)
 	glScaled (scale_tol, scale_tol, 1.0);
-    __draw_critical_color (r.type);
+    __draw_critical_color (r.type, draw_critical_circle);
     glPopMatrix();
 
     if (draw_death)
@@ -525,19 +617,26 @@ void __draw_critical_query (TrackRenderingEntry r,  double scale, double tol_mul
     }
 }
 
-void __draw_critical_elixir (Coord c, CriticalType type, double elixir,  double scale, double tol_mult)
+void TrackDisplay::__draw_critical_elixir (Coord c, CriticalType type, double elixir,  double scale, double tol_mult)
 {
     double x = c.x;
     double y = c.y;
 
-    double scale_tol = tol_mult * (1.0 + elixir);
+    double scale_tol;
+
+    if (multiply_exp)
+	scale_tol = pow (tol_mult, 1.0 + elixir);
+    else if (multiply_pow)
+	scale_tol = pow (1.0 + elixir, tol_mult);
+    else
+	scale_tol = tol_mult * (1.0 + elixir);
 
     glPushMatrix ();
     glTranslated ((double) x, (double) y, 0.0);
     glScaled (scale, scale, 1.0);
     if (scale_tol != 0.0)
 	glScaled (scale_tol, scale_tol, 1.0);
-    __draw_critical_color (type);
+    __draw_critical_color (type, draw_critical_circle);
     glPopMatrix();
 }
 
@@ -886,6 +985,9 @@ void TrackDisplay::draw (int dem_idx, Point llc, Point hrc)
 	inspector_maxima_total = inspector_maxima_rendered =
 	    inspector_minima_total = inspector_minima_rendered =
 	    inspector_sellae_total = inspector_sellae_rendered = 0;
+
+	if (set_life_cut_on_index)
+	    maxima_life_cut = minima_life_cut = sellae_life_cut = dem_idx;
 	
 	for (unsigned i = 0; i < track->lines.size(); i++)
 	{
@@ -948,8 +1050,14 @@ void TrackDisplay::draw (int dem_idx, Point llc, Point hrc)
 		inspector_minima_rendered++;
 	    if (track->original_type (i) == SA2 || track->original_type (i) == SA3)
 		inspector_sellae_rendered++;
-		
-	    __draw_critical_elixir (track->lines[i].entries[0].c,
+
+	    int ei = draw_current_point? track->get_entry (i, dem_idx) : 0 ;
+	    if (ei == -1)
+	    {
+		printf ("Warning: ei==-1\n");
+		ei = 0;
+	    }
+	    __draw_critical_elixir (track->lines[i].entries[ei].c,
 				    track->original_type (i),
 				    vvv, spot_scale, mmm);
 	}

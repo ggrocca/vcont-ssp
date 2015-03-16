@@ -34,7 +34,7 @@ if [ $# == 0 ]; then
     exit 0
 fi
 
-OUTDIR=../../../datasets/dhm25
+OUTDIR=../../../datasets/dhm25.classification
 
 cat $OUTDIR/morph_kleinform-classified.csv > $OUTDIR/temp.csv
 cat $OUTDIR/name_pkt-classified.csv >> $OUTDIR/temp.csv

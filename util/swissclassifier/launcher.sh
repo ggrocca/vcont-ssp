@@ -7,29 +7,32 @@ else
     DATASET=$1
 fi
 
+strength_threshold=1.0
+
 if [ $ALL == "true" ]; then DATASET="dhm25"; fi
 if [ $DATASET == "dhm25" ]; then
-    ./swissclassifier -i ../../../datasets/dhm25/morph_kleinform.csv \
-		      -o ../../../datasets/dhm25/morph_kleinform-classified.csv \
-		      -a ../../../datasets/dhm25/aargau-lucerne.asc \
-		      -t ../../../datasets/dhm25/aargau-lucerne_terr.trk \
-		      -S 1.0 -c \
-                      > ../../../datasets/dhm25/morph_kleinform-classified.csv.out.txt
+    OUTDIR=../../../datasets/dhm25.classification
+    ./swissclassifier -i $OUTDIR/morph_kleinform.csv \
+		      -o $OUTDIR/morph_kleinform-classified.csv \
+		      -a $OUTDIR/aargau-lucerne.asc \
+		      -t $OUTDIR/aargau-lucerne_terr.trk \
+		      -S $strength_threshold -c -R \
+                      > $OUTDIR/morph_kleinform-classified.csv.out.txt
     
-    ./swissclassifier -i ../../../datasets/dhm25/name_pkt.csv \
-		      -o ../../../datasets/dhm25/name_pkt-classified.csv \
-		      -a ../../../datasets/dhm25/aargau-lucerne.asc \
-		      -t ../../../datasets/dhm25/aargau-lucerne_terr.trk \
-		      -S 1.0 -c \
-                      > ../../../datasets/dhm25/name_pkt-classified.csv.out.txt
+    ./swissclassifier -i $OUTDIR/name_pkt.csv \
+		      -o $OUTDIR/name_pkt-classified.csv \
+		      -a $OUTDIR/aargau-lucerne.asc \
+		      -t $OUTDIR/aargau-lucerne_terr.trk \
+		      -S $strength_threshold -c -R \
+                      > $OUTDIR/name_pkt-classified.csv.out.txt
 
 
-    ./swissclassifier -i ../../../datasets/dhm25/hoehenkote.csv \
-		      -o ../../../datasets/dhm25/hoehenkote-classified.csv \
-		      -a ../../../datasets/dhm25/aargau-lucerne.asc \
-		      -t ../../../datasets/dhm25/aargau-lucerne_terr.trk \
-		      -S 1.0 -c \
-                      > ../../../datasets/dhm25/hoehenkote-classified.csv.out.txt
+    ./swissclassifier -i $OUTDIR/hoehenkote.csv \
+		      -o $OUTDIR/hoehenkote-classified.csv \
+		      -a $OUTDIR/aargau-lucerne.asc \
+		      -t $OUTDIR/aargau-lucerne_terr.trk \
+		      -S $strength_threshold -c -R \
+                      > $OUTDIR/hoehenkote-classified.csv.out.txt
 
 
     ./swissmangler.sh natural \
@@ -56,6 +59,6 @@ if [ $DATASET == "aletsch" ]; then
 		      -o ../../../datasets/aletsch/aletsch-classified.csv \
 		      -a ../../../datasets/aletsch/aletsch.asc \
 		      -t ../../../datasets/aletsch/aletsch_terr.trk \
-		      -S 1.0 -c \
+		      -S $strength_threshold -c -r \
                       > ../../../datasets/aletsch/aletsch-classified.csv.out.txt    
 fi

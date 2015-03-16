@@ -51,6 +51,16 @@ inline bool is_pit (SwisstopoType st)
     return st == MORPH_DOLINE_100 || st == MORPH_SINK_400;
 }
 
+inline bool is_natural (SwisstopoType st)
+{
+    return st == HEIGHT_NATURAL_400;
+}
+
+inline bool is_human (SwisstopoType st)
+{
+    return st == HEIGHT_HUMAN_500;
+}
+
 
 /*
   ClassifiedType -> ClassifiedType

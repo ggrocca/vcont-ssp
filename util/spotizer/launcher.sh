@@ -18,6 +18,7 @@ if [[ !($# == 8 || $# == 10 || $# == 12 || $# == 14) ]]; then
     exit 1
 fi
 
+QUERY_OPT="-q pr"
 DATASET=$1
 
 EXPERIMENT="complete"
@@ -159,7 +160,7 @@ elif [ "$MODE" == "query" ]; then
 	./spotizer -t $BASEDIR/$NAME"_terr.trk" \
     		   -a $BASEDIR/$NAME".asc" -s $BASEDIR/$CSV \
     		   -Q $LIFE_STEPS $STRENGTH_STEPS -D $DIST -C $BCUT \
-		   $PRUNE $PEAKS $EXPOPT $STRENGTHOPT $LIFEOPT \
+		   $PRUNE $PEAKS $EXPOPT $STRENGTHOPT $LIFEOPT $QUERY_OPT \
     		   -o $RESDIR/"stats" \
     		   > $RESDIR/"stats.txt"
 	#echo gnuplot -e "dir='$RESDIR'" plot_query.gp
@@ -182,12 +183,12 @@ elif [ "$MODE" == "query" ]; then
 	./spotizer -g $BASEDIR/$NAME"_drop.csv" \
     		   -a $BASEDIR/$NAME".asc" -s $BASEDIR/$CSV \
     		   -Q $LIFE_STEPS $STRENGTH_STEPS -D $DIST -C $BCUT \
-		   $PRUNE $PEAKS $EXPOPT \
+		   $PRUNE $PEAKS $EXPOPT $QUERY_OPT \
     		   -o $DROPDIR/"stats" \
     		   > $DROPDIR/"stats.txt"
 	#echo gnuplot -e "dir='$DROPDIR'" plot_generic.gp
 	#gnuplot -e "dir='$DROPDIR'" plot_generic.gp
-	./plot_generic.sh $DROPDIR
+	./plot_generic.sh $DROPDIR "Drop"
 	
 	JAARADIR=$RESDIR"_JAARA"
 	resdir_setup $JAARADIR
@@ -200,12 +201,12 @@ elif [ "$MODE" == "query" ]; then
 	./spotizer -g $BASEDIR/$NAME"_jaara.csv" \
     		   -a $BASEDIR/$NAME".asc" -s $BASEDIR/$CSV \
     		   -Q $LIFE_STEPS $STRENGTH_STEPS -D $DIST -C $BCUT \
-		   $PRUNE $PEAKS $EXPOPT \
+		   $PRUNE $PEAKS $EXPOPT $QUERY_OPT \
     		   -o $JAARADIR/"stats" \
     		   > $JAARADIR/"stats.txt"
 	#echo gnuplot -e "dir='$JAARADIR'" plot_generic.gp
 	#gnuplot -e "dir='$JAARADIR'" plot_generic.gp
-	./plot_generic.sh $JAARADIR
+	./plot_generic.sh $JAARADIR "Jaara"
 	
     fi    
 fi

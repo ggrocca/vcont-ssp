@@ -107,8 +107,12 @@ public:
     double importance_mult;
     double importance_scale;
     double importance_cut;
+    bool multiply_exp;
+    bool multiply_pow;
 
     bool draw_spots;
+    bool draw_current_point;
+    bool set_life_cut_on_index;
     bool multiply_elix_spots;
     bool draw_final;
     bool draw_always_selected;
@@ -188,6 +192,15 @@ public:
     bool do_draw_crop_cut;
     double crop_cut;
     Coord crop_cut_llc, crop_cut_hrc;
+
+    bool draw_critical_circle;
+private:
+    void __draw_critical_query (TrackRenderingEntry r,  double scale, double tol_mult,
+				bool cur_pos, bool draw_death);
+
+    void __draw_critical_elixir (Coord c, CriticalType type, double elixir,
+				 double scale, double tol_mult);
+
 };
 
 

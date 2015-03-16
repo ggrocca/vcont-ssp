@@ -19,6 +19,9 @@ char *track_file = 0;
 double strength_threshold = 2.0;
 bool correction_pre = false;
 bool correction_pre_saddles = false;
+bool perform_final_report_swiss = false;
+bool perform_final_report_generic = false;
+
 void print_help (FILE* f)
 {
     fprintf (f, "Usage: swissclassifier\n"
@@ -31,6 +34,7 @@ void print_help (FILE* f)
 	     "[-W WINDOW] : pixel window for fit classification. default 2 (5x5)\n"
 	     "[-c] : Correct unclassified points if a maximum or minumum is present\n"
 	     "[-s] : Correct saddles too\n"
+	     "[-r] : Print quality assesment report\n"
 	     "\n"
 	     );
 }
@@ -80,6 +84,14 @@ void app_init(int argc, char *argv[])
                 strength_threshold = atof (*++argv);
                 argc--;
                 break;
+
+	    case 'R':
+		perform_final_report_swiss = true;
+		break;
+
+	    case 'r':
+		perform_final_report_generic = true;
+		break;
 
             default:
                 goto die;
@@ -295,6 +307,213 @@ ASCHeader asch;
 // double cellsize, xllcorner, yllcorner;
 std::vector <SwissSpotHeight> swiss;
 std::vector <SwissSpotHeight> swiss_class;
+
+void check_and_print_generic (std::vector <SwissSpotHeight>& sc)
+{
+    int peak, pit, saddle, other;
+    peak = pit = saddle = other = 0;
+    
+    for (int i = 0; i < sc.size(); i++)
+    {
+	if (sc[i].ct == PEAK)
+	    peak++;
+
+	if (sc[i].ct == PIT)
+	    pit++;
+
+	if (sc[i].ct == SADDLE)
+	    saddle++;
+
+	if (sc[i].ct == OTHER)
+	    other++;
+    }
+    printf ("\n");
+    printf ("REPORT total %d\n", sc.size() );
+    printf ("REPORT peak %d\n", peak );
+    printf ("REPORT saddle %d\n", saddle );
+    printf ("REPORT pit %d\n", pit );
+    printf ("REPORT other %d\n", other );
+    printf ("\n");
+}
+
+void check_and_print_swiss (std::vector <SwissSpotHeight>& sc)
+{
+    int peak_total, peak_peak, peak_pit, peak_saddle, peak_other, peak_wrong;
+    peak_total = peak_peak = peak_pit = peak_saddle = peak_other = peak_wrong = 0;
+    int saddle_total, saddle_peak, saddle_pit, saddle_saddle, saddle_other, saddle_wrong;
+    saddle_total = saddle_peak = saddle_pit = saddle_saddle = saddle_other = saddle_wrong = 0;
+    int pit_total, pit_peak, pit_pit, pit_saddle, pit_other, pit_wrong;
+    pit_total = pit_peak = pit_pit = pit_saddle = pit_other = pit_wrong = 0;
+    int natural_total, natural_peak, natural_pit, natural_saddle, natural_other;
+    natural_total = natural_peak = natural_pit = natural_saddle = natural_other = 0;
+    int human_total, human_peak, human_pit, human_saddle, human_other;
+    human_total = human_peak = human_pit = human_saddle = human_other = 0;
+    int other_total, other_peak, other_pit, other_saddle, other_other, other_wrong;
+    other_total = other_peak = other_pit = other_saddle = other_other = other_wrong = 0;
+    
+    for (int i = 0; i < sc.size(); i++)
+    {
+	if (is_peak (sc[i].st))
+	{
+	    peak_total++;
+	    if (sc[i].ct == PEAK)
+		peak_peak++;
+
+	    if (sc[i].ct == PIT)
+		peak_pit++;
+
+	    if (sc[i].ct == SADDLE)
+		peak_saddle++;
+
+	    if (sc[i].ct == OTHER)
+		peak_other++;
+	}
+	else if (is_saddle (sc[i].st))
+	{
+	    saddle_total++;
+	    if (sc[i].ct == PEAK)
+		saddle_peak++;
+
+	    if (sc[i].ct == PIT)
+		saddle_pit++;
+
+	    if (sc[i].ct == SADDLE)
+		saddle_saddle++;
+
+	    if (sc[i].ct == OTHER)
+		saddle_other++;
+	}
+	else if (is_pit (sc[i].st))
+	{
+	    pit_total++;
+	    if (sc[i].ct == PEAK)
+		pit_peak++;
+
+	    if (sc[i].ct == PIT)
+		pit_pit++;
+
+	    if (sc[i].ct == SADDLE)
+		pit_saddle++;
+
+	    if (sc[i].ct == OTHER)
+		pit_other++;
+	}
+	else if (is_natural (sc[i].st))
+	{
+	    natural_total++;
+	    if (sc[i].ct == PEAK)
+		natural_peak++;
+
+	    if (sc[i].ct == PIT)
+		natural_pit++;
+
+	    if (sc[i].ct == SADDLE)
+		natural_saddle++;
+
+	    if (sc[i].ct == OTHER)
+		natural_other++;
+	}
+	else if (is_human (sc[i].st))
+	{
+	    human_total++;
+	    if (sc[i].ct == PEAK)
+		human_peak++;
+
+	    if (sc[i].ct == PIT)
+		human_pit++;
+
+	    if (sc[i].ct == SADDLE)
+		human_saddle++;
+
+	    if (sc[i].ct == OTHER)
+		human_other++;
+	}
+	else if (is_pit (sc[i].st))
+	{
+	    pit_total++;
+	    if (sc[i].ct == PEAK)
+		pit_peak++;
+
+	    if (sc[i].ct == PIT)
+		pit_pit++;
+
+	    if (sc[i].ct == SADDLE)
+		pit_saddle++;
+
+	    if (sc[i].ct == OTHER)
+		pit_other++;
+	}
+	else
+	{
+	    other_total++;
+	    if (sc[i].ct == PEAK)
+		other_peak++;
+
+	    if (sc[i].ct == PIT)
+		other_pit++;
+
+	    if (sc[i].ct == SADDLE)
+		other_saddle++;
+
+	    if (sc[i].ct == OTHER)
+		other_other++;
+	}
+    }
+
+    peak_wrong = peak_pit + peak_saddle;// + peak_other;
+    saddle_wrong = saddle_pit + saddle_peak;// + saddle_other;
+    pit_wrong = pit_peak + pit_saddle;// + pit_other;
+    other_wrong = other_pit + other_saddle + other_peak;
+
+    printf ("\n");
+    printf ("REPORT peak_total %d\n", peak_total );
+    printf ("REPORT peak_peak %d\n", peak_peak );
+    printf ("REPORT peak_saddle %d\n", peak_saddle );
+    printf ("REPORT peak_pit %d\n", peak_pit );
+    printf ("REPORT peak_other %d\n", peak_other );
+    printf ("REPORT peak_mismatch %d\n", peak_wrong );
+
+    printf ("\n");
+    printf ("REPORT saddle_total %d\n", saddle_total );
+    printf ("REPORT saddle_peak %d\n", saddle_peak );
+    printf ("REPORT saddle_saddle %d\n", saddle_saddle );
+    printf ("REPORT saddle_pit %d\n", saddle_pit );
+    printf ("REPORT saddle_other %d\n", saddle_other );
+    printf ("REPORT saddle_mismatch %d\n", saddle_wrong );
+
+    printf ("\n");
+    printf ("REPORT pit_total %d\n", pit_total );
+    printf ("REPORT pit_peak %d\n", pit_peak );
+    printf ("REPORT pit_saddle %d\n", pit_saddle );
+    printf ("REPORT pit_pit %d\n", pit_pit );
+    printf ("REPORT pit_other %d\n", pit_other );
+    printf ("REPORT pit_mismatch %d\n", pit_wrong );
+
+    printf ("\n");
+    printf ("REPORT other_total %d\n", other_total );
+    printf ("REPORT other_peak %d\n", other_peak );
+    printf ("REPORT other_saddle %d\n", other_saddle );
+    printf ("REPORT other_pit %d\n", other_pit );
+    printf ("REPORT other_other %d\n", other_other );
+    printf ("REPORT other_mismatch %d\n", other_wrong );
+
+    printf ("\n");
+    printf ("REPORT natural_total %d\n", natural_total );
+    printf ("REPORT natural_peak %d\n", natural_peak );
+    printf ("REPORT natural_saddle %d\n", natural_saddle );
+    printf ("REPORT natural_pit %d\n", natural_pit );
+    printf ("REPORT natural_other %d\n", natural_other );
+
+    printf ("\n");
+    printf ("REPORT human_total %d\n", human_total );
+    printf ("REPORT human_peak %d\n", human_peak );
+    printf ("REPORT human_saddle %d\n", human_saddle );
+    printf ("REPORT human_pit %d\n", human_pit );
+    printf ("REPORT human_other %d\n", human_other );
+
+    printf ("\n");
+}
+
 
 void adjacent_pixels (Point p, std::vector<Coord>& nb)
 {
@@ -633,6 +852,11 @@ int main (int argc, char *argv[])
     }
     
     csvio.save (output_swiss_file, swiss_class);
+
+    if (perform_final_report_swiss)
+	check_and_print_swiss (swiss_class);
+    if (perform_final_report_generic)
+	check_and_print_generic (swiss_class);
 }
 
 

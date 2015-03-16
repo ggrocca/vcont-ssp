@@ -36,7 +36,7 @@ for category in $categories ; do
 	
 	plot_scattered $dir stats-$category-performance.dat \
 		       terrain-$category-$graph.pdf \
-    		       $xx $yy $graph-$category
+    		       $xx $yy "Life+Drop"
 
 	for zed in life strength ; do
 
@@ -72,8 +72,10 @@ for category in $categories ; do
 	     life strength $column
     done
 
+    realmax=`grep terrain_peaks_life_max "$dir"/"stats.txt" | cut -d ' '  -f 2`
     simple_plot $dir stats-peaks-performance.dat terrain-peaks-f05-simple.pdf \
-		life f05 f05 \* \* 0 1
+		life f05 "Life+Drop" 0 $realmax 0 1
+#		life f05 f05 \* \* 0 1
 
 
     

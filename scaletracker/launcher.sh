@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function print_help {
-    echo "Usage: $0" "[all | aargau-lucerne | lucerne | crop_named_peaks | aletsch_terr | aletsch_curv] [drop]" 
+    echo "Usage: $0" "[all | aargau-lucerne | lucerne | crop_named_peaks | aletsch_terr | aletsch_curv | greek | monterosa ] [drop]" 
 }
 
 if [ $# -lt "1" ]; then
@@ -111,3 +111,39 @@ if [ $DATASET == "aletsch_curv_8" ]; then
 		  2> ../../datasets/aletsch/aletsch_curv_8.err.txt    
     set +x
 fi
+
+if [ $ALL == "true" ]; then DATASET="greek"; fi
+if [ $DATASET == "greek" ]; then
+    echo "greek"
+    set -x
+    /usr/bin/time -f "%E real,%U user,%S sys" \
+    		  -o ../../datasets/greek/greek_terr.time.txt \
+    		  ./scaletracker \
+    		  -i ../../datasets/greek/greek_pos_krig_higherres.asc \
+    		  -o ../../datasets/greek/greek_terr \
+    		  -a -n 16 -p 0.01 0 $DROPOPT \
+    		  > ../../datasets/greek/greek_terr.out.txt \
+    		  2> ../../datasets/greek/greek_terr.err.txt
+    ../util/track2csv/track2csv -a ../../datasets/greek/greek_pos_krig_higherres.asc \
+				-t ../../datasets/greek/greek_terr.trk \
+				-o ../../datasets/greek/greek_terr.trk.csv
+    set +x
+fi
+
+
+if [ $ALL == "true" ]; then DATASET="monterosa"; fi
+if [ $DATASET == "monterosa" ]; then
+    echo "monterosa"
+    set -x
+    /usr/bin/time -f "%E real,%U user,%S sys" \
+    		  -o ../../datasets/monterosa/monterosa_terr.time.txt \
+    		  ./scaletracker \
+    		  -i ../../datasets/monterosa/N45E007.hgt \
+    		  -o ../../datasets/monterosa/monterosa_terr \
+    		  -a -n 14 -p 0.01 0 $DROPOPT \
+		  -c 2700 3000 3300 3600 \
+    		  > ../../datasets/monterosa/monterosa_terr.out.txt \
+    		  2> ../../datasets/monterosa/monterosa_terr.err.txt
+    set +x
+fi
+./scaletracker -n 14 -i ../../datasets/N45E007.hgt -o ../../scratch/monterosa -t ../../scratch/monterosa -p 0.01 0 -c 2700 3000 3300 3600 -m 14 > ../../scratch/monterosa.out.txt 2> ../../scratch/monterosa.err.txt

@@ -589,14 +589,19 @@ void init_inspector_mode ()
     TwAddVarRW(cBar, "render spots", TW_TYPE_BOOLCPP, &(td.draw_inspector), "");
     TwAddSeparator (cBar, 0, 0);
 
+    TwAddVarRW(cBar, "circle spots", TW_TYPE_BOOLCPP, &(td.draw_critical_circle), "");
+    TwAddVarRW(cBar, "collapse position", TW_TYPE_BOOLCPP, &(td.draw_current_point), "");
+    TwAddVarRW(cBar, "life cut from dem_idx", TW_TYPE_BOOLCPP, &(td.set_life_cut_on_index), "");
     TwAddVarRW(cBar, "spot size", TW_TYPE_DOUBLE,
 	       &(td.spot_scale), "min=0.001 max=100.00 step=0.001");
 
     td.elixir_mult = td.importance_mult = 0.0;
     TwAddVarRW(cBar, "life mult", TW_TYPE_DOUBLE, &(td.elixir_mult),
-    	       "min=0.0 max=1.0 step=0.05");
+    	       "min=0.0 step=0.05");
     TwAddVarRW(cBar, "importance mult", TW_TYPE_DOUBLE, &(td.importance_mult),
-    	       "min=0.0 max=1.0 step=0.05");
+    	       "min=0.0 step=0.05");
+    TwAddVarRW(cBar, "mult exp", TW_TYPE_BOOLCPP, &(td.multiply_exp), "");
+    TwAddVarRW(cBar, "mult pow", TW_TYPE_BOOLCPP, &(td.multiply_pow), "");
     TwAddSeparator (cBar, 0, 0);
 
     td.inspector_maxima = true;

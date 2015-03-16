@@ -31,6 +31,11 @@ double cut_borders = 0.0;
 
 bool do_output = false;
 bool do_peaks_only = false;
+
+bool save_f05_query = true;
+bool save_pr_query = false;
+char* save_best_query = NULL;
+
 std::string oname;
 
 bool strength_user_limits = false;
@@ -80,6 +85,7 @@ void print_help (FILE* f)
 	     "[-s swiss input points.csv]\n"
 	     "[-m modified swiss output points.csv]: dumb classifier\n"
 	     "[-a dem.asc]\n"
+	     "[-q 'pr'|'f05'] save best pr query or best f05 query.\n"
 	     "[-Q LIFE_STEPS STRENGTH_STEPS] query mode - ROC and PR analysis.\n"
 	     "[-S STRENGTH_MAX STRENGTH_MIN] keep strength values in those boundaries.\n"
 	     "[-L LIFE_MAX LIFE_MIN] keep life values in those boundaries.\n"
@@ -115,6 +121,17 @@ void app_init(int argc, char *argv[])
                 oname = (*++argv);
 		do_output = true;
                 argc--;
+                break;
+
+	    case 'q':
+                save_best_query = (*++argv);
+                argc--;
+		if (save_best_query != NULL && strlen(save_best_query) == 2 &&
+		    save_best_query[0] == 'p' && save_best_query[1] == 'r')
+		{
+		    save_f05_query = false;
+		    save_pr_query = true;
+		}
                 break;
 
             case 's':
@@ -792,8 +809,16 @@ void main_query ()
 		 best_query_pr_point.x, best_query_pr_point.y, 
 		 life_best_pr, strength_best_pr);
 
-	fprintf (stdout, "saving f05 query\n");
-	query_and_save (oname+"-"+kt_name, life_best_f05, strength_best_f05, kt_sw, kt_swps, kt_st);
+	if (save_f05_query)
+	{
+	    fprintf (stdout, "saving f05 query\n");
+	    query_and_save (oname+"-"+kt_name, life_best_f05, strength_best_f05, kt_sw, kt_swps, kt_st);
+	}
+	if (save_pr_query)
+	{
+	    fprintf (stdout, "saving pr query\n");
+	    query_and_save (oname+"-"+kt_name, life_best_pr, strength_best_pr, kt_sw, kt_swps, kt_st);
+	}
     }
     
     CSVReader csvio (asch);
