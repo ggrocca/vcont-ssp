@@ -602,6 +602,7 @@ void init_inspector_mode ()
     	       "min=0.0 step=0.05");
     TwAddVarRW(cBar, "mult exp", TW_TYPE_BOOLCPP, &(td.multiply_exp), "");
     TwAddVarRW(cBar, "mult pow", TW_TYPE_BOOLCPP, &(td.multiply_pow), "");
+
     TwAddSeparator (cBar, 0, 0);
 
     td.inspector_maxima = true;

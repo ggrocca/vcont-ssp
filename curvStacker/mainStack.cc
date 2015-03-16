@@ -30,6 +30,7 @@ void print_help ()
 	     "[-C cellSize] : grid cells have cellSize size.\n"
 	     "[-Z curvMultFactor] : multiply curvature values by this value.\n"
 	     "[-L LowestRandomizedValue] : background has this value, randomized\n"
+	     "[-I] : compute Shape Index\n"
 	     "[-t] : disable topology Index.\n"
 	     "\n"
 	     );
@@ -40,6 +41,7 @@ double radius = 8.0;
 double maxV = 256.0;
 double step = 2.0;
 bool expStep = false;
+bool shapeIndex = false;
 bool do_topoindex = true;
 unsigned int skip = 2;
 bool grid = false;
@@ -172,13 +174,16 @@ void app_init(int argc, char *argv[])
 	    default:
 	      print_help();
 	      exit(-1);
+   	    case 'I':
+	      shapeIndex=true;
+	      break;
 	    }
         }	
     }
 
     if (curvFile && meshFile)
 	return;
-    else if (demFile && (meshFile || pngFile))
+    else if (demFile && (meshFile || pngFile || meshNumb>0))
 	return;
     else if (sspFile && (meshFile || pngFile))
 	return;
@@ -210,7 +215,7 @@ int main(int argc, char* argv[])
   now_max = demFile? radius : maxV;
   now_step = demFile? 1 : step;
   now_exp = demFile? 0 : expStep;
-  curvStacker s(now_base, now_max, now_step, now_exp ,skip, mapFile, heightFile, fastComputation);
+  curvStacker s(now_base, now_max, now_step, now_exp ,skip, mapFile, heightFile, fastComputation,shapeIndex);
 
   if (grid)
       s.setGrid (grid_width, grid_height, cellSize);

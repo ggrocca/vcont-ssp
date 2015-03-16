@@ -243,6 +243,10 @@ void TW_CALL save_points (void *clientData)
 
 double mult_factor = 1.0;
 bool do_normalize_border_points = true;
+bool automatic=false;
+string* autoFile=NULL;
+int n_shapes = 0;
+vector<string> shapeFiles;
 
 void print_help (FILE* f)
 {
@@ -257,6 +261,8 @@ void print_help (FILE* f)
 	     "[-c signs] load sign map\n"
 	     "[-g heights] load height field\n"
 	     "[-v val] val file\n"
+	     "[-k out.txt] automatic computation and printing of fiducial points\n"
+	     "[-S n shapeFiles] load n shape index files\n"
 	     "\n"
 	     );
 }
@@ -269,16 +275,27 @@ void app_init(int argc, char *argv[])
         {
             switch( (*argv)[1] )
             {
+
+	    case 'k':
+	      automatic=true;
+	      autoFile=new string(*++argv);
+	      argc--;
+	      break;
 	    case 'u':
 		do_normalize_border_points = false;
                 break;
-
-
-            case 's':
+	    case 's':
                 ssp_file = (*++argv);
                 argc--;
                 break;
-
+	    case 'S':
+	      n_shapes=atoi(*++argv);
+	      argc--;
+	      for (int i=0; i<n_shapes; i++, argc--)
+		{
+		  shapeFiles.push_back(string(*++argv));
+		}
+	      break;
 	    case 'm':
                 mult_factor = atof (*++argv);
                 argc--;
@@ -361,6 +378,11 @@ int main (int argc, char *argv[])
     if (do_normalize_border_points)
 	td.track->normalize_border_points ();
 
+    if (n_shapes>0)
+      td.readShapes(shapeFiles);
+
+    td.automatic=automatic;
+    td.autoFile=autoFile;
     // int dem_num;
     // read_dems (argv[2], dem_num = atoi (argv[3]));
     td.read_ssp (ssp_file);
@@ -379,8 +401,8 @@ int main (int argc, char *argv[])
     if (height_file != NULL)
       td.read_height(height_file);
 
-    if (val_file != NULL)
-      td.read_val(val_file);
+    // if (val_file != NULL)
+    //   td.read_val(val_file);
     // m.bb();
     // m.initL();
 
@@ -559,15 +581,21 @@ int main (int argc, char *argv[])
 
      int i=1;
      TwAddVarRW(cBar, "Search nose tip", TW_TYPE_BOOLCPP,  &(td.show_nose), "");
-     TwAddVarRW(cBar, "Search eyes outer angles", TW_TYPE_BOOLCPP,  &(td.show_eyesOuterAngles), "");
+     TwAddVarRW(cBar, "Search eyes angles", TW_TYPE_BOOLCPP,  &(td.show_eyesOuterAngles), "");
      TwAddVarRW(cBar, "Search nose sides",TW_TYPE_BOOLCPP,  &(td.show_noseLimits), "");
      TwAddVarRW(cBar, "Search underNose",TW_TYPE_BOOLCPP,  &(td.show_underNose), "");
      TwAddVarRW(cBar, "Search nose root",TW_TYPE_BOOLCPP,  &(td.show_noseRoot), "");
+     TwAddVarRW(cBar, "Search mouth",TW_TYPE_BOOLCPP,  &(td.show_mouth), "");
      TwAddVarRW(cBar, "fiducial to be shown", TW_TYPE_INT32, &(td.fiducialShow), "");
      TwAddSeparator (cBar, 0, 0);
      
 
+
      TwAddVarRW(cBar, "Show simmetry axis",TW_TYPE_BOOLCPP,  &(td.show_axis), "");
+     TwAddVarRW(cBar, "- Cut border pixels", TW_TYPE_DOUBLE, &(td.border_cut),
+    	       "min=0.0 step=1");
+     TwAddVarRW(cBar, "- similarity cut", TW_TYPE_DOUBLE, &(td.sim_cut),
+    	       "min=0.0 step=0.001");
      TwAddVarRW(cBar, "- min differential cut", TW_TYPE_DOUBLE, &(td.simmetry_imp_cut_min),
     	       "min=0.0 step=0.00001");
      TwAddVarRW(cBar, "- min life cut", TW_TYPE_DOUBLE, &(td.simmetry_life_cut_min),

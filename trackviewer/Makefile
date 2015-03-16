@@ -102,7 +102,7 @@ endif
 # override STATIC_LDFLAGS +=
 # override FRAMEWORKS +=
 override FLAGS = 
-override DEBUG_FLAGS = -Wall -W -g
+override DEBUG_FLAGS = -Wall -W -g -Wshadow
 override TRACE_FLAGS += -DDEBUGTRACE
 override RELEASE_FLAGS = -O2 -DNDEBUG
 override INCLUDES = -I../common/

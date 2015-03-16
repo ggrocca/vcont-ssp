@@ -69,7 +69,7 @@ public:
     void getbb (Point* a, Point* b);
     void draw (int dem_idx);
     void draw_line_test (double d);
-
+  void readShapes(vector<string>);
     // additional csv points
 
 
@@ -142,6 +142,8 @@ public:
   bool show_noseLimits;
   bool show_underNose;
   bool show_eyesOuterAngles;
+  bool show_eyebrows;
+  bool show_mouth;
   int fiducialShow;
     double spot_scale;
     void init_spots ();
@@ -197,6 +199,8 @@ public:
     double sellae_excluded_life;
 
 
+  double border_cut;
+  double sim_cut;
     // std::vector<DEMReader*> dems;
     ScaleSpace* ssp;
     Track* track;
@@ -213,6 +217,10 @@ public:
     double swpts_cellsize;
   //std::vector<SwissSpotHeight> swpts_ground_truth;
     
+
+  bool automatic;
+  string * autoFile;
+  bool isInner;
     // void swpts_load_asc (char* filename);
     // void swpts_draw ();
     // void swpts_load_csv (char* filename);
@@ -221,10 +229,14 @@ public:
   int searchNoseTip();
   int searchNoseRoot(double, double);
   int searchUnderNose(double, double);
-  void searchEyesOuterAngles(double, double,int&,int&);
-  void searchEyesOuterAngles(int&,int&);
+  void searchEyesAngles(double, double,int&,int&, int&, int&);
+  void searchEyesAngles(int&,int&);
   void searchNoseLimits(double,double,int&,int&);
+  void searchEyebrows(double,int&,int&);
+  void searchMouth(double, double,int&,int&,int&,int&);
   void computeAxis(double&,double&,double&,double&,vector<CritNikolas>);
+
+  double max_imp, min_imp;
 };
 
 
