@@ -1,6 +1,6 @@
 #!/bin/bash
 
-tab="distancetable.dat"
+tab="distancetable2.dat"
 
 fiducials=`head $tab -n 13 | cut -f 3`
 

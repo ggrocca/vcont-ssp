@@ -227,13 +227,13 @@ public:
     // void swpts_save_csv (char* filename);
   
   int searchNoseTip();
-  int searchNoseRoot(double, double);
+  int searchNoseRoot(double, double, double);
   int searchUnderNose(double, double);
   void searchEyesAngles(double, double,int&,int&, int&, int&);
   void searchEyesAngles(int&,int&);
-  void searchNoseLimits(double,double,int&,int&);
+  void searchNoseLimits(double,double,int,int&,int&);
   void searchEyebrows(double,int&,int&);
-  void searchMouth(double, double,int&,int&,int&,int&);
+  void searchMouth(double, double, double, double, int&,int&,int&,int&);
   void computeAxis(double&,double&,double&,double&,vector<CritNikolas>);
 
   double max_imp, min_imp;
