@@ -60,3 +60,37 @@ _EOF_
 done
 echo "done."
 echo ""
+
+
+
+echo "generate grouped plots..."
+
+my_fontscale=1.7
+my_dashlength=1.5
+
+function plot_group {
+    {
+	name=$1
+	shift
+	comma=","
+	plotline="plot "
+	for var in "$@"; do
+	    plotline="$plotline '$var.tmp.dat' using 'distance':'percent' w lp"
+	    if [ $var != "${@: -1}" ]; then
+		plotline=$plotline$comma
+	    fi
+	done
+	echo "set terminal pdfcairo size 20cm,20cm linewidth 4 rounded"
+	echo "set output '$name.pdf'"
+	#echo "set title '$fp'"
+	echo "set xrange [0:20]"
+	echo $plotline
+    } | gnuplot
+}
+
+plot_group group1_nose  fiducial_prn   fiducial_al_dx fiducial_al_sx fiducial_m      fiducial_sn
+plot_group group2_eyes  fiducial_ex_dx fiducial_ex_sx fiducial_en_dx fiducial_en_sx
+plot_group group3_mouth fiducial_sto1  fiducial_sto2  fiducial_ch_dx fiducial_ch_sx
+
+echo "done."
+echo ""
