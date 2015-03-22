@@ -6,7 +6,8 @@ fiducials=`head $tab -n 13 | cut -f 3`
 meshnum=`tail -n 1 $tab | cut -f 2`
 #meshnum=$((meshnum+1))
 # 100 : mn = x : ln   x=(100/mn)ln    
-echo $meshnum
+echo "number of meshe: $meshnum"
+echo ""
 #meshnum=108
 
 echo "check that all meshes have all fiducial points..."
