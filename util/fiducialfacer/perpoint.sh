@@ -80,8 +80,9 @@ function plot_group {
 		plotline=$plotline$comma
 	    fi
 	done
-	echo "set terminal pdfcairo size 20cm,20cm linewidth 4 rounded"
+	echo "set terminal pdfcairo dl $my_dashlength size 20cm,20cm linewidth 4 rounded fontscale $my_fontscale"
 	echo "set output '$name.pdf'"
+#	echo "load 'settings.gp'"
 	#echo "set title '$fp'"
 	echo "set xrange [0:20]"
 	echo $plotline
