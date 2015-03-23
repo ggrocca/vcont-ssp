@@ -1,6 +1,6 @@
 #!/bin/bash
 
-tab="distancetable2.dat"
+tab="distancetable.dat"
 
 fiducials=`head $tab -n 13 | cut -f 3`
 meshnum=`tail -n 1 $tab | cut -f 2`
