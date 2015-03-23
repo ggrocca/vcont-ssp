@@ -6,7 +6,7 @@ fiducials=`head $tab -n 13 | cut -f 3`
 meshnum=`tail -n 1 $tab | cut -f 2`
 #meshnum=$((meshnum+1))
 # 100 : mn = x : ln   x=(100/mn)ln    
-echo "number of meshe: $meshnum"
+echo "number of meshes: $meshnum"
 echo ""
 #meshnum=108
 
@@ -75,7 +75,8 @@ function plot_group {
 	comma=","
 	plotline="plot "
 	for var in "$@"; do
-	    plotline="$plotline '$var.tmp.dat' using 'distance':'percent' w lp"
+	    title=${var#"fiducial_"}
+	    plotline="$plotline '$var.tmp.dat' using 'distance':'percent' title '$title' w lp"
 	    if [ $var != "${@: -1}" ]; then
 		plotline=$plotline$comma
 	    fi
@@ -84,6 +85,7 @@ function plot_group {
 	echo "set output '$name.pdf'"
 #	echo "load 'settings.gp'"
 	#echo "set title '$fp'"
+	echo "set key at 19,38"
 	echo "set xrange [0:20]"
 	echo $plotline
     } | gnuplot
