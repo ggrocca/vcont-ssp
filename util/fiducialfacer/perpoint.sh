@@ -75,7 +75,8 @@ function plot_group {
 	comma=","
 	plotline="plot "
 	for var in "$@"; do
-	    title=${var#"fiducial_"}
+	    #title=${var#"fiducial_"}
+	    title=" "
 	    plotline="$plotline '$var.tmp.dat' using 'distance':'percent' title '$title' w lp"
 	    if [ $var != "${@: -1}" ]; then
 		plotline=$plotline$comma
@@ -83,10 +84,13 @@ function plot_group {
 	done
 	echo "set terminal pdfcairo dl $my_dashlength size 20cm,20cm linewidth 4 rounded fontscale $my_fontscale"
 	echo "set output '$name.pdf'"
-#	echo "load 'settings.gp'"
+	echo "load 'settings.gp'"
 	#echo "set title '$fp'"
-	echo "set key at 19,38"
-	echo "set xrange [0:20]"
+	echo "set xlabel 'mm'"
+	echo "set ylabel '%meshes'"
+	echo "set xtics 2"
+	echo "set ytics 10"
+	echo "set xrange [0:16]"
 	echo $plotline
     } | gnuplot
 }
