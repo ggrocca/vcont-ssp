@@ -2,6 +2,12 @@
 
 tab="distancetable.dat"
 
+if [ $# -eq 1 ]; then
+    NOLABEL=$1
+else
+    NOLABEL=empty
+fi
+
 fiducials=`head $tab -n 13 | cut -f 3`
 meshnum=`tail -n 1 $tab | cut -f 2`
 #meshnum=$((meshnum+1))
@@ -71,6 +77,9 @@ my_dashlength=1.5
 function plot_group {
     {
 	name=$1
+	if [ $NOLABEL == "nolabel" ]; then
+	    name=$name"_nolabel"
+	fi
 	shift
 	comma=","
 	plotline="plot "
@@ -86,8 +95,23 @@ function plot_group {
 	echo "set output '$name.pdf'"
 	echo "load 'settings.gp'"
 	#echo "set title '$fp'"
-	echo "set xlabel 'mm'"
-	echo "set ylabel '%meshes'"
+	if [ $NOLABEL == "nolabel" ]; then
+	    echo "unset xlabel"
+	    echo "unset ylabel"
+	    echo "set lmargin at screen 0.12;"
+	    echo "set rmargin at screen 0.96;"
+	    #echo "set bmargin at screen 0.1;"
+	    #echo "set tmargin at screen 0.98;"
+	else
+	    echo "set lmargin at screen 0.16;"
+	    echo "set rmargin at screen 0.93;"
+	    #echo "set bmargin at screen 0.1;"
+	    echo "set tmargin at screen 0.98;"	    
+	    echo "set xlabel offset 0,0.5,0"
+	    echo "set ylabel offset 2.8,0,0"
+	    echo "set xlabel 'mm'"
+	    echo "set ylabel '%meshes'"
+	fi
 	echo "set xtics 2"
 	echo "set ytics 10"
 	echo "set xrange [0:16]"

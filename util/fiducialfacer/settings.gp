@@ -45,10 +45,3 @@ set border back linestyle 80
 #unset key
 set key at 14.7,38
 
-set lmargin at screen 0.16;
-set rmargin at screen 0.93;
-#set bmargin at screen 0.1;
-set tmargin at screen 0.98;
-
-set xlabel offset 0,0.5,0
-set ylabel offset 2.8,0,0
