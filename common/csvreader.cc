@@ -609,6 +609,59 @@ void CSVReader::save (const char* filename, std::vector<int>& spots,
     save (filename, vsh);
 }    
 
+void CSVReader::save (const char* filename, std::vector<int>& spots,
+		      std::vector<double>& rendersize, Track* track, ScaleSpace* ssp)
+{
+    if (rendersize.size () != spots.size ())
+	return save (filename, spots, track, ssp);
+	
+    std::vector<SwissSpotHeight> vsh;
+    
+    for (unsigned i = 0; i < spots.size(); i++)
+    {
+    	int idx = spots[i];
+    	// coords:      track->lines[idx].entries[0].c,
+    	// type:        track->original_type (idx)
+    	// importance:  track->lifetime_elixir (idx)
+
+    	Point pi (track->lines[idx].entries[0].c.x + 0.5,
+    		  track->lines[idx].entries[0].c.y + 0.5);
+    	double vv = (*(ssp->dem[0]))(track->lines[idx].entries[0].c.x,
+				     track->lines[idx].entries[0].c.y);
+	
+	SwissSpotHeight sh (pi);
+	sh.z = vv;
+	sh.ct = critical2classified (track->original_type (idx));
+	sh.st = UNDEFINED;
+	sh.dbt = DB_TRACK;
+	sh.life = track->lifetime_elixir (idx);
+	sh.strength = track->strength (idx);
+	vsh.push_back (sh);
+    }
+    
+    // save (filename, points, false);
+    FILE *fp = fopen (filename, "w");
+    if (fp == NULL)
+	eprintx (2, "Could not open file `%s'. %s\n", filename, strerror (errno));
+
+    fprintf (fp, "X,Y,Z,LIFE,STRENGTH,RENDERSIZE,CLASSIFICATION,SWISSTOPO,DATABASE\n");
+    
+    for (unsigned i = 0; i < vsh.size(); i++)
+    {
+	Point pa;
+	img2asc (vsh[i].p, &pa);
+
+	fprintf (fp, "%lf,%lf,%lf,%lf,%lf,%lf,%s,%s,%d\n",
+		 pa.x, pa.y, vsh[i].z, vsh[i].life, vsh[i].strength,
+		 rendersize[i],
+		 (classified2string (vsh[i].ct)).c_str (),
+		 (swisstopo2string (vsh[i].st)).c_str (),
+		 vsh[i].dbt);
+    }
+
+    fclose (fp);
+}
+
 void CSVReader::save (const char* filename, ScaleSpace* ssp)
 {
     FILE* fp = fopen (filename, "w");

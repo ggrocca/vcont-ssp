@@ -145,6 +145,7 @@ public:
     double& operator() (Coord c, AccessType a = ABYSS);    // read & write with coord
     double& operator() (int x, int y, AccessType a = ABYSS); // read & write with x,y
 
+    void invert ();                                          // invert all cell signs
     void clip_background (double v);            // values < v are clipped to -DBL_MAX
     void clip_background (Dem& dem, double v);     // clip values that are < v in dem
     bool is_clip (Coord c);                               // is this a clipped value?

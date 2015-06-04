@@ -183,6 +183,8 @@ public:
     // 	       bool save_types);
     void save (const char* filename, std::vector<int>& spots,
 		     Track* track, ScaleSpace* ssp);
+    void save (const char* filename, std::vector<int>& spots,
+	       std::vector<double>& rendersize, Track* track, ScaleSpace* ssp);
     void save (const char* filename, ScaleSpace* ssp);
     
     void asc2img (Point a, Point* i);

@@ -138,7 +138,7 @@ if [ $DATASET == "monterosa" ]; then
     /usr/bin/time -f "%E real,%U user,%S sys" \
     		  -o ../../datasets/monterosa/monterosa_terr.time.txt \
     		  ./scaletracker \
-    		  -i ../../datasets/monterosa/N45E007.hgt \
+    		  -i ../../datasets/monterosa/n45e007.asc \
     		  -o ../../datasets/monterosa/monterosa_terr \
     		  -a -n 14 -p 0.01 0 $DROPOPT \
 		  -c 2700 3000 3300 3600 \
@@ -146,4 +146,60 @@ if [ $DATASET == "monterosa" ]; then
     		  2> ../../datasets/monterosa/monterosa_terr.err.txt
     set +x
 fi
-./scaletracker -n 14 -i ../../datasets/N45E007.hgt -o ../../scratch/monterosa -t ../../scratch/monterosa -p 0.01 0 -c 2700 3000 3300 3600 -m 14 > ../../scratch/monterosa.out.txt 2> ../../scratch/monterosa.err.txt
+
+if [ $ALL == "true" ]; then DATASET="puysegur"; fi
+if [ $DATASET == "puysegur" ]; then
+    echo "puysegur"
+    set -x
+    /usr/bin/time -f "%E real,%U user,%S sys" \
+    		  -o ../../datasets/newzealand/puysegur_25_terr.time.txt \
+    		  ./scaletracker \
+    		  -i ../../datasets/newzealand/puysegur_25.asc \
+    		  -o ../../datasets/newzealand/puysegur_25_terr \
+    		  -I -a -n 16 -p 0.01 0 $DROPOPT \
+    		  > ../../datasets/newzealand/puysegur_25_terr.out.txt \
+    		  2> ../../datasets/newzealand/puysegur_25_terr.err.txt
+    ../util/track2csv/track2csv -a ../../datasets/newzealand/puysegur_25.asc \
+				-t ../../datasets/newzealand/puysegur_25_terr.trk \
+				-o ../../datasets/newzealand/puysegur_25_terr.trk.csv
+    set +x
+fi
+
+if [ $ALL == "true" ]; then DATASET="newzealand"; fi
+if [ $DATASET == "newzealand" ]; then
+    echo "newzealand"
+    set -x
+    /usr/bin/time -f "%E real,%U user,%S sys" \
+    		  -o ../../datasets/newzealand/newzealand_10_terr.time.txt \
+    		  ./scaletracker \
+    		  -i ../../datasets/newzealand/newzealand_10.asc \
+    		  -o ../../datasets/newzealand/newzealand_10_terr \
+    		  -I -a -n 16 -p 0.01 0 $DROPOPT \
+    		  > ../../datasets/newzealand/newzealand_10_terr.out.txt \
+    		  2> ../../datasets/newzealand/newzealand_10_terr.err.txt
+    ../util/track2csv/track2csv -a ../../datasets/newzealand/newzealand_10.asc \
+				-t ../../datasets/newzealand/newzealand_10_terr.trk \
+				-o ../../datasets/newzealand/newzealand_10_terr.trk.csv
+    set +x
+fi
+
+if [ $ALL == "true" ]; then DATASET="raukumara"; fi
+if [ $DATASET == "raukumara" ]; then
+    echo "raukumara"
+    set -x
+    /usr/bin/time -f "%E real,%U user,%S sys" \
+    		  -o ../../datasets/newzealand/raukumara_terr.time.txt \
+    		  ./scaletracker \
+    		  -i ../../datasets/newzealand/raukumara.asc \
+    		  -o ../../datasets/newzealand/raukumara_terr \
+    		  -I -a -n 16 -p 0.01 0 $DROPOPT \
+    		  > ../../datasets/newzealand/raukumara_terr.out.txt \
+    		  2> ../../datasets/newzealand/raukumara_terr.err.txt
+    ../util/track2csv/track2csv -a ../../datasets/newzealand/raukumara.asc \
+				-t ../../datasets/newzealand/raukumara_terr.trk \
+				-o ../../datasets/newzealand/raukumara_terr.trk.csv
+    set +x
+fi
+
+
+#./scaletracker -n 14 -i ../../datasets/N45E007.hgt -o ../../scratch/monterosa -t ../../scratch/monterosa -p 0.01 0 -c 2700 3000 3300 3600 -m 14 > ../../scratch/monterosa.out.txt 2> ../../scratch/monterosa.err.txt

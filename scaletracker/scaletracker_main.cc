@@ -29,6 +29,7 @@ char *tracking_name = 0;
 char *critical_name = 0;
 char *critical_csv_name = 0;
 char *scalespace_write_name = 0;
+char *scalespace_write_plateau_name = 0;
 char *scalespace_read_name = 0;
 char *plateau_name = 0;
 char *asc_crop_name = 0;
@@ -54,6 +55,7 @@ bool do_control = false;
 int filter_algo = 0;
 bool check_plateaus = false;
 bool do_final_query = false;
+bool do_invert_dem = false;
 // bool do_border_normalization = false;
 
 char *meshfile = 0;
@@ -82,6 +84,7 @@ void print_help (FILE* f)
 	     "[-m mult] : multiply tiff output values by mult. Default auto mode\n"
 	     "[-a] : check for flat areas\n"
 	     "[-D] : substitute Relative Drop calculation for strength. Peaks only. \n"
+	     "[-I] : Invert altitude values signs of DEM cells. \n"
 	     // "[-e] : border points normalization\n"
 	     "[-q] : do final tracking query.\n"
 	     "\n"
@@ -203,18 +206,21 @@ void app_init(int argc, char *argv[])
 		static char _critical_str[_FNLEN] = {'\0'};
 		static char _critical_csv_str[_FNLEN] = {'\0'};
 		static char _scalespace_str[_FNLEN] = {'\0'};
+		static char _scalespace_plateau_str[_FNLEN] = {'\0'};
 		static char _plateau_str[_FNLEN] = {'\0'};
 		static char _asc_crop_str[_FNLEN] = {'\0'};
 		snprintf (_tracking_str, _FNLEN, "%s%s" ,out_name, ".trk");
 		snprintf (_critical_str, _FNLEN, "%s%s" ,out_name, ".crt");
 		snprintf (_critical_csv_str, _FNLEN, "%s%s" ,out_name, ".crt.csv");
 		snprintf (_scalespace_str, _FNLEN, "%s%s" ,out_name, ".ssp");
+		snprintf (_scalespace_plateau_str, _FNLEN, "%s%s" ,out_name, "_plt.ssp");
 		snprintf (_plateau_str, _FNLEN, "%s%s" ,out_name, ".plt");
 		snprintf (_asc_crop_str, _FNLEN, "%s%s" ,out_name, "_crop.asc");
 		tracking_name = &(_tracking_str[0]);
 		critical_name = &(_critical_str[0]);
 		critical_csv_name = &(_critical_csv_str[0]);
 		scalespace_write_name = &(_scalespace_str[0]);
+		scalespace_write_plateau_name = &(_scalespace_plateau_str[0]);
 		plateau_name = &(_plateau_str[0]);
 		asc_crop_name = &(_asc_crop_str[0]);
 #undef _FNLEN
@@ -253,6 +259,10 @@ void app_init(int argc, char *argv[])
 
 	    case 'D':
 		do_relative_drop = true;
+                break;
+
+	    case 'I':
+		do_invert_dem = true;
                 break;
 
             case 'f':
@@ -431,6 +441,9 @@ int main (int argc, char *argv[])
 	fclose (fp);
     }
 
+    if (idem != NULL && do_invert_dem)
+	idem->invert ();
+
     tprintp ("###", "%s", "Start!\n");
 
     ScaleSpaceOpts opts;
@@ -537,9 +550,6 @@ int main (int argc, char *argv[])
 	}
     }
 
-    if (scalespace_write_name)
-	ssp->write_scalespace (scalespace_write_name);
-    
     if (check_plateaus)
     {
 	int level_with_flats = -1;
@@ -552,12 +562,16 @@ int main (int argc, char *argv[])
 
 	if (level_with_flats != -1)
 	{
+	    ssp->write_scalespace (scalespace_write_plateau_name);
 	    ssp->write_plateaus (plateau_name);	    
 	    eprintx (2, "Scalespace has flat areas, starting at level %d."
 		     " Critical points extraction and tracking aborted.\n",
 		     level_with_flats);
 	}
     }
+
+    if (scalespace_write_name)
+	ssp->write_scalespace (scalespace_write_name);
     
     if (stage == 3)
 	exit (0);

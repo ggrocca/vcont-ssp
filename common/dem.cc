@@ -266,6 +266,14 @@ void Dem::clip_background (Dem& d, double v)
 		(*this)(i, j) = -DBL_MAX;
 }
 
+void Dem::invert ()
+{
+    for (int i = 0; i < width; i++)
+	for (int j = 0; j < height; j++)
+	    (*this)(i, j) = -(*this)(i, j);
+}
+
+
 bool Dem::is_clip (Coord c)
 {
     return is_clip (c.x, c.y);

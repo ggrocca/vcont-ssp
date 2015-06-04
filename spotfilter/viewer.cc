@@ -674,6 +674,9 @@ void init_inspector_mode ()
     TwAddVarRO(cBar, "crop_cut llc.y", TW_TYPE_INT32, &(td.crop_cut_llc.y), "");
     TwAddVarRO(cBar, "crop_cut hrc.x", TW_TYPE_INT32, &(td.crop_cut_hrc.x), "");
     TwAddVarRO(cBar, "crop_cut hrc.y", TW_TYPE_INT32, &(td.crop_cut_hrc.y), "");
+
+    TwAddSeparator (cBar, 0, 0);
+    TwAddButton(cBar, "save points", save_points, NULL, "");
 }
   
 

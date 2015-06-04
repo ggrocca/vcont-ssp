@@ -10,7 +10,8 @@ set style line 81 lt rgb "#606060" lw 1 # grey
 
 set style line 82 lt 1  # dashed
 #set style line 82 lt rgb "#D4AA2C" lw 2
-set style line 82 lt rgb "#F1C232" lw 3
+#set style line 82 lt rgb "#F1C232" lw 3
+set style line 82 lt rgb "#00D8D8" lw 3
 set style line 83 lt 1  # dashed
 set style line 83 lt rgb "#E69138"lw 3
 

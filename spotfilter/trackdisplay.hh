@@ -171,6 +171,7 @@ public:
     std::vector<TrackRenderingEntry> vquery;
     TrackOrdering *track_order;
     vector<int> spots_current;
+    vector<double> spots_current_scalesize;
     std::vector < std::vector < std::vector <Coord> > > plateaus;
     
     // swisstopo additional points load/save/show
@@ -198,8 +199,8 @@ private:
     void __draw_critical_query (TrackRenderingEntry r,  double scale, double tol_mult,
 				bool cur_pos, bool draw_death);
 
-    void __draw_critical_elixir (Coord c, CriticalType type, double elixir,
-				 double scale, double tol_mult);
+    double __draw_critical_elixir (Coord c, CriticalType type, double elixir,
+				   double scale, double tol_mult);
 
 };
 

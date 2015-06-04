@@ -1,5 +1,19 @@
 #include "trackdisplay.hh"
 
+// green 489825 0.282, 0.596, 0.145
+// blue  1155CC 0.067, 0.333, 0.8
+// red   CC0000 0.8, 0, 0
+double dgreen[3] =   {0.282, 0.596, 0.145};
+double dblue[3]  =   {0.067, 0.333, 0.8};
+double dred[3]   =   {0.8, 0, 0};
+
+// green 59BC2D  0.349, 0.737, 0.176
+// blue  1361E8  0.075, 0.38, 0.91
+// red   E30000  0.89, 0, 0
+double mgreen[3] =   {0.349, 0.737, 0.176};
+double mblue[3]  =   {0.075, 0.38, 0.91};
+double mred[3]   =   {0.89, 0, 0};
+
 double white[3] =   {1.0,1.0,1.0};
 double black[3] =   {0.0,0.0,0.0};
 double red[3] =     {1.0,0.0,0.0};
@@ -97,6 +111,9 @@ TrackDisplay::TrackDisplay()
     draw_critical_circle = false;
     draw_current_point = false;
     set_life_cut_on_index = false;
+
+    asc = NULL;
+    ssp = NULL;
 };
 
 
@@ -114,8 +131,7 @@ void TrackDisplay::set_boundaries ()
 	width = ssp->dem[0]->width;
 	height = ssp->dem[0]->height;
     }
-
-    if (asc)
+    else if (asc)
     {
 	clip_white = asc->max;
 	clip_black = asc->min;	
@@ -123,6 +139,12 @@ void TrackDisplay::set_boundaries ()
 	height = asc->height;
     }
 
+    if (ssp && asc &&
+	((int)asc->width != ssp->dem[0]->width ||
+	 (int)asc->height != ssp->dem[0]->height))
+	eprintx (3, "%s", "sizes of ssp and asc are different.\n");
+	
+    
     crop_llc.x = crop_llc.y = 0;
     crop_hrc.x = width;
     crop_hrc.y = height;
@@ -344,16 +366,16 @@ void __draw_critical_color (CriticalType t, bool __circle=false)
     switch (t)
     {
     case MIN:
-	glColor3dv (blue);
+	glColor3dv (mblue);
  	break;
 
     case MAX:
-	glColor3dv(red);
+	glColor3dv (mred);
 	break;
 
     case SA2:
     case SA3:
-	glColor3dv(green);
+	glColor3dv (mgreen);
 	break;
 
     // case SA3:
@@ -617,12 +639,12 @@ void TrackDisplay::__draw_critical_query (TrackRenderingEntry r,  double scale, 
     }
 }
 
-void TrackDisplay::__draw_critical_elixir (Coord c, CriticalType type, double elixir,  double scale, double tol_mult)
+double TrackDisplay::__draw_critical_elixir (Coord c, CriticalType type, double elixir,  double scale, double tol_mult)
 {
     double x = c.x;
     double y = c.y;
 
-    double scale_tol;
+    double scale_tol = 0.0;
 
     if (multiply_exp)
 	scale_tol = pow (tol_mult, 1.0 + elixir);
@@ -638,6 +660,8 @@ void TrackDisplay::__draw_critical_elixir (Coord c, CriticalType type, double el
 	glScaled (scale_tol, scale_tol, 1.0);
     __draw_critical_color (type, draw_critical_circle);
     glPopMatrix();
+
+    return scale_tol;
 }
 
 // std::vector<int> spots_maxima;
@@ -793,14 +817,15 @@ void TrackDisplay::draw (int dem_idx, Point llc, Point hrc)
 
 	glEnable(GL_FLAT);
 	glBegin (GL_QUADS);
-	for (unsigned i = bllc.x; i < bhrc.x; i++)
-	    for (unsigned j = bllc.y; j < bhrc.y; j++)
+	for (int i = bllc.x; i < bhrc.x; i++)
+	    for (int j = bllc.y; j < bhrc.y; j++)
 	    {
 		double min = clip_black;
 		double max = clip_white;
 		double mul = multiply;
 
-		double vij = asc? asc->get_pixel (i, j) : (*ssp->dem[level]) (i, j);
+		// double vij = asc? asc->get_pixel (i, j) : (*ssp->dem[level]) (i, j);
+		double vij = ssp? (*ssp->dem[level]) (i, j) : asc->get_pixel (i, j);
 		vij = __clip (vij, min, max, mul);
  
 		glColor3f (vij, vij, vij);
@@ -982,6 +1007,8 @@ void TrackDisplay::draw (int dem_idx, Point llc, Point hrc)
 
     if (draw_inspector)
     {
+	spots_current.clear();
+	spots_current_scalesize.clear();
 	inspector_maxima_total = inspector_maxima_rendered =
 	    inspector_minima_total = inspector_minima_rendered =
 	    inspector_sellae_total = inspector_sellae_rendered = 0;
@@ -1057,9 +1084,12 @@ void TrackDisplay::draw (int dem_idx, Point llc, Point hrc)
 		printf ("Warning: ei==-1\n");
 		ei = 0;
 	    }
-	    __draw_critical_elixir (track->lines[i].entries[ei].c,
-				    track->original_type (i),
-				    vvv, spot_scale, mmm);
+	    double scalesize;
+	    scalesize = __draw_critical_elixir (track->lines[i].entries[ei].c,
+						track->original_type (i),
+						vvv, spot_scale, mmm);
+	    spots_current.push_back (i);
+	    spots_current_scalesize.push_back (scalesize);
 	}
     }    
     
@@ -1522,5 +1552,5 @@ void TrackDisplay::swpts_save_csv (char* filename)
     // printf ("final: %s\n", cwd);
 
     CSVReader csvio (*asc);
-    csvio.save (cwd, spots_current, track, ssp);
+    csvio.save (cwd, spots_current, spots_current_scalesize, track, ssp);
 }
