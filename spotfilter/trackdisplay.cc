@@ -366,7 +366,8 @@ void __draw_critical_color (CriticalType t, bool __circle=false)
     switch (t)
     {
     case MIN:
-	glColor3dv (mblue);
+	// glColor3dv (mblue);
+	glColor3dv (mgreen);
  	break;
 
     case MAX:
@@ -375,7 +376,8 @@ void __draw_critical_color (CriticalType t, bool __circle=false)
 
     case SA2:
     case SA3:
-	glColor3dv (mgreen);
+	// glColor3dv (mgreen);
+	glColor3dv (mblue);
 	break;
 
     // case SA3:
